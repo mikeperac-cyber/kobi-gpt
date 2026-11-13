@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+motor
+pyjwt
+bcrypt
+httpx
+python-multipart
+pillow
+qrcode
+reportlab
+pytest
+pytest-asyncio
+mongomock-motor
+pypdf

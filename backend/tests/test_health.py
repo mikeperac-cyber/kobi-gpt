@@ -2,6 +2,7 @@ from app.core.config import get_settings
 
 
 async def test_health_reports_provider_without_key(client, monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")  # process env beats the root .env
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-secret-123")
     get_settings.cache_clear()
     r = await client.get("/api/health")
@@ -9,7 +10,6 @@ async def test_health_reports_provider_without_key(client, monkeypatch):
     assert r.status_code == 200
     assert body == {"status": "ok", "llm": {"provider": "anthropic", "key_set": True}}
     assert "sk-secret-123" not in r.text
-    get_settings.cache_clear()
 
 
 def test_to_json():

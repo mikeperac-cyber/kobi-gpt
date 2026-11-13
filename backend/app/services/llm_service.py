@@ -1,6 +1,7 @@
 """Single entry point for every LLM call: raw-httpx providers, JSON validation, run logging."""
 import base64
 import json
+import logging
 import re
 import time
 from datetime import datetime, timezone
@@ -15,13 +16,18 @@ from app.core.config import get_settings
 from app.core.db import get_db
 
 PROMPTS = Path(__file__).resolve().parents[1] / "prompts"
+log = logging.getLogger(__name__)
 M = TypeVar("M", bound=BaseModel)
 
 
 class LLMError(Exception): ...
 class LLMNotConfigured(LLMError): ...
 class LLMTimeout(LLMError): ...
-class LLMInvalidOutput(LLMError): ...
+class LLMInvalidOutput(LLMError):
+    def __init__(self, msg: str, raw: str = ""):
+        super().__init__(msg)
+        self.raw = raw
+
 class LLMProviderError(LLMError): ...
 
 
@@ -39,7 +45,17 @@ async def _post(url: str, headers: dict, body: dict, timeout: float) -> dict:
         raise LLMProviderError(str(e)) from e
     if not 200 <= r.status_code < 300:
         raise LLMProviderError(f"{r.status_code}: {r.text[:300]}")
-    return r.json()
+    try:
+        return r.json()
+    except ValueError as e:
+        raise LLMProviderError(f"non-JSON response: {r.text[:200]}") from e
+
+
+def _extract(fn, data):
+    try:
+        return fn(data)
+    except (KeyError, IndexError, TypeError, AttributeError) as e:
+        raise LLMProviderError(f"unexpected response shape: {str(data)[:300]}") from e
 
 
 def _b64(img: bytes) -> str:
@@ -65,7 +81,7 @@ class AnthropicProvider:
             {"model": self.model, "max_tokens": 4096, "messages": [{"role": "user", "content": content}]},
             timeout,
         )
-        return "".join(b.get("text", "") for b in data["content"])
+        return _extract(lambda d: "".join(b.get("text", "") for b in d["content"]), data)
 
 
 class OpenAIProvider:
@@ -82,7 +98,7 @@ class OpenAIProvider:
         data = await _post(
             "https://api.openai.com/v1/chat/completions", {"Authorization": f"Bearer {self.key}"}, body, timeout
         )
-        return data["choices"][0]["message"]["content"] or ""
+        return _extract(lambda d: d["choices"][0]["message"]["content"] or "", data)
 
 
 class GeminiProvider:
@@ -100,7 +116,7 @@ class GeminiProvider:
             body,
             timeout,
         )
-        return "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
+        return _extract(lambda d: "".join(p.get("text", "") for p in d["candidates"][0]["content"]["parts"]), data)
 
 
 _PROVIDERS = {"anthropic": AnthropicProvider, "openai": OpenAIProvider, "gemini": GeminiProvider}
@@ -146,9 +162,10 @@ async def _logged(name, prompt, run_type, company_id, work):
         return result
     except Exception as e:
         error = f"{type(e).__name__}: {e}"
+        output = getattr(e, "raw", "")
         raise
     finally:
-        await get_db().agent_runs.insert_one(
+        doc = (
             {
                 "type": run_type,
                 "company_id": company_id,
@@ -160,6 +177,10 @@ async def _logged(name, prompt, run_type, company_id, work):
                 "created_at": datetime.now(timezone.utc),
             }
         )
+        try:
+            await get_db().agent_runs.insert_one(doc)
+        except Exception:  # logging must never mask the real result or error
+            log.exception("failed to write agent_runs")
 
 
 def _timeout(timeout: float | None) -> float:
@@ -183,6 +204,7 @@ async def generate_json(name, context, schema: type[M], *, run_type, company_id,
 
     async def work():
         provider, current = _get_provider(), prompt
+        raw = ""
         for _ in range(3):
             raw = (await provider.complete(current, list(images), _timeout(timeout), True)).strip()
             m = _FENCE.match(raw)
@@ -194,6 +216,6 @@ async def generate_json(name, context, schema: type[M], *, run_type, company_id,
                 f"{prompt}\n\nYour previous reply was not valid. Error: {last[:500]}\n"
                 "Reply again with ONLY the corrected JSON."
             )
-        raise LLMInvalidOutput(last)
+        raise LLMInvalidOutput(last, raw)
 
     return await _logged(name, prompt, run_type, company_id, work)

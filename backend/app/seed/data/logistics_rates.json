@@ -1,0 +1,11 @@
+[
+  {"key": "packaging_pct", "value": 0.08,
+   "label_tr": "ÖRNEK – gerçek forwarder teklifiyle değiştirin", "label_en": "EXAMPLE – replace with a real forwarder quote"},
+  {"key": "ltl_bands", "bands": [
+     {"max_kg": 500, "eur_per_kg": 0.60}, {"max_kg": 3000, "eur_per_kg": 0.35}, {"max_kg": 12000, "eur_per_kg": 0.25}],
+   "label_tr": "ÖRNEK – gerçek forwarder teklifiyle değiştirin", "label_en": "EXAMPLE – replace with a real forwarder quote"},
+  {"key": "ftl", "eur_per_truck": 2500, "truck_capacity_kg": 24000,
+   "label_tr": "ÖRNEK – gerçek forwarder teklifiyle değiştirin", "label_en": "EXAMPLE – replace with a real forwarder quote"},
+  {"key": "courier", "eur_per_kg": 8.0, "min_eur": 60,
+   "label_tr": "ÖRNEK – gerçek forwarder teklifiyle değiştirin", "label_en": "EXAMPLE – replace with a real forwarder quote"}
+]

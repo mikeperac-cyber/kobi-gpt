@@ -1,0 +1,26 @@
+{
+  "bozkurt": [
+    {"company_name": "Nussgarten Feinkost Handels GmbH", "contact_name": "Katrin Wiesner", "email": "einkauf.nussgarten-feinkost@example.com", "website": "https://www.nussgarten-feinkost.example.com", "notes": "Importeur für Nüsse, Pistazien und Trockenfrüchte; beliefert Feinkostläden und Bäckereien."},
+    {"company_name": "Rheinwiese Naturkost Vertrieb GmbH", "contact_name": "Jonas Brandl", "email": "jonas.brandl.rheinwiese-naturkost@example.com", "website": "https://www.rheinwiese-naturkost.example.com", "notes": "Großhandel für Bio-Lebensmittel, Nüsse und Snacks, sucht Pistazien aus der Türkei."},
+    {"company_name": "Hanseatische Süßwaren Kontor GmbH", "contact_name": "Mareike Tönnies", "email": "kontakt.hanse-suesswaren@example.com", "website": null, "notes": "Süßwaren und Konditoreibedarf, Interesse an Pistazienkernen."},
+    {"company_name": "Bergfried Getränke Logistik GmbH", "contact_name": "Heiko Sander", "email": "info.bergfried-getraenke@example.com", "website": "https://www.bergfried-getraenke.example.com", "notes": "Getränkelogistik und Lagerung; kein Lebensmittelsortiment mit Nüssen."},
+    {"company_name": "Schwarzwald Snackwerk GmbH", "contact_name": "Anja Keller", "email": "anja.keller.snackwerk-sw@example.com", "website": null, "notes": "Hersteller von Snackmischungen, kauft geröstete Pistazien und Nüsse in großen Mengen."},
+    {"company_name": "Elbtal Gewerbebedarf GmbH", "contact_name": "Frank Ostermann", "email": "vertrieb.elbtal-gewerbebedarf@example.com", "website": null, "notes": "Bürobedarf und Verpackungen für Gewerbekunden."}
+  ],
+  "pamukkale": [
+    {"company_name": "Frottee Kontor Nord GmbH", "contact_name": "Silke Brandt", "email": "einkauf.frottee-kontor@example.com", "website": "https://www.frottee-kontor.example.com", "notes": "Großhändler für Handtücher, Frottee und Bademäntel aus Baumwolle für Hotels."},
+    {"company_name": "Wellnesswelt Hotelbedarf GmbH", "contact_name": "Dirk Pfannenstiel", "email": "d.pfannenstiel.wellnesswelt-hotelbedarf@example.com", "website": "https://www.wellnesswelt-hotelbedarf.example.com", "notes": "Hotelbedarf und Spa-Textilien, sucht Bademäntel und Handtücher aus Baumwolle."},
+    {"company_name": "Lindenhof Heimtextil Vertrieb GmbH", "contact_name": "Gabi Neumeier", "email": "kontakt.lindenhof-heimtextil@example.com", "website": null, "notes": "Heimtextilien für den Einzelhandel, Interesse an Baumwoll-Handtüchern."},
+    {"company_name": "Donaustahl Werkzeugbedarf GmbH", "contact_name": "Rudolf Hinterseer", "email": "info.donaustahl-werkzeug@example.com", "website": "https://www.donaustahl-werkzeug.example.com", "notes": "Werkzeuge und Maschinenzubehör, kein Textilsortiment."},
+    {"company_name": "Sonnenbad Saunawelten GmbH", "contact_name": "Petra Wöhler", "email": "p.woehler.sonnenbad-saunawelten@example.com", "website": null, "notes": "Betreiber von Saunalandschaften, benötigt Frottee-Bademäntel und Saunatücher."},
+    {"company_name": "Tannengrund Gartenmöbel GmbH", "contact_name": "Lars Eichkamp", "email": "vertrieb.tannengrund-garten@example.com", "website": null, "notes": "Gartenmöbel und Outdoor-Zubehör."}
+  ],
+  "uludag": [
+    {"company_name": "Schraubenkontor Süd GmbH", "contact_name": "Thomas Reinsch", "email": "einkauf.schraubenkontor-sued@example.com", "website": "https://www.schraubenkontor-sued.example.com", "notes": "Großhandel für Schrauben, Muttern und Verbindungselemente aus Stahl, verzinkt, für Automobilzulieferer."},
+    {"company_name": "Kaltfliess Verbindungstechnik GmbH", "contact_name": "Ursula Dreyer", "email": "u.dreyer.kaltfliess-verbindungstechnik@example.com", "website": "https://www.kaltfliess-verbindungstechnik.example.com", "notes": "Befestigungselemente, Schrauben und Muttern M8, Serienfertigung für die Automobilindustrie."},
+    {"company_name": "Neckarbogen Industriebedarf GmbH", "contact_name": "Markus Feldhaus", "email": "info.neckarbogen-industriebedarf@example.com", "website": null, "notes": "Industriebedarf, Normteile und Stahlschrauben für Maschinenbau."},
+    {"company_name": "Zuckerrohr Feinkost Import GmbH", "contact_name": "Beate Lorenz", "email": "kontakt.zuckerrohr-feinkost@example.com", "website": "https://www.zuckerrohr-feinkost.example.com", "notes": "Import von Feinkost und Gewürzen, kein technischer Bedarf."},
+    {"company_name": "Weserland Fahrzeugteile GmbH", "contact_name": "Holger Brinkmann", "email": "h.brinkmann.weserland-fahrzeugteile@example.com", "website": null, "notes": "Zulieferer für Fahrzeugteile, sucht galvanisierte Stahlschrauben und Muttern."},
+    {"company_name": "Rosenau Modeaccessoires GmbH", "contact_name": "Claudia Veith", "email": "vertrieb.rosenau-mode@example.com", "website": null, "notes": "Modeaccessoires und Schmuck."}
+  ]
+}

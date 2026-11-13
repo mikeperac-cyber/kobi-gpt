@@ -1,0 +1,62 @@
+[
+  {
+    "key": "bozkurt", "user": {"email": "bozkurt@demo.local", "name": "Bozkurt Demo"}, "color": "#3E7B4F",
+    "company": {
+      "name": "Bozkurt Antep Fıstığı", "city": "Gaziantep", "sector": "gida",
+      "description_tr": "Gaziantep'te üç kuşaktır Antep fıstığı işliyoruz. Kendi bahçelerimizden ve sözleşmeli üreticilerden aldığımız fıstığı ayıklıyor, kavuruyor ve 1 kg ile 10 kg'lık paketlerde sunuyoruz. Üretimimiz ISO 22000 ve Helal belgelidir.",
+      "founded_year": 1998, "employee_count": 32, "certifications": ["ISO 22000", "Helal"],
+      "contact": {"phone": "+90 342 555 01 01", "email": "ihracat@bozkurt-demo.example.com", "website": null},
+      "logo_url": null, "min_order_note": "Asgari sipariş 500 kg; palet halinde sevkiyat."
+    },
+    "products": [
+      {"name_tr": "Kabuklu Kavrulmuş Antep Fıstığı", "unit": "kg", "moq": 500, "unit_weight_kg": 1.0, "price_floor": 11.5,
+       "material_or_ingredients": "Antep fıstığı, deniz tuzu",
+       "description_tr": "Kabuğu çatlak, taze kavrulmuş tuzlu Antep fıstığı. 1 kg ve 10 kg'lık paketlerde sunulur. Her parti ayıklanır ve gıda güvenliği kontrolünden geçer.",
+       "photo_labels": ["Kabuklu Antep Fıstığı", "Kavrulmuş Fıstık 1 kg ve 10 kg"]},
+      {"name_tr": "İç Antep Fıstığı", "unit": "kg", "moq": 300, "unit_weight_kg": 1.0, "price_floor": 19.0,
+       "material_or_ingredients": "Antep fıstığı (iç)",
+       "description_tr": "Kabuğu soyulmuş, yeşil renkli iç Antep fıstığı. Pastacılık, dondurma ve gıda sanayisi için uygundur. 1 kg ve 10 kg'lık paketlerde sunulur.",
+       "photo_labels": ["İç Antep Fıstığı", "İç Fıstık Paketleri"]}
+    ]
+  },
+  {
+    "key": "pamukkale", "user": {"email": "pamukkale@demo.local", "name": "Pamukkale Demo"}, "color": "#2F6F8F",
+    "company": {
+      "name": "Pamukkale Havlu Atölyesi", "city": "Denizli", "sector": "tekstil",
+      "description_tr": "Denizli'de aile atölyesi olarak pamuklu havlu ve bornoz üretiyoruz. İplikten dokumaya, boyadan dikime kadar işin büyük kısmını kendi atölyemizde yapıyoruz. Ürünlerimiz OEKO-TEX belgelidir.",
+      "founded_year": 2004, "employee_count": 18, "certifications": ["OEKO-TEX"],
+      "contact": {"phone": "+90 258 555 02 02", "email": "ihracat@pamukkale-demo.example.com", "website": null},
+      "logo_url": null, "min_order_note": "Asgari sipariş 300 adet; renk ve logo çalışması yapılabilir."
+    },
+    "products": [
+      {"name_tr": "%100 Pamuk Havlu", "unit": "adet", "moq": 1000, "unit_weight_kg": 0.5, "price_floor": 3.2,
+       "material_or_ingredients": "%100 pamuk",
+       "description_tr": "Yumuşak ve emici, %100 pamuklu havlu. Yüz, el ve banyo boyları mevcuttur. Otel ve perakende için uygundur.",
+       "photo_labels": ["%100 Pamuk Havlu", "Havlu Renk Seçenekleri"]},
+      {"name_tr": "Pamuk Bornoz", "unit": "adet", "moq": 300, "unit_weight_kg": 0.9, "price_floor": 9.5,
+       "material_or_ingredients": "%100 pamuk",
+       "description_tr": "Havlu kumaştan, %100 pamuklu bornoz. Kadın ve erkek modelleri vardır. Otel, spa ve perakende için uygundur.",
+       "photo_labels": ["Pamuk Bornoz", "Bornoz Modelleri"]}
+    ]
+  },
+  {
+    "key": "uludag", "user": {"email": "uludag@demo.local", "name": "Uludağ Demo"}, "color": "#4A5A6A",
+    "company": {
+      "name": "Uludağ Bağlantı Elemanları", "city": "Bursa", "sector": "otomotiv_yan_sanayi",
+      "description_tr": "Bursa'da otomotiv yan sanayisi için cıvata ve somun üretiyoruz. Galvaniz kaplamalı çelik bağlantı elemanlarını belirlenen ölçülere göre seri üretim yapıyoruz. ISO 9001 ve IATF 16949 belgelidir.",
+      "founded_year": 1992, "employee_count": 45, "certifications": ["ISO 9001", "IATF 16949"],
+      "contact": {"phone": "+90 224 555 03 03", "email": "ihracat@uludag-demo.example.com", "website": null},
+      "logo_url": null, "min_order_note": "Asgari sipariş 50.000 adet; teknik resme göre üretim yapılabilir."
+    },
+    "products": [
+      {"name_tr": "Galvanizli Çelik Cıvata M8", "unit": "adet", "moq": 50000, "unit_weight_kg": 0.02, "price_floor": 0.04,
+       "material_or_ingredients": "Çelik, galvaniz kaplama",
+       "description_tr": "M8 ölçüsünde galvaniz kaplamalı çelik cıvata. Seri üretimdir; ölçü ve kaplama kontrolü her partide yapılır.",
+       "photo_labels": ["Galvanizli Cıvata M8", "Cıvata Üretim Hattı"]},
+      {"name_tr": "Galvanizli Çelik Somun M8", "unit": "adet", "moq": 100000, "unit_weight_kg": 0.01, "price_floor": 0.02,
+       "material_or_ingredients": "Çelik, galvaniz kaplama",
+       "description_tr": "M8 ölçüsünde galvaniz kaplamalı çelik somun. Seri üretimdir; cıvata ile birlikte set halinde de sunulabilir.",
+       "photo_labels": ["Galvanizli Somun M8", "Somun Çeşitleri"]}
+    ]
+  }
+]

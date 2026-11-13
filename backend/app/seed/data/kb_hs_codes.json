@@ -1,0 +1,18 @@
+[
+  {"id": "0802.51", "sector": "gida", "description_en": "Pistachios, fresh or dried, in shell", "description_tr": "Kabuklu Antep fıstığı, taze veya kuru",
+   "note_en": "raw or dried, not roasted", "note_tr": "ham veya kurutulmuş, kavrulmamış"},
+  {"id": "0802.52", "sector": "gida", "description_en": "Pistachios, fresh or dried, shelled", "description_tr": "Kabuğu soyulmuş (iç) Antep fıstığı, taze veya kuru",
+   "note_en": "raw or dried, not roasted", "note_tr": "ham veya kurutulmuş, kavrulmamış"},
+  {"id": "2008.19", "sector": "gida", "description_en": "Nuts (incl. mixtures), otherwise prepared or preserved, e.g. roasted", "description_tr": "Başka şekilde hazırlanmış veya saklanmış sert kabuklu yemişler (karışımlar dahil), örneğin kavrulmuş",
+   "note_en": "roasted and salted pistachios usually fall here", "note_tr": "kavrulmuş ve tuzlanmış fıstık genellikle bu koda girer"},
+  {"id": "6302.60", "sector": "tekstil", "description_en": "Toilet and kitchen linen, of terry towelling, of cotton", "description_tr": "Pamuklu havlu kumaşından tuvalet ve mutfak tekstili",
+   "note_en": "towels", "note_tr": "havlular"},
+  {"id": "6207.91", "sector": "tekstil", "description_en": "Men's bathrobes, dressing gowns etc., of cotton", "description_tr": "Pamuklu erkek bornoz, sabahlık ve benzerleri",
+   "note_en": "", "note_tr": ""},
+  {"id": "6208.91", "sector": "tekstil", "description_en": "Women's and girls' bathrobes, dressing gowns etc., of cotton", "description_tr": "Pamuklu kadın ve kız çocuk bornoz, sabahlık ve benzerleri",
+   "note_en": "", "note_tr": ""},
+  {"id": "7318.15", "sector": "otomotiv_yan_sanayi", "description_en": "Other screws and bolts, of iron or steel", "description_tr": "Demir veya çelikten diğer vidalar ve cıvatalar",
+   "note_en": "", "note_tr": ""},
+  {"id": "7318.16", "sector": "otomotiv_yan_sanayi", "description_en": "Nuts, of iron or steel", "description_tr": "Demir veya çelikten somunlar",
+   "note_en": "", "note_tr": ""}
+]

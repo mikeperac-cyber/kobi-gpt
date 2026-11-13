@@ -9,7 +9,12 @@ def get_db() -> AsyncIOMotorDatabase:
     global _db
     if _db is None:
         s = get_settings()
-        _db = AsyncIOMotorClient(s.mongo_uri)[s.mongo_db]
+        if s.mongo_uri.startswith("mongomock://"):  # dev-only in-memory mode, data is lost on restart
+            from mongomock_motor import AsyncMongoMockClient
+
+            _db = AsyncMongoMockClient()[s.mongo_db]
+        else:
+            _db = AsyncIOMotorClient(s.mongo_uri)[s.mongo_db]
     return _db
 
 

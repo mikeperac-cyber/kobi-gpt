@@ -13,3 +13,4 @@
 11. **Demo companies** carry `is_demo_company: true`; the demo timeout and `demo_cache` apply only to them.
 12. **Quote PDF and readiness PDF both go through `pdf_service`**, which takes already-public dicts (never a product document), so the floor cannot reach it.
 13. **CERTS includes "IATF 16949"** (added to the spec list for the Bursa fastener seed company).
+14. **In-memory dev database** (`MONGO_URI=mongomock://`) uses mongomock-motor and seeds on startup so the app runs with no MongoDB installed. Data is lost on restart; use real MongoDB for persistence.

@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -30,7 +31,16 @@ UPLOADS = Path(__file__).resolve().parents[2] / "uploads"
 
 @asynccontextmanager
 async def lifespan(_app):
-    await ensure_indexes(get_db())
+    db = get_db()
+    await ensure_indexes(db)
+    s = get_settings()
+    if s.mongo_uri.startswith("mongomock://"):  # in-memory dev DB starts empty: seed demo logins
+        if not s.seed_password:
+            logging.getLogger(__name__).warning("SEED_PASSWORD unset in mongomock mode; demo password is demo12345")
+            s.seed_password = "demo12345"
+        from app.seed import seed
+
+        await seed(db)
     yield
 
 

@@ -24,8 +24,8 @@ export default function Layout() {
           </div>
         </div>
         {user?.has_company && (
-          <nav aria-label={t('nav.main')} className="max-w-5xl mx-auto px-4 flex gap-1 border-t border-slate-100">
-            {([['/', 'nav.dashboard'], ['/company', 'nav.company'], ['/products', 'nav.products']] as const).map(([to, k]) => (
+          <nav aria-label={t('nav.main')} className="max-w-5xl mx-auto px-4 flex gap-1 overflow-x-auto border-t border-slate-100">
+            {([['/', 'nav.dashboard'], ['/company', 'nav.company'], ['/products', 'nav.products'], ['/storefront', 'nav.storefront'], ['/compliance', 'nav.compliance'], ['/leads', 'nav.leads']] as const).map(([to, k]) => (
               <NavLink key={to} to={to} end className={({ isActive }) => `min-h-11 px-3 inline-flex items-center text-sm ${isActive ? 'font-bold underline underline-offset-4 decoration-brand' : 'text-slate-700'}`}>{t(k)}</NavLink>
             ))}
           </nav>

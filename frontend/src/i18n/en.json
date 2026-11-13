@@ -42,7 +42,10 @@
     "skip": "Skip to content",
     "main": "Main menu",
     "company": "My company",
-    "products": "My products"
+    "products": "My products",
+    "storefront": "Storefront",
+    "compliance": "Compliance",
+    "leads": "Buyers"
   },
   "privacy": {
     "title": "Privacy Notice (KVKK)",
@@ -105,9 +108,52 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
-    "soon": "The dashboard is coming soon.",
-    "welcome": "Welcome, {{name}}"
+    "title": "Export Dashboard",
+    "retry": "Try again",
+    "loadError": "The dashboard could not be loaded right now.",
+    "market": {
+      "DE": "Germany"
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "progress": "{{done}}/4 steps done",
+      "done": "done",
+      "todo": "to do",
+      "profile": "Profile",
+      "storefront": "Storefront",
+      "compliance": "Compliance",
+      "first_quote": "First quote"
+    },
+    "storefront": {
+      "title": "Storefront",
+      "none": "Not created",
+      "draft": "Draft",
+      "published": "Published",
+      "create": "Create my storefront",
+      "view": "View storefront"
+    },
+    "compliance": {
+      "title": "Compliance",
+      "none": "Not done",
+      "score": "Readiness score {{score}}%",
+      "run": "Run compliance check"
+    },
+    "leads": {
+      "title": "Buyers",
+      "summary_one": "{{count}} lead, {{pending}} awaiting approval",
+      "summary_other": "{{count}} leads, {{pending}} awaiting approval",
+      "find": "Find buyers"
+    },
+    "notif": {
+      "title": "Notifications",
+      "empty": "No notifications yet.",
+      "rfq": "New quote request: {{company}}",
+      "unknown": "New notification"
+    },
+    "placeholder": {
+      "empty": "This section is coming soon.",
+      "back": "Back to dashboard"
+    }
   },
   "company": {
     "title": "Company",

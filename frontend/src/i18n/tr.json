@@ -42,7 +42,10 @@
     "skip": "İçeriğe geç",
     "main": "Ana menü",
     "company": "Firmam",
-    "products": "Ürünlerim"
+    "products": "Ürünlerim",
+    "storefront": "Vitrin",
+    "compliance": "Mevzuat",
+    "leads": "Alıcılar"
   },
   "privacy": {
     "title": "Aydınlatma Metni (KVKK)",
@@ -105,9 +108,52 @@
     }
   },
   "dashboard": {
-    "title": "Panel",
-    "soon": "Panel yakında eklenecek.",
-    "welcome": "Hoş geldiniz, {{name}}"
+    "title": "İhracat Panosu",
+    "retry": "Tekrar dene",
+    "loadError": "Panoya şu anda ulaşılamadı.",
+    "market": {
+      "DE": "Almanya"
+    },
+    "roadmap": {
+      "title": "Yol haritası",
+      "progress": "{{done}}/4 adım tamamlandı",
+      "done": "tamamlandı",
+      "todo": "yapılacak",
+      "profile": "Profil",
+      "storefront": "Vitrin",
+      "compliance": "Mevzuat",
+      "first_quote": "İlk teklif"
+    },
+    "storefront": {
+      "title": "Vitrin",
+      "none": "Oluşturulmadı",
+      "draft": "Taslak",
+      "published": "Yayında",
+      "create": "Vitrinimi oluştur",
+      "view": "Vitrini görüntüle"
+    },
+    "compliance": {
+      "title": "Mevzuat (uygunluk)",
+      "none": "Yapılmadı",
+      "score": "Hazırlık skoru %{{score}}",
+      "run": "Uygunluk kontrolü yap"
+    },
+    "leads": {
+      "title": "Alıcılar",
+      "summary_one": "{{count}} lead, {{pending}} onay bekleyen mesaj",
+      "summary_other": "{{count}} lead, {{pending}} onay bekleyen mesaj",
+      "find": "Alıcı bul"
+    },
+    "notif": {
+      "title": "Bildirimler",
+      "empty": "Henüz bildirim yok.",
+      "rfq": "Yeni teklif talebi: {{company}}",
+      "unknown": "Yeni bildirim"
+    },
+    "placeholder": {
+      "empty": "Bu bölüm yakında eklenecek.",
+      "back": "Panoya dön"
+    }
   },
   "company": {
     "title": "Firma",

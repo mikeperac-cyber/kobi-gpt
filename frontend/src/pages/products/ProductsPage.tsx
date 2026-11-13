@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import Modal from '../../components/ui/Modal'
 import Skeleton from '../../components/ui/Skeleton'
-import { formatNumber } from '../../i18n/format'
+import { formatMoney, formatNumber } from '../../i18n/format'
 
 export default function ProductsPage() {
   const { t } = useTranslation()
@@ -77,7 +77,7 @@ export default function ProductsPage() {
               <div className="min-w-0 flex-1">
                 <h2 className="font-semibold break-words">{p.name_tr}</h2>
                 <p className="text-sm text-slate-600">{t('products.moqLine', { moq: formatNumber(p.moq), unit: t(`products.units.${p.unit}`) })}</p>
-                <p className="text-sm text-slate-600">{t('products.floorLine', { price: formatNumber(p.price_floor) })}</p>
+                <p className="text-sm text-slate-600">{t('products.floorLine', { price: formatMoney(p.price_floor, 'EUR') })}</p>
                 <div className="flex gap-2 mt-2">
                   <Button variant="secondary" onClick={() => open(p)}>{t('products.edit')}</Button>
                   <Button variant="ghost" onClick={() => setDeleting(p)}>{t('products.delete')}</Button>

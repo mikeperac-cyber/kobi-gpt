@@ -183,6 +183,8 @@
     "moqHint": "Seçtiğiniz birim cinsinden.",
     "unitWeight": "Birim ağırlığı (kg)",
     "unitWeightHint": "İsteğe bağlı. Nakliye tahmini için kullanılır.",
+    "floorCur": "€ / birim",
+    "errInteger": "Adet ve koli için tam sayı girin (örn. 500).",
     "floor": "Gizli taban fiyat",
     "floorTip": "Bu fiyat alıcılara asla gösterilmez; ajan bunun altına teklif vermez.",
     "photos": "Fotoğraflar",

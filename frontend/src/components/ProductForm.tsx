@@ -33,6 +33,7 @@ export function productPayload(d: ProductDraft, mode: 'onboarding' | 'edit'): { 
   const weight = d.unit_weight_kg.trim() ? parseLocaleNumber(d.unit_weight_kg) : null
   if (!d.name_tr.trim()) errs.name_tr = 'company.errRequired'
   if (moq === null || moq <= 0) errs.moq = 'products.errPositive'
+  else if ((d.unit === 'adet' || d.unit === 'koli') && !Number.isInteger(moq)) errs.moq = 'products.errInteger'
   if (floor === null || floor <= 0) errs.price_floor = 'products.errPositive'
   if (d.unit_weight_kg.trim() && (weight === null || weight <= 0)) errs.unit_weight_kg = 'products.errPositive'
   if (mode === 'onboarding' && !d.photos.length) errs.photos = 'errors.photo_required'
@@ -74,7 +75,7 @@ export default function ProductForm({ value: v, onChange, mode, errs = {} }: {
         <Field label={t('products.moq')} hint={t('products.moqHint')} error={errs.moq}><Input inputMode="decimal" {...bind('moq')} /></Field>
       </div>
       <Field label={t('products.unitWeight')} hint={t('products.unitWeightHint')} error={errs.unit_weight_kg}><Input inputMode="decimal" {...bind('unit_weight_kg')} /></Field>
-      <Field label={t('products.floor')} hint={<><Lock />{t('products.floorTip')}</>} error={errs.price_floor}>
+      <Field label={`${t('products.floor')} (${t('products.floorCur')})`} hint={<><Lock />{t('products.floorTip')}</>} error={errs.price_floor}>
         <Input inputMode="decimal" className="bg-slate-50 border-navy/40" {...bind('price_floor')} />
       </Field>
       <div>

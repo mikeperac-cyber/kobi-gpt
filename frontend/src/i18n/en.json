@@ -183,6 +183,8 @@
     "moqHint": "In the unit you chose.",
     "unitWeight": "Unit weight (kg)",
     "unitWeightHint": "Optional. Used for the shipping estimate.",
+    "floorCur": "EUR per unit",
+    "errInteger": "Enter a whole number for piece and carton units (e.g. 500).",
     "floor": "Secret floor price",
     "floorTip": "This price is never shown to buyers; the agent will not quote below it.",
     "photos": "Photos",

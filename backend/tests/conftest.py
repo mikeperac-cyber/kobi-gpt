@@ -28,3 +28,30 @@ def _fresh_settings():
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
+
+
+class FakeLLM:
+    """Pops responses in order; an Exception instance is raised. A callable maps prompt -> response."""
+
+    def __init__(self, responses=None):
+        self.responses = responses if responses is not None else []
+        self.prompts: list[str] = []
+
+    async def complete(self, prompt, images, timeout, json_mode):
+        self.prompts.append(prompt)
+        if callable(self.responses):
+            return self.responses(prompt)
+        r = self.responses.pop(0)
+        if isinstance(r, Exception):
+            raise r
+        return r
+
+
+@pytest.fixture
+def fake_llm():
+    from app.services.llm_service import set_provider
+
+    fake = FakeLLM()
+    set_provider(fake)
+    yield fake
+    set_provider(None)

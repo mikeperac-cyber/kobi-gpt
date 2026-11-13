@@ -12,3 +12,4 @@
 10. **i18n key parity is checked by pytest** (reads `frontend/src/i18n/*.json`). No frontend unit-test framework; frontend is verified by `npm run build` (tsc) and browser walk-throughs.
 11. **Demo companies** carry `is_demo_company: true`; the demo timeout and `demo_cache` apply only to them.
 12. **Quote PDF and readiness PDF both go through `pdf_service`**, which takes already-public dicts (never a product document), so the floor cannot reach it.
+13. **CERTS includes "IATF 16949"** (added to the spec list for the Bursa fastener seed company).

@@ -55,3 +55,22 @@ async def require_admin(user: dict = Depends(current_user)) -> dict:
     if not user.get("is_admin"):
         raise HTTPException(403, {"code": "forbidden", "message_key": "errors.forbidden"})
     return user
+
+
+async def current_company(user: dict = Depends(current_user)) -> dict:
+    company = await get_db().companies.find_one({"owner_id": str(user["_id"])})
+    if not company:
+        raise HTTPException(404, {"code": "no_company", "message_key": "errors.no_company"})
+    return company
+
+
+async def owned(collection: str, id: str, company_id: str) -> dict:
+    """Company-scoped fetch. Missing, foreign or malformed ids all give 404 (no existence leak)."""
+    try:
+        oid = ObjectId(id)
+    except (InvalidId, TypeError):
+        oid = None
+    doc = await get_db()[collection].find_one({"_id": oid, "company_id": company_id}) if oid else None
+    if not doc:
+        raise HTTPException(404, {"code": "not_found", "message_key": "errors.not_found"})
+    return doc

@@ -11,7 +11,7 @@ from app.seed.images import make_placeholder
 from app.services.storage_service import get_storage
 
 DATA = Path(__file__).parent / "data"
-DEMO_LEAD_NOTE = "Demo verisi – kurgusal firma (DEMO)"
+DEMO_LEAD_NOTE = "DEMO – kurgusal firma"
 
 
 def _load(name: str):

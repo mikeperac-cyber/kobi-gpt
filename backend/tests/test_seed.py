@@ -99,7 +99,7 @@ async def test_demo_leads_marked(db, seeded_env):
     for lead in leads:
         assert lead["is_demo"] is True and lead["email"].endswith("@example.com")
         assert lead["source"] == "demo" and lead["country"] == "DE" and lead["status"] == "new" and lead["score"] == 0
-        assert lead["source_note"] and lead["company_id"]
+        assert lead["source_note"] == "DEMO – kurgusal firma" and lead["company_id"]
     assert len({lead["email"] for lead in leads}) == 18
 
 
@@ -122,3 +122,12 @@ def test_placeholder_image():
 
     img = Image.open(io.BytesIO(make_placeholder("Kabuklu Fıstık ŞĞİ", "#3E7B4F")))
     assert img.size == (1200, 900)
+
+
+async def test_reseed_updates_kb_text_but_keeps_verification(db, seeded_env):
+    await seed(db)
+    when = "2026-01-01"
+    await db.kb_rules.update_one({"id": "R7"}, {"$set": {"summary_tr": "ESKİ", "verified": True, "last_verified": when}})
+    await seed(db)
+    r = await db.kb_rules.find_one({"id": "R7"})
+    assert r["summary_tr"] != "ESKİ" and r["verified"] is True and r["last_verified"] == when

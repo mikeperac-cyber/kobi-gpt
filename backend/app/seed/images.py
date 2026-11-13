@@ -18,7 +18,7 @@ def make_placeholder(label: str, color: str) -> bytes:
         font = ImageFont.truetype(str(FONT_BOLD), size)
     draw.text((W / 2, H / 2), label, font=font, fill="white", anchor="mm")
     draw.text((W / 2, H - 60), "ÖRNEK GÖRSEL / PLACEHOLDER", font=ImageFont.truetype(str(FONT_BOLD), 28),
-              fill=(255, 255, 255, 200), anchor="mm")
+              fill="#E6E6E6", anchor="mm")
     out = io.BytesIO()
     img.save(out, "WEBP", quality=80)
     return out.getvalue()

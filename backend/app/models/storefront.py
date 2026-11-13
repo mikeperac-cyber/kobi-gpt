@@ -68,7 +68,7 @@ class LocalizedContent(BaseModel):
     hero: Hero = Field(default_factory=Hero)
     about: About = Field(default_factory=About)
     products: list[ProductBlock] = Field(default_factory=list)
-    why_us: list[str] = Field(default_factory=list)  # 3-4 items
+    why_us: list[str] = Field(default_factory=list, max_length=4)  # fact lines only; <3 => "why_us" in missing
     export_info: ExportInfo = Field(default_factory=ExportInfo)
     rfq: Rfq = Field(default_factory=Rfq)
     footer: Footer = Field(default_factory=Footer)

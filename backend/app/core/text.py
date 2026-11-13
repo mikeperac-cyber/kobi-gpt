@@ -1,6 +1,7 @@
 import unicodedata
 
-_TR = str.maketrans("şŞğĞıIİöÖüÜçÇ", "ssggiiioouucc")
+_TR = {**dict(zip("şŞğĞıIİöÖüÜçÇäÄ", "ssggiiioouuccaa")), "ß": "ss"}
+_TR = str.maketrans(_TR)
 
 
 def tr_fold(s: str) -> str:

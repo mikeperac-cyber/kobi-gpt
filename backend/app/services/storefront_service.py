@@ -16,7 +16,7 @@ def template_for_sector(sector: str) -> str:
 
 
 def slugify_tr(text: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", tr_fold(text)).strip("-")[:60].strip("-")
+    return re.sub(r"[^a-z0-9]+", "-", tr_fold(text)).strip("-")[:60].strip("-") or "shop"
 
 
 async def unique_slug(db, base: str, exclude_id: str | None = None) -> str:
@@ -50,43 +50,66 @@ def compute_missing(cfg: SiteConfig) -> list[str]:
                     walk(x, f"{path}.{i}")
 
     for lang in ("de", "en"):
-        walk(getattr(cfg, lang).model_dump(), "")
+        c = getattr(cfg, lang)
+        walk(c.model_dump(), "")
+        if len(c.why_us) < 3:
+            found.append("why_us")
     return list(dict.fromkeys(found))
+
+
+def _num(v: float, sep: str) -> str:
+    """Thousands-separated, no trailing .0 (de/tr: 1.000.000, en: 1,000,000)."""
+    txt = f"{v:,.2f}".rstrip("0").rstrip(".")
+    dec = "," if sep == "." else "."
+    return txt.replace(",", "#").replace(".", dec).replace("#", sep)
 
 
 def _content(t: dict, company: dict, products: list[dict], intake: IntakeIn | None,
              own_text: str | None) -> LocalizedContent:
-    name, city = company.get("name"), company.get("city")
+    # Never format a missing value into a sentence: skip the clause or leave the field None.
+    name, city = company.get("name") or None, company.get("city") or None
     year, team = company.get("founded_year"), company.get("employee_count")
     certs = list(company.get("certifications") or [])
     story = (own_text or "").strip()
-    if not story:
-        story = t["story"].format(name=name, city=city)
+    if not story and name:
+        story = t["story"].format(name=name, city=city) if city else t["story_nocity"].format(name=name)
         story += t["founded"].format(founded_year=year) if year else ""
         story += t["team"].format(employee_count=team) if team else ""
-    blocks = []
+    story = story or None
+    blocks, why = [], []
     for p in products:
+        pid = p.get("id") or p.get("_id")
+        if pid is None:
+            continue
+        pname = p.get("name_tr") or None
         specs = ([Spec(label=t["spec_material"], value=p["material_or_ingredients"])]
                  if p.get("material_or_ingredients") else [])
-        moq = f"{p['moq']:g} {t['units'].get(p.get('unit'), p.get('unit'))}" if p.get("moq") else None
+        moq = None
+        if p.get("moq"):
+            unit = t["units"].get(p.get("unit"), p.get("unit"))
+            moq = " ".join(x for x in (_num(p["moq"], t["sep"]), unit) if x)
         blocks.append({
-            "product_id": str(p.get("id") or p.get("_id")), "name": p.get("name_tr"),
-            "short": t["product_short"].format(name=p.get("name_tr"), company=name),
+            "product_id": str(pid), "name": pname,
+            "short": (t["product_short"].format(name=pname, company=name) if name else pname) if pname else None,
             # the producer's own Turkish text is only shown in the review copy, never in de/en
             "long": (p.get("description_tr") or None) if own_text is not None else None,
-            "specs": [s.model_dump() for s in specs], "moq": moq, "photos": list(p.get("photos") or []),
+            "specs": [x.model_dump() for x in specs], "moq": moq, "photos": list(p.get("photos") or []),
         })
-    why = []
     if certs:
         why.append(t["why_cert"].format(certs=", ".join(certs)))
     if year:
         why.append(t["why_founded"].format(founded_year=year))
     if team:
         why.append(t["why_team"].format(employee_count=team))
-    why += [t["why_city"].format(city=city), t["why_direct"]]
-    names = ", ".join(p.get("name_tr", "") for p in products)
+    if city:
+        why.append(t["why_city"].format(city=city))
+    if blocks:
+        why.append(t["why_products"].format(n=len(blocks)))
+    why += [t["why_moq"].format(name=b["name"], moq=b["moq"]) for b in blocks if b["name"] and b["moq"]]
+    names = ", ".join(b["name"] for b in blocks if b["name"])
+    seo_desc = (f"{story} {t['products_label']}: {names}." if names else story) if story else None
     return LocalizedContent.model_validate({
-        "hero": {"headline": t["headline"].format(name=name), "subheadline": t["subheadline"].format(city=city),
+        "hero": {"headline": name, "subheadline": t["subheadline"].format(city=city) if city else None,
                  "cta": t["cta"]},
         "about": {"story": story, "city": city, "founded_year": year, "team_size": team, "certifications": certs},
         "products": blocks,
@@ -96,8 +119,7 @@ def _content(t: dict, company: dict, products: list[dict], intake: IntakeIn | No
                         "sample_policy": intake.sample_policy if intake else None},
         "rfq": {"title": t["rfq_title"], "intro": t["rfq_intro"]},
         "footer": {"note": t["footer"]},
-        "seo": {"title": t["seo_title"].format(name=name, city=city),
-                "description": t["seo_desc"].format(name=name, city=city, products=names)},
+        "seo": {"title": " – ".join(x for x in (name, city) if x) or None, "description": seo_desc},
     })
 
 

@@ -88,3 +88,49 @@ def test_compute_missing_matches_fallback():
                                       ("tekstil", "textile"), ("diger", "industrial")])
 def test_template_by_sector(sector, t):
     assert template_for_sector(sector) == t
+
+
+def _strings(o):
+    if isinstance(o, str):
+        yield o
+    elif isinstance(o, dict):
+        for v in o.values():
+            yield from _strings(v)
+    elif isinstance(o, list):
+        for v in o:
+            yield from _strings(v)
+
+
+def test_no_none_in_text_when_facts_missing():
+    company = {"name": "Acme", "sector": "diger", "description_tr": ""}
+    prod = {"id": "p9", "name_tr": "Vida", "moq": 100, "photos": []}
+    cfg = fallback_site_config(company, [public_product(prod)], "b2b", "tr")
+    for part in (cfg.de, cfg.en, cfg.review):
+        for txt in _strings(part.model_dump()):
+            assert "None" not in txt and "null" not in txt, txt
+    assert cfg.de.products[0].moq == "100" and cfg.de.hero.subheadline is None
+    assert "hero.subheadline" in cfg.missing and "about.founded_year" in cfg.missing
+    assert "why_us" in cfg.missing and len(cfg.de.why_us) <= 4
+
+
+def test_why_us_uses_product_facts_no_platform_claim():
+    cfg = _cfg()
+    assert 3 <= len(cfg.de.why_us) <= 4
+    assert not any("Kontakt" in w for w in cfg.de.why_us)
+    assert "why_us" not in cfg.missing
+
+
+def test_moq_thousands_formatting():
+    p = dict(PRODUCT, moq=1000000.0)
+    cfg = fallback_site_config(COMPANY, [public_product(p)], "b2b", "tr")
+    assert cfg.de.products[0].moq == "1.000.000 kg" and cfg.en.products[0].moq == "1,000,000 kg"
+    p = dict(PRODUCT, moq=2.5, unit="adet")
+    cfg = fallback_site_config(COMPANY, [public_product(p)], "b2b", "tr")
+    assert cfg.en.products[0].moq == "2.5 pcs" and cfg.de.products[0].moq == "2,5 Stück"
+
+
+def test_empty_products_and_slug_fallback():
+    cfg = fallback_site_config(COMPANY, [], "b2b", "tr")
+    assert ": ." not in cfg.de.seo.description and cfg.de.seo.description.endswith(".")
+    assert slugify_tr("???") == "shop"
+    assert slugify_tr("Straße") == "strasse" and tr_fold("Käse") == "kase"

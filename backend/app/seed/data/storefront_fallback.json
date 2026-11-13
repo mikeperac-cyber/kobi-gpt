@@ -11,14 +11,22 @@
     "why_cert": "Zertifizierungen: {certs}",
     "why_founded": "Seit {founded_year} am Markt",
     "why_team": "{employee_count} Mitarbeitende",
-    "why_direct": "Direkter Kontakt zum Hersteller",
     "why_city": "Produktion in {city}, Türkei",
     "rfq_title": "Angebot anfordern",
     "rfq_intro": "Senden Sie uns Ihre Anfrage. Der Hersteller prüft sie und antwortet Ihnen persönlich.",
     "footer": "Anfragen werden vom Hersteller persönlich geprüft.",
     "seo_title": "{name} – {city}",
-    "seo_desc": "{name}, Hersteller aus {city}: {products}.",
-    "units": {"kg": "kg", "adet": "Stück", "metre": "Meter", "koli": "Karton"}
+    "units": {
+      "kg": "kg",
+      "adet": "Stück",
+      "metre": "Meter",
+      "koli": "Karton"
+    },
+    "why_products": "{n} Produkte im Angebot",
+    "why_moq": "{name}: Mindestbestellmenge {moq}",
+    "products_label": "Produkte",
+    "story_nocity": "{name} ist ein Hersteller.",
+    "sep": "."
   },
   "en": {
     "cta": "Request a quote",
@@ -32,14 +40,22 @@
     "why_cert": "Certifications: {certs}",
     "why_founded": "In business since {founded_year}",
     "why_team": "{employee_count} employees",
-    "why_direct": "Direct contact with the manufacturer",
     "why_city": "Made in {city}, Turkey",
     "rfq_title": "Request a quote",
     "rfq_intro": "Send us your enquiry. The manufacturer reviews it and replies personally.",
     "footer": "Enquiries are reviewed personally by the manufacturer.",
     "seo_title": "{name} – {city}",
-    "seo_desc": "{name}, manufacturer from {city}: {products}.",
-    "units": {"kg": "kg", "adet": "pcs", "metre": "m", "koli": "carton"}
+    "units": {
+      "kg": "kg",
+      "adet": "pcs",
+      "metre": "m",
+      "koli": "carton"
+    },
+    "why_products": "{n} products offered",
+    "why_moq": "{name}: minimum order {moq}",
+    "products_label": "Products",
+    "story_nocity": "{name} is a manufacturer.",
+    "sep": ","
   },
   "tr": {
     "cta": "Teklif iste",
@@ -53,13 +69,21 @@
     "why_cert": "Sertifikalar: {certs}",
     "why_founded": "{founded_year} yılından beri faaliyette",
     "why_team": "{employee_count} çalışan",
-    "why_direct": "Üreticiyle doğrudan iletişim",
     "why_city": "{city} üretimi",
     "rfq_title": "Teklif iste",
     "rfq_intro": "Talebinizi gönderin. Üretici inceleyip size kendisi yanıt verir.",
     "footer": "Talepler üretici tarafından incelenir.",
     "seo_title": "{name} – {city}",
-    "seo_desc": "{city} merkezli üretici {name}: {products}.",
-    "units": {"kg": "kg", "adet": "adet", "metre": "metre", "koli": "koli"}
+    "units": {
+      "kg": "kg",
+      "adet": "adet",
+      "metre": "metre",
+      "koli": "koli"
+    },
+    "why_products": "{n} ürün sunuluyor",
+    "why_moq": "{name}: asgari sipariş {moq}",
+    "products_label": "Ürünler",
+    "story_nocity": "{name} bir üreticidir.",
+    "sep": "."
   }
 }

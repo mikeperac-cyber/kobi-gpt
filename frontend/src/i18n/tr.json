@@ -73,7 +73,9 @@
     "no_company": "Önce firma bilgilerinizi girin.",
     "not_found": "Bulunamadı.",
     "rate_limited": "Çok fazla deneme. Biraz bekleyip tekrar deneyin.",
-    "unauthenticated": "Oturum süreniz doldu. Lütfen giriş yapın."
+    "unauthenticated": "Oturum süreniz doldu. Lütfen giriş yapın.",
+    "too_large": "Dosya çok büyük (en fazla 8 MB).",
+    "bad_type": "Desteklenmeyen dosya türü (jpg, png veya webp yükleyin)."
   },
   "onboarding": {
     "title": "Firmanızı tanıtın",

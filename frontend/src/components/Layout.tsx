@@ -19,7 +19,7 @@ export default function Layout() {
           <div className="flex items-center gap-1">
             <LanguageSwitch />
             {user && (
-              <Button variant="ghost" onClick={async () => { await logout(); nav('/login') }}>{t('auth.logout')}</Button>
+              <Button variant="ghost" onClick={async () => { try { await logout() } catch { /* still leave */ } nav('/login') }}>{t('auth.logout')}</Button>
             )}
           </div>
         </div>

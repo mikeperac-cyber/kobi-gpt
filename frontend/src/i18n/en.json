@@ -73,7 +73,9 @@
     "no_company": "Please enter your company details first.",
     "not_found": "Not found.",
     "rate_limited": "Too many attempts. Wait a moment and try again.",
-    "unauthenticated": "Your session expired. Please log in."
+    "unauthenticated": "Your session expired. Please log in.",
+    "too_large": "File is too large (8 MB at most).",
+    "bad_type": "Unsupported file type (upload jpg, png or webp)."
   },
   "onboarding": {
     "title": "Tell us about your company",

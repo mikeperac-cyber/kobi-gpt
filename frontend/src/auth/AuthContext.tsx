@@ -55,11 +55,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register: async (name, email, password) => {
       const lang = i18n.language // new accounts default to tr server-side; keep the form's language
       await api('/api/auth/register', { method: 'POST', json: { name, email, password, kvkk_consent: true } })
-      return apply(await api<User>('/api/auth/me', { method: 'PATCH', json: { ui_language: lang } }))
+      // Cookie is set now: load the user first so a failed language PATCH cannot strand the session.
+      const u = (await refresh())!
+      try {
+        return apply(await api<User>('/api/auth/me', { method: 'PATCH', json: { ui_language: lang } }))
+      } catch {
+        return u
+      }
     },
     logout: async () => {
-      await api('/api/auth/logout', { method: 'POST' })
-      setUser(null)
+      try {
+        await api('/api/auth/logout', { method: 'POST' })
+      } finally {
+        setUser(null)
+      }
     },
     setLanguage: async (lang) => {
       await i18n.changeLanguage(lang)

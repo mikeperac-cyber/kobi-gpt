@@ -24,3 +24,17 @@ def test_tr_en_key_parity():
 def test_no_empty_strings():
     for lang in ("tr", "en"):
         assert all(isinstance(v, str) and v.strip() for v in flat(load(lang)).values())
+
+
+def test_backend_error_codes_translated():
+    import re
+    app = Path(__file__).resolve().parents[1] / "app"
+    src = {p: p.read_text(encoding="utf-8") for p in app.rglob("*.py")}
+    codes = {"validation_error"}
+    for text in src.values():
+        codes |= set(re.findall(r'"errors\.(\w+)"', text))
+    codes |= set(re.findall(r'"(\w+)"', re.search(r"KNOWN_CODES = \{(.*?)\}", src[app / "main.py"]).group(1)))
+    codes |= set(re.findall(r'ValueError\("(\w+)"', src[app / "services" / "storage_service.py"]))
+    for lang in ("tr", "en"):
+        have = set(load(lang)["errors"])
+        assert codes <= have, (lang, codes - have)

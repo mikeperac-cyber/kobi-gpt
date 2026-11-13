@@ -26,3 +26,4 @@ def set_db(db) -> None:
 async def ensure_indexes(db) -> None:
     await db.users.create_index("email", unique=True)
     await db.companies.create_index("owner_id", unique=True)
+    await db.storefronts.create_index("slug", unique=True)

@@ -32,6 +32,13 @@ class LocalStorage:
         (folder / name).write_bytes(data)
         return f"/uploads/{prefix}/{name}"
 
+    def read(self, url: str) -> bytes | None:
+        """Bytes of a stored upload, or None; only files under the storage root are ever read."""
+        path = (self.root / url.removeprefix("/uploads/")).resolve()
+        if not url.startswith("/uploads/") or not path.is_relative_to(self.root) or not path.is_file():
+            return None
+        return path.read_bytes()
+
     async def delete(self, url: str) -> None:
         path = (self.root / url.removeprefix("/uploads/")).resolve()
         if not url.startswith("/uploads/") or not path.is_relative_to(self.root):

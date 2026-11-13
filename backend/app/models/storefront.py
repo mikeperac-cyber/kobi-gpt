@@ -84,3 +84,30 @@ class SiteConfig(BaseModel):
     template: Literal["industrial", "natural", "textile"]
     missing: list[str] = Field(default_factory=list)
     positioning: Literal["b2b", "b2c"]
+
+
+class ProductAnalysis(BaseModel):
+    attributes: list[str] = Field(default_factory=list)
+    selling_points: list[str] = Field(default_factory=list)
+    quality_signals: list[str] = Field(default_factory=list)
+    buyer_types: list[str] = Field(default_factory=list)
+
+
+class MarketAdaptation(BaseModel):
+    key_messages_de: list[str] = Field(default_factory=list)
+    avoid: list[str] = Field(default_factory=list)
+
+
+class SiteConfigIn(BaseModel):
+    site_config: SiteConfig
+    slug: str = Field(min_length=1, max_length=60)
+    template: Literal["industrial", "natural", "textile"]
+
+
+SECTIONS = ("hero", "about", "products", "why_us", "export_info", "rfq", "footer", "seo")
+
+
+class RegenIn(BaseModel):
+    section: Literal["hero", "about", "products", "why_us", "export_info", "rfq", "footer", "seo"]
+    lang: Literal["de", "en"]
+    instruction: str | None = Field(default=None, max_length=200)

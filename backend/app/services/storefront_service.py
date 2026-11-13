@@ -138,3 +138,164 @@ def fallback_site_config(company: dict, products: list[dict], positioning: str, 
         positioning=positioning)
     cfg.missing = compute_missing(cfg)
     return cfg
+
+
+# ---- AI generation -------------------------------------------------------------------------------
+
+from datetime import datetime, timezone  # noqa: E402
+
+from pydantic import BaseModel, TypeAdapter, field_validator  # noqa: E402
+from pymongo.errors import DuplicateKeyError  # noqa: E402
+
+from app.core.serialize import public_product  # noqa: E402
+from app.models.storefront import (  # noqa: E402
+    About, ExportInfo, Footer, Hero, MarketAdaptation, ProductAnalysis, Rfq, Seo)
+from app.services import agent_steps  # noqa: E402
+from app.services.llm_service import LLMInvalidOutput, generate_json  # noqa: E402
+from app.services.storage_service import get_storage  # noqa: E402
+
+CTA = {"de": "Angebot anfordern", "en": "Request a quote"}
+COMPANY_KEYS = ("name", "city", "sector", "description_tr", "founded_year", "employee_count", "certifications",
+                "min_order_note")
+
+
+class _Content(LocalizedContent):
+    @field_validator("why_us", mode="before")
+    @classmethod
+    def _cap(cls, v):  # truncate instead of failing a whole step over a 5th bullet
+        return v[:4] if isinstance(v, list) else v
+
+
+class ContentOut(BaseModel):
+    de: _Content
+    en: _Content
+    review: _Content
+    slug_suggestion: str | None = None
+
+
+_SECTION_TYPES = {"hero": Hero, "about": About, "products": list[ProductBlock], "why_us": list[str],
+                  "export_info": ExportInfo, "rfq": Rfq, "footer": Footer, "seo": Seo}
+
+
+class RegenOut(BaseModel):
+    content: object
+
+
+def _floor_forms(v: float) -> list[str]:
+    return [x for f in {f"{v:g}", f"{v:.2f}"} for x in (f, f.replace(".", ","))]
+
+
+def contains_floor(obj, floors: list[float]) -> bool:
+    """True if any floor price appears as a standalone number in the generated text."""
+    text = json.dumps(obj, ensure_ascii=False)
+    return any(re.search(rf"(?<![\d.,]){re.escape(f)}(?!\d|[.,]\d)", text) for v in floors for f in _floor_forms(v))
+
+
+def _ctx(company: dict, products: list[dict], ui_language: str, **extra) -> dict:
+    drop = ("company_id", "created_at", "hs_code_confirmed")
+    return {"company": {k: company.get(k) for k in COMPANY_KEYS},
+            "products": [{k: v for k, v in public_product(p).items() if k not in drop} for p in products],
+            "ui_language": ui_language, **extra}
+
+
+def _photos(products: list[dict], limit: int = 3) -> list[bytes]:
+    out, store = [], get_storage()
+    for url in [u for p in products for u in p.get("photos") or []][:limit]:
+        data = store.read(url)
+        if data:
+            out.append(data)
+    return out
+
+
+def _floors(products: list[dict]) -> list[float]:
+    return [p["price_floor"] for p in products if p.get("price_floor")]
+
+
+async def generate_site_config(job_id: str, company: dict, products: list[dict], intake: IntakeIn,
+                               ui_language: str) -> SiteConfig:
+    floors, cid = _floors(products), str(company["_id"])
+    base = _ctx(company, products, ui_language, intake=intake.model_dump())
+    pub = [public_product(p) for p in products]
+
+    async def llm(name, schema, t, **extra):
+        return await generate_json(name, {**base, **extra}, schema, run_type="storefront", company_id=cid,
+                                   timeout=t, images=_photos(products) if name == "sf_product_analysis" else ())
+
+    async def analysis_call(t):
+        return await llm("sf_product_analysis", ProductAnalysis, t)
+
+    analysis, _ = await agent_steps.run_ai_step(job_id, "analysis", company, analysis_call, ProductAnalysis)
+
+    async def adaptation_call(t):
+        return await llm("sf_market_adaptation", MarketAdaptation, t, analysis=analysis.model_dump())
+
+    adaptation, _ = await agent_steps.run_ai_step(job_id, "adaptation", company, adaptation_call, MarketAdaptation)
+
+    async def content_call(t):
+        out = await llm("sf_content", ContentOut, t, analysis=analysis.model_dump(),
+                        adaptation=adaptation.model_dump())
+        if contains_floor(out.model_dump(), floors):
+            raise LLMInvalidOutput("floor price in generated text")
+        return out
+
+    def content_fallback():
+        f = fallback_site_config(company, pub, intake.positioning, ui_language, intake)
+        return ContentOut.model_validate({**f.model_dump(include={"de", "en", "review", "slug_suggestion"})})
+
+    out, _ = await agent_steps.run_ai_step(job_id, "content", company, content_call, content_fallback)
+    # the theme step is deterministic: recorded as "template", never as an LLM result
+    await agent_steps._set_step(job_id, "theme", status="done", source="template", elapsed_ms=0)
+
+    photos = {str(p["_id"]): p.get("photos") or [] for p in products}
+    for b in (*out.de.products, *out.en.products, *out.review.products):
+        b.photos = list(photos.get(b.product_id, b.photos))
+    out.de.hero.cta, out.en.hero.cta = CTA["de"], CTA["en"]
+    cfg = SiteConfig(de=out.de, en=out.en, review=out.review, review_language=ui_language,
+                     slug_suggestion=slugify_tr(out.slug_suggestion or company.get("name", "")),
+                     template=template_for_sector(company.get("sector", "")), positioning=intake.positioning)
+    cfg.missing = compute_missing(cfg)
+    return cfg
+
+
+async def save_generated(db, company: dict, cfg: SiteConfig) -> dict:
+    """One storefront per (company, DE). Regenerating keeps status and slug (a published URL must not move)."""
+    now, cid = datetime.now(timezone.utc), str(company["_id"])
+    data = {"site_config": cfg.model_dump(), "template": cfg.template, "updated_at": now}
+    existing = await db.storefronts.find_one({"company_id": cid, "country": "DE"})
+    if existing:
+        await db.storefronts.update_one({"_id": existing["_id"]}, {"$set": data})
+        return await db.storefronts.find_one({"_id": existing["_id"]})
+    base = cfg.slug_suggestion or slugify_tr(company.get("name", ""))
+    for _ in range(2):  # the unique index closes the check-then-insert race; retry once
+        doc = {**data, "company_id": cid, "country": "DE", "status": "draft", "published_at": None,
+               "slug": await unique_slug(db, base), "created_at": now}
+        try:
+            doc["_id"] = (await db.storefronts.insert_one(doc)).inserted_id
+            return doc
+        except DuplicateKeyError:
+            continue
+    raise RuntimeError("could not allocate a unique slug")
+
+
+async def regenerate_section(company: dict, products: list[dict], cfg: SiteConfig, section: str, lang: str,
+                             instruction: str | None, ui_language: str) -> tuple[object, bool]:
+    """Returns (section as plain JSON, used_fallback); the unchanged section comes back on fallback."""
+    adapter = TypeAdapter(_SECTION_TYPES[section])
+    current = adapter.dump_python(getattr(getattr(cfg, lang), section), mode="json")
+    floors = _floors(products)
+
+    async def call(t):
+        out = await generate_json(
+            "sf_regen_section",
+            _ctx(company, products, ui_language, section=section, lang=lang, current=current,
+                 instruction=instruction or ""),
+            RegenOut, run_type="storefront", company_id=str(company["_id"]), timeout=t)
+        new = adapter.dump_python(adapter.validate_python(out.content), mode="json")
+        if contains_floor(new, floors):
+            raise LLMInvalidOutput("floor price in generated text")
+        return new
+
+    new, fb = await agent_steps.run_ai_step(None, section, company, call, lambda: current)
+    if section == "hero" and not fb:
+        new["cta"] = CTA[lang]
+    return new, fb

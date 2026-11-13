@@ -150,10 +150,14 @@ async def test_request_shapes(monkeypatch):
 
 
 async def test_log_failure_does_not_mask_result(db, fake_llm, monkeypatch):
-    async def boom(*a, **k):
-        raise RuntimeError("mongo down")
+    class Boom:
+        async def insert_one(self, *a, **k):
+            raise RuntimeError("mongo down")
 
-    monkeypatch.setattr(db.agent_runs, "insert_one", boom)
+    class StubDb:
+        agent_runs = Boom()
+
+    monkeypatch.setattr(svc, "get_db", lambda: StubDb())
     fake_llm.responses = ["fine"]
     assert await generate_text("admin_ping", {}, run_type="t", company_id=None) == "fine"
     fake_llm.responses = [LLMTimeout("slow")]

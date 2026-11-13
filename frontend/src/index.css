@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #C8102E;
+  --color-navy: #0B1F3A;
+  --font-sans: "Noto Sans", system-ui, sans-serif;
+}
+
+body { @apply bg-slate-50 text-navy font-sans; }

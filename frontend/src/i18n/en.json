@@ -1,0 +1,123 @@
+{
+  "common": {
+    "appName": "KOBİ-GPT",
+    "tagline": "Export assistant for small manufacturers",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "language": "Language",
+    "required": "required",
+    "optional": "optional",
+    "home": "Home"
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "registerTitle": "Create account",
+    "loginIntro": "Log in to your account.",
+    "registerIntro": "Open a free account and take your first step into exporting.",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "kvkkLabel": "I have read the",
+    "kvkkLink": "Privacy Notice",
+    "kvkkSuffix": "and I agree.",
+    "kvkkExplain": "KVKK is the Turkish personal-data protection law. The Privacy Notice (Aydınlatma Metni) explains how your data is processed.",
+    "kvkkRequired": "You must accept the Privacy Notice to continue.",
+    "submitLogin": "Log in",
+    "submitRegister": "Create account",
+    "submitting": "Sending…",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already have an account?",
+    "logout": "Log out",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "nameRequired": "Full name is required."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "privacy": "Privacy Notice",
+    "account": "My account",
+    "skip": "Skip to content"
+  },
+  "privacy": {
+    "title": "Privacy Notice (KVKK)",
+    "intro": "This notice explains how your personal data is processed under Turkish Personal Data Protection Law No. 6698 (KVKK).",
+    "controllerTitle": "Data controller",
+    "controller": "The data controller is [Platform operator]. Address and contact details: [Platform operator address/contact].",
+    "purposeTitle": "Purposes of processing",
+    "purpose": "To create and manage your account, to provide export-readiness services using your company and product details, and to keep the service secure.",
+    "basisTitle": "Legal basis",
+    "basis": "KVKK Article 5: performance of a contract, legal obligation, legitimate interest and, where needed, your explicit consent.",
+    "rightsTitle": "Your rights (KVKK Article 11)",
+    "rights": "You may learn whether your data is processed, request information, ask for correction or deletion, object to processing, and claim compensation for damage.",
+    "contactTitle": "Contact",
+    "contact": "Send your requests to [Platform operator contact email].",
+    "placeholderNote": "Fields in square brackets must be completed by the platform operator before launch."
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Could not reach the server. Check your connection.",
+    "boundary_title": "Something went wrong",
+    "boundary_body": "The page hit an unexpected error. You can try again.",
+    "email_taken": "An account with this email already exists.",
+    "invalid_credentials": "Incorrect email or password.",
+    "validation_error": "Please check the fields.",
+    "password_too_long": "Password is too long (72 bytes at most).",
+    "invalid_city": "Invalid city.",
+    "invalid_certification": "Invalid certification.",
+    "photo_required": "At least one photo is required.",
+    "company_exists": "This account already has a company.",
+    "forbidden": "You are not allowed to do this.",
+    "no_company": "Please enter your company details first.",
+    "not_found": "Not found.",
+    "rate_limited": "Too many attempts. Wait a moment and try again.",
+    "unauthenticated": "Your session expired. Please log in."
+  },
+  "onboarding": {
+    "title": "Tell us about your company",
+    "soon": "This step is coming soon."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "soon": "The dashboard is coming soon.",
+    "welcome": "Welcome, {{name}}"
+  },
+  "company": {
+    "title": "Company"
+  },
+  "products": {
+    "title": "Products"
+  },
+  "storefront": {
+    "title": "Storefront"
+  },
+  "compliance": {
+    "title": "Compliance"
+  },
+  "leads": {
+    "title": "Buyers"
+  },
+  "approvals": {
+    "title": "Approvals"
+  },
+  "quotes": {
+    "title": "Quotes"
+  },
+  "pipeline": {
+    "title": "Pipeline"
+  },
+  "admin": {
+    "title": "Admin"
+  },
+  "demo": {
+    "title": "Demo"
+  },
+  "account": {
+    "title": "My account"
+  },
+  "agent": {
+    "title": "Assistant"
+  }
+}

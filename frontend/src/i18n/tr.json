@@ -1,0 +1,123 @@
+{
+  "common": {
+    "appName": "KOBİ-GPT",
+    "tagline": "KOBİ'ler için ihracat asistanı",
+    "loading": "Yükleniyor…",
+    "retry": "Tekrar dene",
+    "close": "Kapat",
+    "save": "Kaydet",
+    "cancel": "Vazgeç",
+    "language": "Dil",
+    "required": "zorunlu",
+    "optional": "isteğe bağlı",
+    "home": "Ana sayfa"
+  },
+  "auth": {
+    "loginTitle": "Giriş yap",
+    "registerTitle": "Hesap oluştur",
+    "loginIntro": "Hesabınıza giriş yapın.",
+    "registerIntro": "Ücretsiz hesap açın ve ihracata ilk adımı atın.",
+    "name": "Ad soyad",
+    "email": "E-posta",
+    "password": "Şifre",
+    "passwordHint": "En az 8 karakter.",
+    "kvkkLabel": "Kişisel verilerimin işlenmesine ilişkin",
+    "kvkkLink": "Aydınlatma Metni'ni",
+    "kvkkSuffix": "okudum ve kabul ediyorum.",
+    "kvkkExplain": "KVKK (Kişisel Verilerin Korunması Kanunu), kişisel verilerinizin korunmasını düzenleyen Türkiye kanunudur. Aydınlatma Metni, verilerinizin nasıl işlendiğini anlatan bilgilendirmedir.",
+    "kvkkRequired": "Devam etmek için Aydınlatma Metni'ni onaylamanız gerekir.",
+    "submitLogin": "Giriş yap",
+    "submitRegister": "Hesap oluştur",
+    "submitting": "Gönderiliyor…",
+    "noAccount": "Hesabınız yok mu?",
+    "haveAccount": "Zaten hesabınız var mı?",
+    "logout": "Çıkış",
+    "passwordTooShort": "Şifre en az 8 karakter olmalı.",
+    "nameRequired": "Ad soyad gerekli."
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "privacy": "Aydınlatma Metni",
+    "account": "Hesabım",
+    "skip": "İçeriğe geç"
+  },
+  "privacy": {
+    "title": "Aydınlatma Metni (KVKK)",
+    "intro": "Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında kişisel verilerinizin nasıl işlendiğini açıklar.",
+    "controllerTitle": "Veri sorumlusu",
+    "controller": "Veri sorumlusu [Platform işletmecisi]'dir. Adres ve iletişim bilgileri: [Platform işletmecisi adres/iletişim].",
+    "purposeTitle": "İşleme amaçları",
+    "purpose": "Hesabınızı oluşturmak ve yönetmek, firma ve ürün bilgilerinizle ihracat hazırlık hizmetlerini sunmak, güvenliği sağlamak.",
+    "basisTitle": "Hukuki sebep",
+    "basis": "KVKK madde 5: sözleşmenin ifası, hukuki yükümlülük, meşru menfaat ve gerektiğinde açık rızanız.",
+    "rightsTitle": "Haklarınız (KVKK madde 11)",
+    "rights": "Verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, düzeltme veya silme isteme, işlemeye itiraz etme ve zarar halinde tazminat talep etme haklarına sahipsiniz.",
+    "contactTitle": "Başvuru",
+    "contact": "Taleplerinizi [Platform işletmecisi iletişim e-postası] adresine iletebilirsiniz.",
+    "placeholderNote": "Köşeli parantezli alanlar yayın öncesinde platform işletmecisi tarafından doldurulmalıdır."
+  },
+  "errors": {
+    "generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "network": "Sunucuya ulaşılamadı. Bağlantınızı kontrol edin.",
+    "boundary_title": "Bir şeyler ters gitti",
+    "boundary_body": "Sayfa beklenmedik bir hata verdi. Tekrar deneyebilirsiniz.",
+    "email_taken": "Bu e-posta ile zaten bir hesap var.",
+    "invalid_credentials": "E-posta veya şifre hatalı.",
+    "validation_error": "Lütfen alanları kontrol edin.",
+    "password_too_long": "Şifre çok uzun (en fazla 72 bayt).",
+    "invalid_city": "Geçersiz şehir.",
+    "invalid_certification": "Geçersiz sertifika.",
+    "photo_required": "En az bir fotoğraf gerekli.",
+    "company_exists": "Bu hesap için zaten bir firma var.",
+    "forbidden": "Bu işlem için yetkiniz yok.",
+    "no_company": "Önce firma bilgilerinizi girin.",
+    "not_found": "Bulunamadı.",
+    "rate_limited": "Çok fazla deneme. Biraz bekleyip tekrar deneyin.",
+    "unauthenticated": "Oturum süreniz doldu. Lütfen giriş yapın."
+  },
+  "onboarding": {
+    "title": "Firmanızı tanıtın",
+    "soon": "Bu adım yakında eklenecek."
+  },
+  "dashboard": {
+    "title": "Panel",
+    "soon": "Panel yakında eklenecek.",
+    "welcome": "Hoş geldiniz, {{name}}"
+  },
+  "company": {
+    "title": "Firma"
+  },
+  "products": {
+    "title": "Ürünler"
+  },
+  "storefront": {
+    "title": "Vitrin"
+  },
+  "compliance": {
+    "title": "Uyum"
+  },
+  "leads": {
+    "title": "Alıcılar"
+  },
+  "approvals": {
+    "title": "Onaylar"
+  },
+  "quotes": {
+    "title": "Teklifler"
+  },
+  "pipeline": {
+    "title": "Süreç"
+  },
+  "admin": {
+    "title": "Yönetim"
+  },
+  "demo": {
+    "title": "Demo"
+  },
+  "account": {
+    "title": "Hesabım"
+  },
+  "agent": {
+    "title": "Asistan"
+  }
+}

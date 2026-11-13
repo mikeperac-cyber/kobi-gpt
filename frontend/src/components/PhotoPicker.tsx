@@ -67,7 +67,7 @@ export default function PhotoPicker({ urls, max = 6, prefix = 'products', onChan
           </Button>
         </>
       )}
-      <p className="text-sm text-slate-600">{t('photos.hint', { max })}</p>
+      <p className="text-sm text-slate-600">{t(prefix === 'logos' ? 'photos.logoHint' : 'photos.hint', { max })}</p>
       {err && <p role="alert" className="text-sm text-brand font-semibold">{err}</p>}
     </div>
   )

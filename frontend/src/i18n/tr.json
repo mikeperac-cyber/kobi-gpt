@@ -125,7 +125,7 @@
       "first_quote": "İlk teklif"
     },
     "storefront": {
-      "title": "Vitrin",
+      "title": "Dijital Vitrin",
       "none": "Oluşturulmadı",
       "draft": "Taslak",
       "published": "Yayında",
@@ -133,13 +133,13 @@
       "view": "Vitrini görüntüle"
     },
     "compliance": {
-      "title": "Mevzuat (uygunluk)",
+      "title": "Mevzuat Bekçisi",
       "none": "Yapılmadı",
       "score": "Hazırlık skoru %{{score}}",
       "run": "Uygunluk kontrolü yap"
     },
     "leads": {
-      "title": "Alıcılar",
+      "title": "Alıcı Ajanı",
       "summary_one": "{{count}} lead, {{pending}} onay bekleyen mesaj",
       "summary_other": "{{count}} lead, {{pending}} onay bekleyen mesaj",
       "find": "Alıcı bul"
@@ -270,6 +270,7 @@
     "add": "Fotoğraf ekle",
     "uploading": "Yükleniyor…",
     "hint": "En fazla {{max}} fotoğraf. jpg, png veya webp, 8 MB'a kadar.",
+    "logoHint": "Tek bir logo görseli (isteğe bağlı). jpg, png veya webp, 8 MB'a kadar.",
     "alt": "Fotoğraf {{n}}",
     "moveUp": "Fotoğraf {{n}} öne al",
     "moveDown": "Fotoğraf {{n}} arkaya al",

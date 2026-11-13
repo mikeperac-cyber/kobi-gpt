@@ -125,7 +125,7 @@
       "first_quote": "First quote"
     },
     "storefront": {
-      "title": "Storefront",
+      "title": "Digital Storefront",
       "none": "Not created",
       "draft": "Draft",
       "published": "Published",
@@ -133,13 +133,13 @@
       "view": "View storefront"
     },
     "compliance": {
-      "title": "Compliance",
+      "title": "Compliance Guard",
       "none": "Not done",
       "score": "Readiness score {{score}}%",
       "run": "Run compliance check"
     },
     "leads": {
-      "title": "Buyers",
+      "title": "Buyer Agent",
       "summary_one": "{{count}} lead, {{pending}} awaiting approval",
       "summary_other": "{{count}} leads, {{pending}} awaiting approval",
       "find": "Find buyers"
@@ -270,6 +270,7 @@
     "add": "Add photo",
     "uploading": "Uploading…",
     "hint": "Up to {{max}} photos. jpg, png or webp, up to 8 MB.",
+    "logoHint": "One logo image (optional). jpg, png or webp, up to 8 MB.",
     "alt": "Photo {{n}}",
     "moveUp": "Move photo {{n}} earlier",
     "moveDown": "Move photo {{n}} later",

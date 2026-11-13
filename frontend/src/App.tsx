@@ -5,16 +5,19 @@ import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
+import Wizard from './pages/onboarding/Wizard'
+import CompanyPage from './pages/company/CompanyPage'
+import ProductsPage from './pages/products/ProductsPage'
 import PrivacyNotice from './pages/privacy/PrivacyNotice'
 
-// Placeholders: Task 8 builds onboarding, Task 9 the dashboard.
-function Placeholder({ ns }: { ns: 'onboarding' | 'dashboard' }) {
+// Placeholder: Task 9 builds the dashboard.
+function Dashboard() {
   const { t } = useTranslation()
   const { user } = useAuth()
   return (
     <section>
-      <h1 className="text-2xl font-semibold">{ns === 'dashboard' ? t('dashboard.welcome', { name: user?.name }) : t('onboarding.title')}</h1>
-      <p className="text-slate-600">{t(`${ns}.soon`)}</p>
+      <h1 className="text-2xl font-semibold">{t('dashboard.welcome', { name: user?.name })}</h1>
+      <p className="text-slate-600">{t('dashboard.soon')}</p>
     </section>
   )
 }
@@ -27,8 +30,10 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/privacy" element={<PrivacyNotice />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Placeholder ns="dashboard" />} />
-          <Route path="/onboarding" element={<Placeholder ns="onboarding" />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/onboarding" element={<Wizard />} />
+          <Route path="/company" element={<CompanyPage />} />
+          <Route path="/products" element={<ProductsPage />} />
         </Route>
       </Route>
     </Routes>

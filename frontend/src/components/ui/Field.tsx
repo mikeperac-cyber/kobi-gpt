@@ -10,8 +10,11 @@ export default function Field({ label, hint, error, children }: {
   return (
     <div className="space-y-1">
       <label htmlFor={id} className="block text-sm font-semibold">{label}</label>
-      {cloneElement(children, { id, 'aria-invalid': !!error, 'aria-describedby': error ?? hint ? `${id}-d` : undefined })}
-      <p id={`${id}-d`} className={`text-sm ${error ? 'text-brand' : 'text-slate-600'}`}>{error ?? hint}</p>
+      {cloneElement(children, { id, 'aria-invalid': !!error, 'aria-describedby': error || hint ? `${id}-d` : undefined })}
+      <div id={`${id}-d`} className="text-sm">
+        {hint && <p className="text-slate-600">{hint}</p>}
+        {error && <p role="alert" className="text-brand font-semibold">{error}</p>}
+      </div>
     </div>
   )
 }

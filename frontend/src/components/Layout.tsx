@@ -1,4 +1,4 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import LanguageSwitch from './LanguageSwitch'
@@ -23,6 +23,13 @@ export default function Layout() {
             )}
           </div>
         </div>
+        {user?.has_company && (
+          <nav aria-label={t('nav.main')} className="max-w-5xl mx-auto px-4 flex gap-1 border-t border-slate-100">
+            {([['/', 'nav.dashboard'], ['/company', 'nav.company'], ['/products', 'nav.products']] as const).map(([to, k]) => (
+              <NavLink key={to} to={to} end className={({ isActive }) => `min-h-11 px-3 inline-flex items-center text-sm ${isActive ? 'font-bold underline underline-offset-4 decoration-brand' : 'text-slate-700'}`}>{t(k)}</NavLink>
+            ))}
+          </nav>
+        )}
       </header>
       <main id="main" className="flex-1 w-full max-w-5xl mx-auto px-4 py-6"><Outlet /></main>
       <footer className="text-center text-sm text-slate-600 py-4">

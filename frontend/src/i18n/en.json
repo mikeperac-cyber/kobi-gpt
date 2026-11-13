@@ -39,7 +39,10 @@
     "dashboard": "Dashboard",
     "privacy": "Privacy Notice",
     "account": "My account",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "main": "Main menu",
+    "company": "My company",
+    "products": "My products"
   },
   "privacy": {
     "title": "Privacy Notice (KVKK)",
@@ -78,8 +81,28 @@
     "bad_type": "Unsupported file type (upload jpg, png or webp)."
   },
   "onboarding": {
-    "title": "Tell us about your company",
-    "soon": "This step is coming soon."
+    "title": "Introduce your company",
+    "stepOf": "Step {{n}} of {{total}}",
+    "next": "Continue",
+    "back": "Back",
+    "finish": "Create my company",
+    "creating": "Creating…",
+    "companyTitle": "Your company",
+    "companyIntro": "Buyers will know you by this information. You can change it later on 'My company'.",
+    "productTitle": "Your first product",
+    "productIntro": "Let's start exporting with one product. You can add more later.",
+    "marketTitle": "Target market",
+    "marketIntro": "Which country do you want to sell to first?",
+    "marketNote": "Our first market is Germany. Other countries are coming soon.",
+    "comingSoon": "Coming soon",
+    "markets": {
+      "DE": "Germany",
+      "NL": "Netherlands",
+      "FR": "France",
+      "US": "USA",
+      "AE": "UAE",
+      "IQ": "Iraq"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -87,10 +110,83 @@
     "welcome": "Welcome, {{name}}"
   },
   "company": {
-    "title": "Company"
+    "title": "Company",
+    "pageTitle": "My company",
+    "saved": "Saved.",
+    "name": "Company name",
+    "logo": "Logo",
+    "logoHint": "Optional. Shown on your storefront.",
+    "city": "City",
+    "cityPlaceholder": "Select a city",
+    "sector": "Sector",
+    "sectorPlaceholder": "Select a sector",
+    "sectors": {
+      "tekstil": "Textiles",
+      "gida": "Food",
+      "otomotiv_yan_sanayi": "Automotive supply industry",
+      "diger": "Other"
+    },
+    "description": "About your company",
+    "descriptionHint": "Describe your company in a few sentences (optional).",
+    "founded": "Year founded",
+    "employees": "Number of employees",
+    "certs": "Certifications",
+    "certsHint": "Tick the ones you hold.",
+    "certNames": {
+      "ISO 9001": "ISO 9001",
+      "ISO 22000": "ISO 22000",
+      "BRC": "BRC",
+      "IFS": "IFS",
+      "OEKO-TEX": "OEKO-TEX",
+      "Helal": "Halal",
+      "Organik": "Organic",
+      "CE": "CE",
+      "IATF 16949": "IATF 16949",
+      "Diğer": "Other"
+    },
+    "phone": "Phone",
+    "email": "Contact email",
+    "website": "Website",
+    "minOrder": "Minimum order note",
+    "minOrderHint": "E.g. 'At least 1 pallet' (optional).",
+    "errRequired": "This field is required.",
+    "errYear": "Enter a valid year (1800 to this year).",
+    "errStaff": "Enter at least 1 employee.",
+    "errEmail": "Enter a valid email."
   },
   "products": {
-    "title": "Products"
+    "title": "Products",
+    "pageTitle": "My products",
+    "add": "Add product",
+    "addTitle": "New product",
+    "editTitle": "Edit product",
+    "edit": "Edit",
+    "delete": "Delete",
+    "empty": "No products yet. Start with 'Add product'.",
+    "deleteTitle": "Delete product",
+    "deleteBody": "'{{name}}' will be deleted. This cannot be undone.",
+    "moqLine": "Minimum order: {{moq}} {{unit}}",
+    "floorLine": "Secret floor price: {{price}} (only you can see it)",
+    "name": "Product name",
+    "description": "Product description",
+    "descriptionHint": "Write as if you were describing the product to a customer",
+    "material": "Material / ingredients",
+    "materialHint": "E.g. 'Pistachio, salt' or '100% cotton'.",
+    "unit": "Unit",
+    "units": {
+      "kg": "kg",
+      "adet": "piece",
+      "metre": "metre",
+      "koli": "carton"
+    },
+    "moq": "Minimum order quantity",
+    "moqHint": "In the unit you chose.",
+    "unitWeight": "Unit weight (kg)",
+    "unitWeightHint": "Optional. Used for the shipping estimate.",
+    "floor": "Secret floor price",
+    "floorTip": "This price is never shown to buyers; the agent will not quote below it.",
+    "photos": "Photos",
+    "errPositive": "Enter a number greater than 0 (e.g. 12.50)."
   },
   "storefront": {
     "title": "Storefront"
@@ -121,5 +217,14 @@
   },
   "agent": {
     "title": "Assistant"
+  },
+  "photos": {
+    "add": "Add photo",
+    "uploading": "Uploading…",
+    "hint": "Up to {{max}} photos. jpg, png or webp, up to 8 MB.",
+    "alt": "Photo {{n}}",
+    "moveUp": "Move photo {{n}} earlier",
+    "moveDown": "Move photo {{n}} later",
+    "remove": "Remove photo {{n}}"
   }
 }

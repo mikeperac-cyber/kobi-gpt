@@ -39,7 +39,10 @@
     "dashboard": "Panel",
     "privacy": "Aydınlatma Metni",
     "account": "Hesabım",
-    "skip": "İçeriğe geç"
+    "skip": "İçeriğe geç",
+    "main": "Ana menü",
+    "company": "Firmam",
+    "products": "Ürünlerim"
   },
   "privacy": {
     "title": "Aydınlatma Metni (KVKK)",
@@ -79,7 +82,27 @@
   },
   "onboarding": {
     "title": "Firmanızı tanıtın",
-    "soon": "Bu adım yakında eklenecek."
+    "stepOf": "Adım {{n}} / {{total}}",
+    "next": "Devam",
+    "back": "Geri",
+    "finish": "Firmamı oluştur",
+    "creating": "Oluşturuluyor…",
+    "companyTitle": "Firmanız",
+    "companyIntro": "Alıcılar sizi bu bilgilerle tanıyacak. Sonradan 'Firmam' sayfasından değiştirebilirsiniz.",
+    "productTitle": "İlk ürününüz",
+    "productIntro": "İhracata bir ürünle başlayalım. Diğer ürünleri sonra ekleyebilirsiniz.",
+    "marketTitle": "Hedef pazar",
+    "marketIntro": "Önce hangi ülkeye satış yapmak istiyorsunuz?",
+    "marketNote": "İlk pazarımız Almanya. Diğer ülkeler yakında eklenecek.",
+    "comingSoon": "Yakında",
+    "markets": {
+      "DE": "Almanya",
+      "NL": "Hollanda",
+      "FR": "Fransa",
+      "US": "ABD",
+      "AE": "BAE",
+      "IQ": "Irak"
+    }
   },
   "dashboard": {
     "title": "Panel",
@@ -87,10 +110,83 @@
     "welcome": "Hoş geldiniz, {{name}}"
   },
   "company": {
-    "title": "Firma"
+    "title": "Firma",
+    "pageTitle": "Firmam",
+    "saved": "Kaydedildi.",
+    "name": "Firma adı",
+    "logo": "Logo",
+    "logoHint": "İsteğe bağlı. Vitrininizde görünür.",
+    "city": "Şehir",
+    "cityPlaceholder": "Şehir seçin",
+    "sector": "Sektör",
+    "sectorPlaceholder": "Sektör seçin",
+    "sectors": {
+      "tekstil": "Tekstil",
+      "gida": "Gıda",
+      "otomotiv_yan_sanayi": "Otomotiv yan sanayi",
+      "diger": "Diğer"
+    },
+    "description": "Firma tanıtımı",
+    "descriptionHint": "Firmanızı birkaç cümleyle anlatın (isteğe bağlı).",
+    "founded": "Kuruluş yılı",
+    "employees": "Çalışan sayısı",
+    "certs": "Sertifikalar",
+    "certsHint": "Sahip olduklarınızı işaretleyin.",
+    "certNames": {
+      "ISO 9001": "ISO 9001",
+      "ISO 22000": "ISO 22000",
+      "BRC": "BRC",
+      "IFS": "IFS",
+      "OEKO-TEX": "OEKO-TEX",
+      "Helal": "Helal",
+      "Organik": "Organik",
+      "CE": "CE",
+      "IATF 16949": "IATF 16949",
+      "Diğer": "Diğer"
+    },
+    "phone": "Telefon",
+    "email": "İletişim e-postası",
+    "website": "Web sitesi",
+    "minOrder": "Asgari sipariş notu",
+    "minOrderHint": "Örn. 'En az 1 palet' (isteğe bağlı).",
+    "errRequired": "Bu alan zorunlu.",
+    "errYear": "Geçerli bir yıl girin (1800 ile bu yıl arası).",
+    "errStaff": "En az 1 çalışan girin.",
+    "errEmail": "Geçerli bir e-posta girin."
   },
   "products": {
-    "title": "Ürünler"
+    "title": "Ürünler",
+    "pageTitle": "Ürünlerim",
+    "add": "Ürün ekle",
+    "addTitle": "Yeni ürün",
+    "editTitle": "Ürünü düzenle",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "empty": "Henüz ürün yok. 'Ürün ekle' ile başlayın.",
+    "deleteTitle": "Ürünü sil",
+    "deleteBody": "'{{name}}' silinecek. Bu işlem geri alınamaz.",
+    "moqLine": "En az sipariş: {{moq}} {{unit}}",
+    "floorLine": "Gizli taban fiyat: {{price}} (yalnızca siz görürsünüz)",
+    "name": "Ürün adı",
+    "description": "Ürün açıklaması",
+    "descriptionHint": "Ürününüzü bir müşteriye anlatır gibi yazın",
+    "material": "Malzeme / içerik",
+    "materialHint": "Örn. 'Antep fıstığı, tuz' veya '%100 pamuk'.",
+    "unit": "Birim",
+    "units": {
+      "kg": "kg",
+      "adet": "adet",
+      "metre": "metre",
+      "koli": "koli"
+    },
+    "moq": "Asgari sipariş miktarı",
+    "moqHint": "Seçtiğiniz birim cinsinden.",
+    "unitWeight": "Birim ağırlığı (kg)",
+    "unitWeightHint": "İsteğe bağlı. Nakliye tahmini için kullanılır.",
+    "floor": "Gizli taban fiyat",
+    "floorTip": "Bu fiyat alıcılara asla gösterilmez; ajan bunun altına teklif vermez.",
+    "photos": "Fotoğraflar",
+    "errPositive": "0'dan büyük bir sayı girin (örn. 12,50)."
   },
   "storefront": {
     "title": "Vitrin"
@@ -121,5 +217,14 @@
   },
   "agent": {
     "title": "Asistan"
+  },
+  "photos": {
+    "add": "Fotoğraf ekle",
+    "uploading": "Yükleniyor…",
+    "hint": "En fazla {{max}} fotoğraf. jpg, png veya webp, 8 MB'a kadar.",
+    "alt": "Fotoğraf {{n}}",
+    "moveUp": "Fotoğraf {{n}} öne al",
+    "moveDown": "Fotoğraf {{n}} arkaya al",
+    "remove": "Fotoğraf {{n}} sil"
   }
 }

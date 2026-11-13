@@ -2,7 +2,7 @@ import httpx
 import pytest
 from mongomock_motor import AsyncMongoMockClient
 
-from app.core.db import set_db
+from app.core.db import ensure_indexes, set_db
 from app.main import create_app
 
 
@@ -10,6 +10,7 @@ from app.main import create_app
 async def db():
     database = AsyncMongoMockClient()["kobigpt_test"]
     set_db(database)
+    await ensure_indexes(database)
     yield database
     set_db(None)
 
@@ -22,7 +23,8 @@ async def client(db):
 
 
 @pytest.fixture(autouse=True)
-def _fresh_settings():
+def _fresh_settings(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "test-secret-test-secret-test-secret-0123")
     from app.core.config import get_settings
 
     get_settings.cache_clear()

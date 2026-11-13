@@ -16,3 +16,7 @@ def get_db() -> AsyncIOMotorDatabase:
 def set_db(db) -> None:
     global _db
     _db = db
+
+
+async def ensure_indexes(db) -> None:
+    await db.users.create_index("email", unique=True)

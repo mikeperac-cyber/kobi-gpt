@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from pymongo.errors import DuplicateKeyError
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.core.config import get_settings
@@ -41,7 +42,10 @@ async def register(body: RegisterIn, request: Request, response: Response):
     now = datetime.now(timezone.utc)
     doc = {"email": body.email, "password_hash": hash_password(body.password), "name": body.name.strip(),
            "is_admin": False, "ui_language": "tr", "created_at": now, "kvkk_consent_at": now}
-    doc["_id"] = (await users.insert_one(doc)).inserted_id
+    try:
+        doc["_id"] = (await users.insert_one(doc)).inserted_id
+    except DuplicateKeyError:
+        raise HTTPException(409, {"code": "email_taken", "message_key": "errors.email_taken"})
     _set_cookie(response, str(doc["_id"]))
     return await _me(doc)
 

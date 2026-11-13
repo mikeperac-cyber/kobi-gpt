@@ -17,6 +17,13 @@ class RegisterIn(BaseModel):
             raise ValueError("invalid email")
         return v
 
+    @field_validator("password")
+    @classmethod
+    def _pw_bytes(cls, v: str) -> str:
+        if len(v.encode()) > 72:
+            raise ValueError("password_too_long")
+        return v
+
     @field_validator("kvkk_consent")
     @classmethod
     def _consent(cls, v: bool) -> bool:

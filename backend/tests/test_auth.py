@@ -57,3 +57,43 @@ async def test_cookie_flags(client):
 async def test_non_admin_forbidden(client):
     await client.post("/api/auth/register", json=REG)
     assert (await client.post("/api/admin/llm-test")).status_code == 403
+
+
+async def test_password_too_long_bytes(client):
+    pw = "şğı" * 13 + "ab"  # 41 chars, 80 bytes
+    r = await client.post("/api/auth/register", json={**REG, "password": pw})
+    assert r.status_code == 422
+    from app.core.security import verify_password
+
+    assert verify_password(pw, "$2b$12$" + "a" * 53) is False
+    r = await client.post("/api/auth/login", json={"email": REG["email"], "password": pw})
+    assert r.status_code == 401
+
+
+async def test_wrong_password_and_tampered_token(client):
+    await client.post("/api/auth/register", json=REG)
+    r = await client.post("/api/auth/login", json={"email": REG["email"], "password": "nopenope1"})
+    assert r.status_code == 401
+    client.cookies.set("kobi_session", client.cookies["kobi_session"][:-3] + "abc")
+    assert (await client.get("/api/auth/me")).status_code == 401
+
+
+async def test_unique_email_index_race(client, db):
+    from pymongo.errors import DuplicateKeyError
+    import pytest
+
+    await db.users.insert_one({"email": "a@b.com"})
+    with pytest.raises(DuplicateKeyError):
+        await db.users.insert_one({"email": "a@b.com"})
+
+
+async def test_insecure_secret_guard(monkeypatch):
+    import pytest
+    from app.core.config import get_settings
+    from app.main import create_app
+
+    monkeypatch.setenv("JWT_SECRET", "dev-secret-change-me")
+    monkeypatch.setenv("FRONTEND_ORIGIN", "https://kobi.example.com")
+    get_settings.cache_clear()
+    with pytest.raises(RuntimeError):
+        create_app()

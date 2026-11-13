@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import bcrypt
 import jwt
 from bson import ObjectId
+from bson.errors import InvalidId
 from fastapi import Depends, HTTPException, Request
 
 from app.core.config import get_settings
@@ -17,6 +18,8 @@ def hash_password(p: str) -> str:
 
 
 def verify_password(p: str, h: str) -> bool:
+    if len(p.encode()) > 72:  # bcrypt limit
+        return False
     try:
         return bcrypt.checkpw(p.encode(), h.encode())
     except ValueError:
@@ -37,10 +40,12 @@ async def current_user(request: Request) -> dict:
     if not token:
         raise _unauth()
     try:
-        uid = jwt.decode(token, get_settings().jwt_secret, algorithms=["HS256"])["sub"]
-        user = await get_db().users.find_one({"_id": ObjectId(uid)})
-    except Exception:  # bad signature, expired, malformed id
+        claims = jwt.decode(token, get_settings().jwt_secret, algorithms=["HS256"],
+                            options={"require": ["exp", "sub"]})
+        uid = ObjectId(claims["sub"])
+    except (jwt.PyJWTError, InvalidId, KeyError, TypeError):
         raise _unauth()
+    user = await get_db().users.find_one({"_id": uid})
     if not user:
         raise _unauth()
     return user

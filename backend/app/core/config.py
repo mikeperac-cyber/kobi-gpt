@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     gemini_api_key: str = ""
     anthropic_api_key: str = ""
-    llm_timeout_seconds: int = 45
-    demo_llm_timeout_seconds: int = 25
+    llm_timeout_seconds: float = 45
+    demo_llm_timeout_seconds: float = 25
     frontend_origin: str = "http://localhost:5173"
     email_provider: str = ""
     seed_password: str = ""

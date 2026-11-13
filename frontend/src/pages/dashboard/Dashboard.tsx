@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../api/client'
 import Button from '../../components/ui/Button'
+import Flag from '../../components/Flag'
 import Card from '../../components/ui/Card'
 import Skeleton from '../../components/ui/Skeleton'
 import ModuleCard from './ModuleCard'
@@ -16,8 +17,6 @@ type Data = {
   roadmap: RoadmapState
   notifications: Notif[]
 }
-
-const flag = (cc: string) => String.fromCodePoint(...[...cc.toUpperCase()].map((c) => 0x1f1a5 + c.charCodeAt(0)))
 
 export default function Dashboard() {
   const { t } = useTranslation()
@@ -47,13 +46,12 @@ export default function Dashboard() {
     </div>
   )
   const { storefront: sf, compliance: c, leads: l } = data
-  const market = t(`dashboard.market.${data.company.country_code}`, { defaultValue: data.company.country_code })
   return (
     <section className="space-y-4">
       <header>
         <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
         <p className="text-slate-700">
-          {data.company.name} <span role="img" aria-label={market}>{flag(data.company.country_code)}</span>
+          {data.company.name} <Flag country={data.company.country_code} />
         </p>
       </header>
       <Roadmap roadmap={data.roadmap} />

@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends
 
 from app.core.db import get_db
@@ -5,6 +7,13 @@ from app.core.security import current_company, owned
 from app.core.serialize import to_json
 
 router = APIRouter()
+
+
+def _ts(doc: dict) -> datetime:
+    d = doc.get("created_at")
+    if not isinstance(d, datetime):
+        return datetime.min.replace(tzinfo=timezone.utc)
+    return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
 
 
 @router.get("/dashboard")
@@ -18,7 +27,7 @@ async def dashboard(company: dict = Depends(current_company)):
     report = None
     if pids:  # newest report across all the company's products
         reports = await db.readiness_reports.find({"product_id": {"$in": pids}}).to_list(500)
-        report = max(reports, key=lambda r: r.get("created_at") or 0, default=None)
+        report = max(reports, key=_ts, default=None)
     leads = await db.leads.find({"company_id": cid}).to_list(5000)
     lids = [str(x["_id"]) for x in leads]
     pending = sent_quote = 0
@@ -27,7 +36,7 @@ async def dashboard(company: dict = Depends(current_company)):
         pending += await db.quotes.count_documents({"lead_id": {"$in": lids}, "status": "draft"})
         sent_quote = await db.quotes.count_documents({"lead_id": {"$in": lids}, "status": "sent"})
     notes = await db.notifications.find({"company_id": cid}).to_list(200)
-    notes.sort(key=lambda n: n.get("created_at") or 0, reverse=True)
+    notes.sort(key=_ts, reverse=True)
     return {
         "company": {"name": company["name"], "country_code": (market or {}).get("country_code", "DE")},
         "storefront": {"status": sf["status"] if sf else "none", "slug": sf.get("slug") if sf else None},

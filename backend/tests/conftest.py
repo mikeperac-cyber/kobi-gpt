@@ -55,3 +55,23 @@ def fake_llm():
     set_provider(fake)
     yield fake
     set_provider(None)
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    from app.core.ratelimit import reset_all
+
+    reset_all()
+    yield
+
+
+@pytest.fixture
+async def admin_client(db, client):
+    from app.core.security import create_token, hash_password
+
+    res = await db.users.insert_one(
+        {"email": "admin@x.com", "password_hash": hash_password("password123"), "name": "Admin",
+         "is_admin": True, "ui_language": "tr", "created_at": None, "kvkk_consent_at": None}
+    )
+    client.cookies.set("kobi_session", create_token(str(res.inserted_id)))
+    return client

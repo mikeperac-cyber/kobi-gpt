@@ -68,7 +68,6 @@ def test_render_prompt_rejects_price_floor():
         render_prompt("admin_ping", {"items": [{"a": {"price_floor": 5}}]})
 
 
-@pytest.mark.xfail(reason="admin_client fixture arrives in Task 3", strict=False)
 async def test_admin_llm_test_endpoint(admin_client, fake_llm):
     fake_llm.responses = ['{"ok": true, "echo": "pong"}']
     r = await admin_client.post("/api/admin/llm-test")

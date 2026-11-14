@@ -240,6 +240,11 @@
   "storefront": {
     "title": "Storefront",
     "intakeTitle": "Let's build your storefront",
+    "prefillTitle": "From your company records",
+    "prefillCompany": "Company",
+    "prefillCerts": "Certifications",
+    "prefillProducts": "Products",
+    "prefillNote": "The text was taken from your company and product records; edit it freely.",
     "intakeHelp": "Describe your product and company in your own words. You can type or speak into the microphone.",
     "textLabel": "Describe your product",
     "textPlaceholder": "E.g. We process pistachios from our own orchards in Gaziantep; we sell roasted in-shell and shelled kernels.",

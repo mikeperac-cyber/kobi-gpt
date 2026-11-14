@@ -240,6 +240,11 @@
   "storefront": {
     "title": "Vitrin",
     "intakeTitle": "Vitrininizi oluşturalım",
+    "prefillTitle": "Firma bilgilerinizden",
+    "prefillCompany": "Firma",
+    "prefillCerts": "Belgeler",
+    "prefillProducts": "Ürünler",
+    "prefillNote": "Metin firma ve ürün kayıtlarınızdan alındı; istediğiniz gibi değiştirebilirsiniz.",
     "intakeHelp": "Ürününüzü ve firmanızı kendi cümlelerinizle anlatın. Yazabilir ya da mikrofonla söyleyebilirsiniz.",
     "textLabel": "Ürününüzü anlatın",
     "textPlaceholder": "Örn. Gaziantep'te kendi bahçelerimizden Antep fıstığı işliyoruz; kavrulmuş, kabuklu ve iç fıstık satıyoruz.",

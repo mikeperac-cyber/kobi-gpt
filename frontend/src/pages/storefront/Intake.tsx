@@ -9,6 +9,8 @@ import Input from '../../components/ui/Input'
 import Textarea from '../../components/ui/Textarea'
 import { useJob } from '../../hooks/useJob'
 import { useSpeech } from '../../hooks/useSpeech'
+import type { CompanyDoc } from '../../components/CompanyFields'
+import type { ProductDoc } from '../../components/ProductForm'
 
 const KEYS = ['analysis', 'adaptation', 'content', 'theme']
 const INCOTERMS = ['EXW', 'FCA', 'FOB', 'CIF', 'DAP']
@@ -28,6 +30,19 @@ export default function Intake({ onDone, onCancel, initial, onSubmitted }: { onD
   const [err, setErr] = useState('')
   const { job, done } = useJob(jobId)
   const speech = useSpeech(user?.ui_language === 'en' ? 'en-US' : 'tr-TR', (s) => setText((x) => (x ? `${x} ${s}` : s)))
+
+  const [prefill, setPrefill] = useState<{ company: CompanyDoc; products: ProductDoc[] } | null>(null)
+  // Pre-fill from the producer's own records (no translation, nothing invented); skipped on a restart that kept the last intake.
+  useEffect(() => {
+    if (initial) return
+    Promise.all([api<CompanyDoc>('/api/company'), api<ProductDoc[]>('/api/products')]).then(([company, products]) => {
+      setPrefill({ company, products })
+      const seed = [company.description_tr, ...products.map((p) => `${p.name_tr}: ${p.description_tr}`)].filter((s) => s.trim()).join('
+
+')
+      setText((x) => x || seed)
+    }).catch(() => { /* manual entry still works */ })
+  }, [initial])
 
   useEffect(() => { if (done && job?.status === 'done') onDone() }, [done, job, onDone])
 
@@ -69,6 +84,14 @@ export default function Intake({ onDone, onCancel, initial, onSubmitted }: { onD
     <form className="max-w-2xl mx-auto space-y-5" onSubmit={(e) => { e.preventDefault(); void submit() }}>
       <h1 className="text-2xl font-bold">{t('storefront.intakeTitle')}</h1>
       <p className="text-slate-600">{t('storefront.intakeHelp')}</p>
+      {prefill && (
+        <dl className="rounded-md bg-slate-100 p-3 text-sm space-y-1" aria-label={t('storefront.prefillTitle')}>
+          <div><dt className="inline font-semibold">{t('storefront.prefillCompany')}: </dt><dd className="inline">{prefill.company.name}, {prefill.company.city}</dd></div>
+          {prefill.company.certifications.length > 0 && <div><dt className="inline font-semibold">{t('storefront.prefillCerts')}: </dt><dd className="inline">{prefill.company.certifications.join(', ')}</dd></div>}
+          <div><dt className="inline font-semibold">{t('storefront.prefillProducts')}: </dt><dd className="inline">{prefill.products.map((p) => p.name_tr).join(', ')}</dd></div>
+          <p className="text-slate-600">{t('storefront.prefillNote')}</p>
+        </dl>
+      )}
       <Field label={t('storefront.textLabel')}>
         <Textarea rows={6} maxLength={4000} value={text} onChange={(e) => setText(e.target.value)} placeholder={t('storefront.textPlaceholder')} />
       </Field>

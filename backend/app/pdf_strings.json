@@ -1,0 +1,35 @@
+{
+  "tr": {
+    "title": "İhracat Hazırlık Raporu", "company": "Firma", "date": "Tarih", "product": "Ürün", "country": "Hedef pazar",
+    "gtip": "GTİP (ürününüzün gümrük kodu)", "gtip_warning": "Kesin GTİP (12 hane) için gümrük müşavirinize danışın.",
+    "checklist": "Mevzuat kontrol listesi", "TR": "Türkiye tarafı", "DEST": "Hedef pazar",
+    "zorunlu": "Zorunlu", "koşullu": "Koşullu", "önerilen": "Önerilen",
+    "not_applicable": "Uygulanmaz", "ai": "Yapay zekâ açıklaması", "source": "Kaynak",
+    "verified": "Son doğrulama: {d}", "unverified": "Demo verisi – doğrulanmadı",
+    "done": "[x] Tamamlandı", "todo": "[ ] Yapılacak",
+    "incentives": "Devlet destekleri", "why": "Neden uygun?",
+    "score": "Hazırlık skoru (tahmini)", "formula": "Ağırlıklar: zorunlu 3, koşullu 2, önerilen 1 — tamamlanan maddelerin ağırlığı / uygulanan maddelerin ağırlığı. Tahmini bir göstergedir.",
+    "next_steps": "Sıradaki 3 adım",
+    "no_match": "Bu ürün/ülke için bilgi tabanımızda kayıt yok. Lütfen bir uzmana danışın:",
+    "experts": ["İhracatçı Birliği (sektörünüzün birliği)", "İTO / İSO (ticaret ve sanayi odanız)", "Ticaret Müşavirliği (hedef ülkedeki Türk ticaret ataşeliği)"],
+    "footer": "Bu rapor bilgilendirme amaçlıdır; resmi mevzuat ve gümrük müşaviri görüşü esastır.", "page": "Sayfa {n}",
+    "months": ["", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"], "file": "ihracat-hazirlik-raporu.pdf"
+  },
+  "en": {
+    "title": "Export Readiness Report", "company": "Company", "date": "Date", "product": "Product", "country": "Target market",
+    "gtip": "HS code (your product's customs code)", "gtip_warning": "Check the final 12-digit GTİP code with your customs broker.",
+    "checklist": "Compliance checklist", "TR": "Turkish side", "DEST": "Target market",
+    "zorunlu": "Mandatory", "koşullu": "Conditional", "önerilen": "Recommended",
+    "not_applicable": "Not applicable", "ai": "AI explanation", "source": "Source",
+    "verified": "Last verified: {d}", "unverified": "Demo data – not verified",
+    "done": "[x] Done", "todo": "[ ] To do",
+    "incentives": "State incentives", "why": "Why eligible?",
+    "score": "Readiness score (estimated)", "formula": "Weights: mandatory 3, conditional 2, recommended 1 — weight of completed items / weight of applicable items. This is an estimate.",
+    "next_steps": "Next 3 steps",
+    "no_match": "Our knowledge base has no records for this product/country. Please consult an expert:",
+    "experts": ["Exporters' Association (your sector's association)", "Chamber of Commerce / Industry (ITO / ISO)", "Trade Counsellor's office (Turkish commercial attaché in the target country)"],
+    "footer": "This report is for information only; official regulations and a customs broker's advice take precedence.", "page": "Page {n}",
+    "months": ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "file": "export-readiness-report.pdf"
+  }
+}

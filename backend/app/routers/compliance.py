@@ -1,12 +1,15 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from bson import ObjectId
+from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.core.db import get_db
 from app.core.security import current_company, current_user, owned
 from app.core.serialize import to_json
 from app.models.compliance import CheckIn, GtipConfirmIn, GtipIn, TickIn
 from app.services import agent_steps, regai_service as regai
+from app.services.pdf_service import STRINGS, readiness_pdf
+from app.services.storage_service import get_storage
 
 router = APIRouter(prefix="/compliance")
 
@@ -114,3 +117,18 @@ async def refresh_next_steps(report_id: str, user: dict = Depends(current_user),
     steps = await regai.next_steps(rep["checklist"], kb, company, user.get("ui_language", "tr"), None)
     await db.readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"next_steps": steps}})
     return {"next_steps": steps}
+
+
+@router.get("/reports/{report_id}/pdf")
+async def report_pdf(report_id: str, user: dict = Depends(current_user), company: dict = Depends(current_company)):
+    db, lang = get_db(), user.get("ui_language", "tr")
+    rep = await owned("readiness_reports", report_id, str(company["_id"]))
+    product = await db.products.find_one({"_id": ObjectId(rep["product_id"])}) or {}
+    contact = company.get("contact") or {}
+    public = {"name": company.get("name"), "city": company.get("city"), "sector": company.get("sector"),
+              "contact": {k: contact.get(k) for k in ("email", "phone", "website")}}  # allow-list, never a product doc
+    data = readiness_pdf({**to_json(rep), "product_name": product.get("name_tr", "")}, public, lang)
+    url = await get_storage().save_file(data, f"reports/{company['_id']}", ".pdf")
+    await db.readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"pdf_url": url}})
+    return Response(data, media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="{STRINGS[lang]["file"]}"'})

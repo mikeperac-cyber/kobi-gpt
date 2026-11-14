@@ -18,6 +18,7 @@ def set_root(path: Path | None) -> None:  # tests point this at tmp_path
 
 class Storage(Protocol):
     async def save(self, data: bytes, prefix: str) -> str: ...
+    async def save_file(self, data: bytes, prefix: str, ext: str) -> str: ...
     async def delete(self, url: str) -> None: ...
 
 
@@ -26,9 +27,13 @@ class LocalStorage:
         self.root = Path(root).resolve()
 
     async def save(self, data: bytes, prefix: str) -> str:
+        return await self.save_file(data, prefix, ".webp")
+
+    async def save_file(self, data: bytes, prefix: str, ext: str) -> str:
+        """Store generated (non-image) bytes such as PDFs; ext is chosen by code, never by the client."""
         folder = self.root / prefix
         folder.mkdir(parents=True, exist_ok=True)
-        name = f"{uuid.uuid4().hex}.webp"  # never the client's filename
+        name = f"{uuid.uuid4().hex}{ext}"  # never the client's filename
         (folder / name).write_bytes(data)
         return f"/uploads/{prefix}/{name}"
 

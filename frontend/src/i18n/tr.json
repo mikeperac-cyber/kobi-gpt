@@ -45,7 +45,8 @@
     "products": "Ürünlerim",
     "storefront": "Vitrin",
     "compliance": "Mevzuat",
-    "leads": "Alıcılar"
+    "leads": "Alıcılar",
+    "admin": "Yönetim"
   },
   "privacy": {
     "title": "Aydınlatma Metni (KVKK)",
@@ -84,7 +85,9 @@
     "unauthenticated": "Oturum süreniz doldu. Lütfen giriş yapın.",
     "too_large": "Dosya çok büyük (en fazla 8 MB).",
     "bad_type": "Desteklenmeyen dosya türü (jpg, png veya webp yükleyin).",
-    "slug_taken": "Bu web adresi başka bir firma tarafından kullanılıyor. Başka bir ad deneyin."
+    "slug_taken": "Bu web adresi başka bir firma tarafından kullanılıyor. Başka bir ad deneyin.",
+    "kb_id_exists": "Bu kimlikle bir kayıt zaten var.",
+    "import_invalid": "CSV içinde geçersiz satırlar var; hiçbir kayıt yazılmadı."
   },
   "onboarding": {
     "title": "Firmanızı tanıtın",
@@ -399,5 +402,57 @@
     "moveUp": "Fotoğraf {{n}} öne al",
     "moveDown": "Fotoğraf {{n}} arkaya al",
     "remove": "Fotoğraf {{n}} sil"
+  },
+  "adminKb": {
+    "title": "Bilgi bankası",
+    "intro": "Mevzuat ve teşvik kayıtlarının tek kaynağı. Değiştirilen kayıt yeniden doğrulanana kadar \"doğrulanmadı\" sayılır.",
+    "tabs": {
+      "rules": "Kurallar",
+      "incentives": "Teşvikler",
+      "hs_codes": "GTİP kodları"
+    },
+    "search": "Ara…",
+    "new": "Yeni kayıt",
+    "edit": "Düzenle",
+    "verify": "Doğrulandı olarak işaretle",
+    "export": "CSV indir",
+    "import": "CSV yükle",
+    "imported": "{{n}} kayıt içe aktarıldı.",
+    "importRows": "Geçersiz satırlar: {{rows}}",
+    "empty": "Kayıt yok.",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "listHint": "Birden fazla değeri ; ile ayırın.",
+    "badFields": "Hatalı alanlar: {{f}}",
+    "notVerified": "Demo verisi – doğrulanmadı",
+    "verified": "Doğrulandı · {{date}}",
+    "fields": {
+      "id": "Kimlik",
+      "title_tr": "Başlık (TR)",
+      "title_en": "Başlık (EN)",
+      "name_tr": "Ad (TR)",
+      "name_en": "Ad (EN)",
+      "summary_tr": "Özet (TR)",
+      "summary_en": "Özet (EN)",
+      "what_to_do_tr": "Ne yapmalı (TR)",
+      "what_to_do_en": "Ne yapmalı (EN)",
+      "documents_tr": "Belgeler (TR)",
+      "documents_en": "Belgeler (EN)",
+      "country": "Ülke kodu (örn. DE)",
+      "hs_prefixes": "GTİP önekleri",
+      "sectors": "Sektörler",
+      "channel": "Kanal",
+      "structural_use": "Yapısal kullanım",
+      "side": "Taraf",
+      "level": "Seviye",
+      "source_url": "Kaynak bağlantısı",
+      "provider": "Kurum",
+      "stages": "Aşamalar",
+      "sector": "Sektör",
+      "description_tr": "Açıklama (TR)",
+      "description_en": "Açıklama (EN)",
+      "note_tr": "Not (TR)",
+      "note_en": "Not (EN)"
+    }
   }
 }

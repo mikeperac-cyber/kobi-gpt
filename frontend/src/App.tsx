@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 
 const Login = lazy(() => import('./pages/auth/Login'))
 const Register = lazy(() => import('./pages/auth/Register'))
@@ -12,6 +13,7 @@ const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'))
 const StorefrontPage = lazy(() => import('./pages/storefront/Index'))
 const CompliancePage = lazy(() => import('./pages/compliance/Index'))
 const LeadsPage = lazy(() => import('./pages/leads/Index'))
+const KbList = lazy(() => import('./pages/admin/KbList'))
 const PrivacyNotice = lazy(() => import('./pages/privacy/PrivacyNotice'))
 
 export default function App() {
@@ -30,6 +32,9 @@ export default function App() {
           <Route path="/storefront" element={<StorefrontPage />} />
           <Route path="/compliance" element={<CompliancePage />} />
           <Route path="/leads" element={<LeadsPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/kb" element={<KbList />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

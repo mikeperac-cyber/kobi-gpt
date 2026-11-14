@@ -9,6 +9,6 @@ export default function ProtectedRoute() {
   const { t } = useTranslation()
   if (loading) return <div role="status" aria-label={t('common.loading')}><Skeleton className="h-10 w-full" /></div>
   if (!user) return <Navigate to="/login" replace />
-  if (!user.has_company && pathname !== '/onboarding') return <Navigate to="/onboarding" replace />
+  if (!user.has_company && pathname !== '/onboarding' && !(user.is_admin && pathname.startsWith('/admin'))) return <Navigate to="/onboarding" replace />
   return <Outlet />
 }

@@ -45,7 +45,8 @@
     "products": "My products",
     "storefront": "Storefront",
     "compliance": "Compliance",
-    "leads": "Buyers"
+    "leads": "Buyers",
+    "admin": "Admin"
   },
   "privacy": {
     "title": "Privacy Notice (KVKK)",
@@ -84,7 +85,9 @@
     "unauthenticated": "Your session expired. Please log in.",
     "too_large": "File is too large (8 MB at most).",
     "bad_type": "Unsupported file type (upload jpg, png or webp).",
-    "slug_taken": "This web address is used by another company. Try another name."
+    "slug_taken": "This web address is used by another company. Try another name.",
+    "kb_id_exists": "A record with this id already exists.",
+    "import_invalid": "The CSV has invalid rows; nothing was written."
   },
   "onboarding": {
     "title": "Introduce your company",
@@ -399,5 +402,57 @@
     "moveUp": "Move photo {{n}} earlier",
     "moveDown": "Move photo {{n}} later",
     "remove": "Remove photo {{n}}"
+  },
+  "adminKb": {
+    "title": "Knowledge base",
+    "intro": "The single source of regulatory and incentive records. An edited record counts as \"not verified\" until it is verified again.",
+    "tabs": {
+      "rules": "Rules",
+      "incentives": "Incentives",
+      "hs_codes": "HS codes"
+    },
+    "search": "Search…",
+    "new": "New record",
+    "edit": "Edit",
+    "verify": "Mark as verified",
+    "export": "Download CSV",
+    "import": "Upload CSV",
+    "imported": "{{n}} records imported.",
+    "importRows": "Invalid rows: {{rows}}",
+    "empty": "No records.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "listHint": "Separate several values with ;",
+    "badFields": "Invalid fields: {{f}}",
+    "notVerified": "Demo data – not verified",
+    "verified": "Verified · {{date}}",
+    "fields": {
+      "id": "Id",
+      "title_tr": "Title (TR)",
+      "title_en": "Title (EN)",
+      "name_tr": "Name (TR)",
+      "name_en": "Name (EN)",
+      "summary_tr": "Summary (TR)",
+      "summary_en": "Summary (EN)",
+      "what_to_do_tr": "What to do (TR)",
+      "what_to_do_en": "What to do (EN)",
+      "documents_tr": "Documents (TR)",
+      "documents_en": "Documents (EN)",
+      "country": "Country code (e.g. DE)",
+      "hs_prefixes": "HS prefixes",
+      "sectors": "Sectors",
+      "channel": "Channel",
+      "structural_use": "Structural use",
+      "side": "Side",
+      "level": "Level",
+      "source_url": "Source link",
+      "provider": "Provider",
+      "stages": "Stages",
+      "sector": "Sector",
+      "description_tr": "Description (TR)",
+      "description_en": "Description (EN)",
+      "note_tr": "Note (TR)",
+      "note_en": "Note (EN)"
+    }
   }
 }

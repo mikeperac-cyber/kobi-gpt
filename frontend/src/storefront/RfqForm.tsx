@@ -34,7 +34,7 @@ export default function RfqForm({ slug, lang, productNames }: { slug: string; la
     }
   }
 
-  const input = 'w-full rounded-md border bg-white text-slate-900 px-3 py-2 min-h-11 border-slate-400'
+  const input = 'w-full rounded-md border bg-white text-slate-900 px-3 py-2 min-h-11 border-slate-500'
   const label = 'block text-sm font-semibold mb-1'
   return (
     <form onSubmit={submit} className="relative grid gap-4 sm:grid-cols-2">

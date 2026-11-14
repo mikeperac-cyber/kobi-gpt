@@ -30,7 +30,7 @@ export function usePublic() {
 
 export function LangSwitch({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
   return (
-    <div className="flex justify-end gap-1 px-4 py-2 bg-white text-sm border-b border-slate-200" role="group" aria-label="Language">
+    <div className="flex justify-end gap-1 px-4 py-2 bg-white text-sm border-b border-slate-200" role="group" aria-label={STR[lang].langLabel}>
       {(['de', 'en'] as const).map((l) => (
         <button key={l} onClick={() => onChange(l)} aria-pressed={lang === l}
           className={`min-h-9 px-3 rounded font-semibold ${lang === l ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}>

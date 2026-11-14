@@ -8,7 +8,7 @@ const base = 'rounded-md px-5 py-3 font-semibold min-h-11 '
 export const THEMES: Record<string, Theme> = {
   industrial: {
     page: 'bg-slate-100 text-slate-900', muted: 'text-slate-600', hero: 'bg-[#12263F] text-white',
-    heroSub: 'text-slate-300', btn: base + 'bg-sky-600 text-white hover:bg-sky-700',
+    heroSub: 'text-slate-300', btn: base + 'bg-sky-700 text-white hover:bg-sky-800',
     card: 'bg-white border border-slate-300 rounded-md', h: 'font-bold tracking-tight uppercase text-[#12263F]',
     section: 'border-t-4 border-slate-400', chip: 'bg-slate-200 text-slate-800',
     grid: 'sm:grid-cols-2', photo: 'aspect-[4/3]',

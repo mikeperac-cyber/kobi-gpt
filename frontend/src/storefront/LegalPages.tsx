@@ -27,7 +27,7 @@ export default function LegalPage({ kind }: { kind: 'impressum' | 'datenschutz' 
         const contact = [l.address, l.phone, l.email].filter(Boolean).join(', ') || dash
         return (
           <div className="bg-white text-slate-900 min-h-screen px-4 py-10">
-            <article lang={lang} className="max-w-2xl mx-auto space-y-4">
+            <main lang={lang} className="max-w-2xl mx-auto space-y-4">
               <Link to={`/s/${slug}${lang === 'en' ? '?lang=en' : ''}`} className="underline">&larr; {STR[lang].back}</Link>
               <h1 className="text-3xl font-bold">{title(lang)}</h1>
               {kind === 'impressum'
@@ -35,7 +35,7 @@ export default function LegalPage({ kind }: { kind: 'impressum' | 'datenschutz' 
                 : STR[lang].privacyBody({ name: l.name ?? dash, contact }).map((b) => (
                   <section key={b.h}><h2 className="text-lg font-semibold mt-4">{b.h}</h2><p>{b.p}</p></section>
                 ))}
-            </article>
+            </main>
           </div>
         )
       }}

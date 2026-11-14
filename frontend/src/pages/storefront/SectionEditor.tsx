@@ -69,11 +69,16 @@ export default function SectionEditor({ section, content, missing, readOnly, reg
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-bold">{t(`storefront.sections.${section}`)}</h3>
         {!readOnly && onRegen && (
-          <Button type="button" variant="secondary" disabled={regenBusy} onClick={() => onRegen(instr ?? undefined)}>
+          <Button type="button" variant="secondary" disabled={regenBusy} onClick={() => onRegen(instr?.trim() || undefined)}>
             {t('storefront.regen')}
           </Button>
         )}
       </div>
+      {!readOnly && onRegen && (
+        <input type="text" maxLength={200} value={instr ?? ''} onChange={(e) => setInstr(e.target.value)}
+          aria-label={t('storefront.instruction')} placeholder={t('storefront.instructionPh')}
+          className="w-full min-h-11 px-3 rounded-md border border-slate-300 bg-white focus:outline-2 focus:outline-navy" />
+      )}
       {!readOnly && onRegen && (
         <div className="flex gap-2" role="group" aria-label={t('storefront.regen')}>
           {(['regenShorter', 'regenTechnical'] as const).map((k) => {

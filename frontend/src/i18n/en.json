@@ -326,7 +326,9 @@
     "copied": "Link copied.",
     "open": "Open storefront",
     "backToEditor": "Back to editor",
-    "stubNoText": "(no text yet)"
+    "stubNoText": "(no text yet)",
+    "instruction": "Custom instruction (optional)",
+    "instructionPh": "E.g. shorter, more technical"
   },
   "compliance": {
     "title": "Compliance"

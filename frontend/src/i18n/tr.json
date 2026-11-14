@@ -326,7 +326,9 @@
     "copied": "Bağlantı kopyalandı.",
     "open": "Vitrini aç",
     "backToEditor": "Düzenlemeye dön",
-    "stubNoText": "(henüz metin yok)"
+    "stubNoText": "(henüz metin yok)",
+    "instruction": "Özel talimat (isteğe bağlı)",
+    "instructionPh": "Örn. daha kısa, daha teknik"
   },
   "compliance": {
     "title": "Uyum"

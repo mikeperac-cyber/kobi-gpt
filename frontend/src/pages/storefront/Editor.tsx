@@ -28,7 +28,7 @@ export default function Editor({ initial, onPublished, onRestart }: {
   const [err, setErr] = useState('')
 
   const content = cfg[tab]
-  const setContent = (c: LocalizedContent) => setCfg({ ...cfg, [tab]: c })
+  const setContent = (c: LocalizedContent) => setCfg((x) => ({ ...x, [tab]: c }))
   const body = () => ({
     site_config: { ...cfg, template, de: clean(cfg.de), en: clean(cfg.en) },
     slug,
@@ -63,6 +63,7 @@ export default function Editor({ initial, onPublished, onRestart }: {
 
   const regen = async (section: Section, instruction?: string) => {
     if (tab === 'review') return
+    if (!(await save())) return // server regenerates from the saved copy: persist local edits first
     setBusy('regen'); setErr(''); setMsg('')
     try {
       const r = await api<{ section: unknown; fallback: boolean; missing: string[] }>('/api/storefronts/mine/regenerate-section', {

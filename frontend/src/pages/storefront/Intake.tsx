@@ -37,9 +37,7 @@ export default function Intake({ onDone, onCancel, initial, onSubmitted }: { onD
     if (initial) return
     Promise.all([api<CompanyDoc>('/api/company'), api<ProductDoc[]>('/api/products')]).then(([company, products]) => {
       setPrefill({ company, products })
-      const seed = [company.description_tr, ...products.map((p) => `${p.name_tr}: ${p.description_tr}`)].filter((s) => s.trim()).join('
-
-')
+      const seed = [company.description_tr, ...products.map((p) => `${p.name_tr}: ${p.description_tr}`)].filter((s) => s.trim()).join('\n\n')
       setText((x) => x || seed)
     }).catch(() => { /* manual entry still works */ })
   }, [initial])

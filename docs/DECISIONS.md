@@ -14,3 +14,8 @@
 12. **Quote PDF and readiness PDF both go through `pdf_service`**, which takes already-public dicts (never a product document), so the floor cannot reach it.
 13. **CERTS includes "IATF 16949"** (added to the spec list for the Bursa fastener seed company).
 14. **In-memory dev database** (`MONGO_URI=mongomock://`) uses mongomock-motor and seeds on startup so the app runs with no MongoDB installed. Data is lost on restart; use real MongoDB for persistence.
+15. **Storefront regeneration keeps status and slug.** One storefront per (company, DE), unique-indexed on `slug` and `(company_id, country)`; regenerating never unpublishes or moves a published URL. `unique_slug` is retried once on `DuplicateKeyError`.
+16. **Theme step is deterministic**: recorded with source `template`, never `llm`. The LLM's own `missing`, `template` and CTA strings are ignored; code forces the CTAs, recomputes `missing`, and re-applies DB photos/product ids (generation and section regeneration).
+17. **Floor-number detection is defence in depth.** Generated de/en/review text or a regenerated section containing the floor as a number triggers the fallback. Limitation: exact decimal forms only (9.5 / 9,5 / 9.50), not rounded or thousand-formatted variants; the floor never enters any prompt, so the model cannot know it.
+18. **`regenerate-section` returns `{section, fallback, missing}`** and persists the section only when not a fallback. `PUT /storefronts/mine` re-slugs through `slugify_tr` (junk becomes `shop`) and recomputes `missing` server-side.
+19. **`LocalStorage.read` is root-confined** (only `/uploads/...` files under the storage root; else None). Analysis sends at most 3 product photos.

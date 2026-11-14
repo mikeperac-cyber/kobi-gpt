@@ -186,6 +186,8 @@ def _floor_forms(v: float) -> list[str]:
 
 
 def contains_floor(obj, floors: list[float]) -> bool:
+    # shortcut: matches exact decimal forms only (9.5 / 9,5 / 9.50), not rounded or thousand-formatted variants;
+    # the floor never enters a prompt, so this is defence in depth. Upgrade if models ever see prices.
     """True if any floor price appears as a standalone number in the generated text."""
     text = json.dumps(obj, ensure_ascii=False)
     return any(re.search(rf"(?<![\d.,]){re.escape(f)}(?!\d|[.,]\d)", text) for v in floors for f in _floor_forms(v))
@@ -291,6 +293,9 @@ async def regenerate_section(company: dict, products: list[dict], cfg: SiteConfi
                  instruction=instruction or ""),
             RegenOut, run_type="storefront", company_id=str(company["_id"]), timeout=t)
         new = adapter.dump_python(adapter.validate_python(out.content), mode="json")
+        if section == "products":  # ids and photos come from the DB, never from the model
+            photos = {str(p["_id"]): p.get("photos") or [] for p in products}
+            new = [{**b, "photos": list(photos[b["product_id"]])} for b in new if b["product_id"] in photos]
         if contains_floor(new, floors):
             raise LLMInvalidOutput("floor price in generated text")
         return new

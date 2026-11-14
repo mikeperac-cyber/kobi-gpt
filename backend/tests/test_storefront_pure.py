@@ -40,9 +40,9 @@ def test_slug_turkish_capitals():
 
 
 async def test_unique_slug_suffix(db):
-    await db.storefronts.insert_one({"slug": "acme"})
+    await db.storefronts.insert_one({"slug": "acme", "company_id": "c1", "country": "DE"})
     assert await unique_slug(db, "acme") == "acme-2"
-    await db.storefronts.insert_one({"slug": "acme-2"})
+    await db.storefronts.insert_one({"slug": "acme-2", "company_id": "c2", "country": "DE"})
     assert await unique_slug(db, "acme") == "acme-3"
     assert await unique_slug(db, "fresh") == "fresh"
 

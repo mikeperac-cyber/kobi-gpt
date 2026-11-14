@@ -169,3 +169,29 @@ def test_contains_floor_is_number_boundary_aware():
     from app.services.storefront_service import contains_floor
     assert contains_floor({"a": "ab 9,5 EUR"}, [9.5]) and contains_floor({"a": "9.50"}, [9.5])
     assert not contains_floor({"a": "seit 2009,5 ; 19.5 ; ISO 22000"}, [9.5])
+
+
+async def test_regen_products_uses_db_photos_and_ids(producer, fake_llm):
+    p = await producer("Ali")
+    fake_llm.responses = _llm(p)
+    await _generate(p)
+    good = {"product_id": p["product"]["id"], "name": "N", "photos": ["http://evil/x.png"]}
+    fake_llm.responses = lambda _: json.dumps({"content": [good, {"product_id": "invented", "name": "X"}]})
+    r = await p["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "products", "lang": "de"})
+    assert r.status_code == 200 and r.json()["fallback"] is False
+    sf = (await p["client"].get("/api/storefronts/mine")).json()
+    blocks = sf["site_config"]["de"]["products"]
+    assert [b["product_id"] for b in blocks] == [p["product"]["id"]]
+    assert blocks[0]["photos"] == ["/uploads/products/a.webp"]
+
+
+async def test_put_junk_slug_and_cross_company_404(producer, fake_llm):
+    a, b = await producer("Ali"), await producer("Veli")
+    fake_llm.responses = _llm(a)
+    await _generate(a)
+    sf = (await a["client"].get("/api/storefronts/mine")).json()
+    body = {"site_config": sf["site_config"], "slug": "!!!", "template": "natural"}
+    assert (await a["client"].put("/api/storefronts/mine", json=body)).json()["slug"] == "shop"
+    assert (await b["client"].put("/api/storefronts/mine", json=body)).status_code == 404  # b has none
+    r = await b["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "seo", "lang": "de"})
+    assert r.status_code == 404

@@ -27,5 +27,6 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
     } catch { /* non-JSON error body */ }
     throw new ApiError(res.status, d.code ?? 'unknown', d.message_key ?? 'errors.generic', d.fields)
   }
-  return res.status === 204 ? (undefined as T) : ((await res.json()) as T)
+  const text = await res.text() // 201/204 may have an empty body
+  return (text ? JSON.parse(text) : undefined) as T
 }

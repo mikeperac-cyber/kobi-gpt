@@ -1,19 +1,22 @@
+import { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
-import Wizard from './pages/onboarding/Wizard'
-import CompanyPage from './pages/company/CompanyPage'
-import ProductsPage from './pages/products/ProductsPage'
-import Dashboard from './pages/dashboard/Dashboard'
-import StorefrontPage from './pages/storefront/Index'
-import CompliancePage from './pages/compliance/Index'
-import LeadsPage from './pages/leads/Index'
-import PrivacyNotice from './pages/privacy/PrivacyNotice'
+
+const Login = lazy(() => import('./pages/auth/Login'))
+const Register = lazy(() => import('./pages/auth/Register'))
+const Wizard = lazy(() => import('./pages/onboarding/Wizard'))
+const CompanyPage = lazy(() => import('./pages/company/CompanyPage'))
+const ProductsPage = lazy(() => import('./pages/products/ProductsPage'))
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'))
+const StorefrontPage = lazy(() => import('./pages/storefront/Index'))
+const CompliancePage = lazy(() => import('./pages/compliance/Index'))
+const LeadsPage = lazy(() => import('./pages/leads/Index'))
+const PrivacyNotice = lazy(() => import('./pages/privacy/PrivacyNotice'))
 
 export default function App() {
   return (
+    <Suspense fallback={null}>
     <Routes>
       <Route element={<Layout />}>
         <Route path="/login" element={<Login />} />
@@ -30,5 +33,6 @@ export default function App() {
         </Route>
       </Route>
     </Routes>
+    </Suspense>
   )
 }

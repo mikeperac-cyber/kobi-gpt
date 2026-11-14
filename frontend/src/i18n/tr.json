@@ -78,6 +78,7 @@
     "forbidden": "Bu işlem için yetkiniz yok.",
     "no_company": "Önce firma bilgilerinizi girin.",
     "not_found": "Bulunamadı.",
+    "unknown_hs_code": "Bu GTİP kodu bilinmiyor; önerilen adaylardan veya bilgi bankasından seçin.",
     "rate_limited": "Çok fazla deneme. Biraz bekleyip tekrar deneyin.",
     "unauthenticated": "Oturum süreniz doldu. Lütfen giriş yapın.",
     "too_large": "Dosya çok büyük (en fazla 8 MB).",

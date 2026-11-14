@@ -78,6 +78,7 @@
     "forbidden": "You are not allowed to do this.",
     "no_company": "Please enter your company details first.",
     "not_found": "Not found.",
+    "unknown_hs_code": "Unknown HS code; pick one of the suggested candidates or a knowledge-base code.",
     "rate_limited": "Too many attempts. Wait a moment and try again.",
     "unauthenticated": "Your session expired. Please log in.",
     "too_large": "File is too large (8 MB at most).",

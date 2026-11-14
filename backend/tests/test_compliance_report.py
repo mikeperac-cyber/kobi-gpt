@@ -154,8 +154,8 @@ async def test_prompts_carry_ui_language_and_no_floor(producer, kb, fake_llm):
     p = await producer("Ali")
     await p["client"].patch("/api/auth/me", json={"ui_language": "en"})
     await check(p)
-    explain = [x for x in fake_llm.prompts if "records (id" in x or "incentives (id" in x]
-    assert len(explain) == 2
+    explain = [x for x in fake_llm.prompts if "records (id" in x or "incentives (id" in x or "open items" in x]
+    assert len(explain) == 3
     for pr in explain:
         assert "ui_language: en" in pr and "price_floor" not in pr
 
@@ -180,3 +180,52 @@ async def test_next_steps_endpoint_respects_ticks(producer, kb, fake_llm):
     assert r.status_code == 200
     got = [s["rule_id"] for s in r.json()["next_steps"]]
     assert first not in got and "R98" not in got and len(got) == 3
+
+
+def test_grounded_text():
+    from app.services.regai_service import grounded_text
+    kb = ["CBAM (2026'dan itibaren)", "Aflatoksin limitleri"]
+    assert grounded_text("18 ay içinde başvurun", kb) is None
+    assert grounded_text("2026 öncesi hazırlanın", kb) == "2026 öncesi hazırlanın"
+    assert grounded_text("Ücret 500 TL", kb) is None
+    assert grounded_text("Limitleri kontrol edin", kb) == "Limitleri kontrol edin"
+    assert grounded_text("x" * 400, kb).endswith("\u2026")
+
+
+async def test_ungrounded_numbers_replaced_by_kb_text(producer, kb, fake_llm, db):
+    def f(pr):
+        if "records (id" in pr:
+            return json.dumps({"items": [
+                {"rule_id": "R7", "applies": True, "reason": "18 ay içinde başvurun", "next_step": "5000 TL ödeyin"},
+                {"rule_id": "R12", "applies": True, "reason": "2026 sonrası zorunlu", "next_step": "hazırlanın"}]})
+        return selector()(pr)
+    fake_llm.responses = f
+    p = await producer("Ali")
+    rep = await check(p)
+    by = {i["rule_id"]: i for i in rep["checklist"]}
+    r7 = next(r for r in RULES if r["id"] == "R7")
+    assert by["R7"]["reason"] == r7["summary_tr"] and by["R7"]["next_step"] == r7["what_to_do_tr"]
+    assert by["R7"]["summary"] == r7["summary_tr"] and by["R7"]["what_to_do"] == r7["what_to_do_tr"]
+    await db.companies.update_many({}, {"$set": {"sector": "otomotiv_yan_sanayi"}})
+    by = {i["rule_id"]: i for i in (await check(p, "7318.15"))["checklist"]}
+    assert by["R12"]["reason"] == "2026 sonrası zorunlu"
+
+
+async def test_two_ticks_both_persist(producer, kb, fake_llm):
+    fake_llm.responses = fails
+    p = await producer("Ali")
+    rep = await check(p)
+    c = p["client"]
+    await c.patch(f"/api/compliance/reports/{rep['id']}/items/R1", json={"done": True})
+    await c.patch(f"/api/compliance/reports/{rep['id']}/items/R3", json={"done": True})
+    got = (await c.get(f"/api/compliance/reports/latest?product_id={p['product']['id']}")).json()
+    assert {i["rule_id"] for i in got["checklist"] if i["done"]} == {"R1", "R3"}
+
+
+async def test_zero_known_rule_ids_falls_back(producer, kb, fake_llm, db):
+    inner = selector()
+    fake_llm.responses = lambda pr: json.dumps({"items": [{"rule_id": "R99", "applies": False}]})         if "records (id" in pr else inner(pr)
+    rep = await check(await producer("Ali"))
+    assert all(i["applies"] for i in rep["checklist"])
+    job = await db.jobs.find_one({"kind": "compliance"}, sort=[("created_at", -1)])
+    assert next(s for s in job["steps"] if s["key"] == "rules")["status"] == "fallback"

@@ -95,11 +95,13 @@ async def tick(report_id: str, rule_id: str, body: TickIn, company: dict = Depen
     rep = await owned("readiness_reports", report_id, str(company["_id"]))
     if rule_id not in {i["rule_id"] for i in rep["checklist"]}:
         raise HTTPException(404, {"code": "not_found", "message_key": "errors.not_found"})
-    for i in rep["checklist"]:
-        if i["rule_id"] == rule_id:
-            i["done"] = body.done
-    score = regai.readiness_score(rep["checklist"])
-    await get_db().readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"checklist": rep["checklist"], "score": score}})
+    db = get_db()
+    # positional update so concurrent ticks on different items cannot overwrite each other
+    await db.readiness_reports.update_one({"_id": rep["_id"], "checklist.rule_id": rule_id},
+                                          {"$set": {"checklist.$.done": body.done}})
+    fresh = await db.readiness_reports.find_one({"_id": rep["_id"]})
+    score = regai.readiness_score(fresh["checklist"])
+    await db.readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"score": score}})
     return {"score": score}
 
 

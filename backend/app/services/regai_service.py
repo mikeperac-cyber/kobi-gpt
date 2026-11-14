@@ -103,7 +103,24 @@ def keep_known(items: list[dict], allowed_ids: set[str], key: str) -> list[dict]
 
 
 def _s(v, cap: int = 300) -> str:
-    return str(v or "").strip()[:cap]
+    v = str(v or "").strip()
+    return v if len(v) <= cap else v[:cap - 1] + "…"
+
+
+_NUM = re.compile(r"\d+(?:[.,]\d+)*")
+_MONEY = re.compile(r"[€$%]|\b(?:TL|TRY|EUR|USD|euro|dolar|lira)\b", re.I)
+
+
+def grounded_text(llm_text, kb_texts: list[str]) -> str | None:
+    """LLM text, or None when it carries a number/amount that the KB record's own text does not contain."""
+    text = _s(llm_text)
+    if not text:
+        return None
+    kb = " ".join(kb_texts)
+    for tok in _NUM.findall(text):
+        if not re.search(rf"(?<!\d){re.escape(tok)}(?!\d)", kb):
+            return None
+    return None if _MONEY.search(text) and not _MONEY.search(kb) else text
 
 
 def build_checklist(rules: list[dict], picked: dict[str, dict], ui: str) -> list[dict]:
@@ -111,26 +128,28 @@ def build_checklist(rules: list[dict], picked: dict[str, dict], ui: str) -> list
     out = []
     for r in rules:
         p = picked.get(r["id"], {})
+        kb = [r[f"title_{ui}"], r[f"summary_{ui}"], r[f"what_to_do_{ui}"]]
         out.append({
             "rule_id": r["id"], "title_tr": r["title_tr"], "title_en": r["title_en"], "side": r["side"],
             "level": r["level"], "source_url": r["source_url"], "last_verified": r.get("last_verified"),
             "verified": r.get("verified", False),
             "applies": p.get("applies", True),
-            "reason": _s(p.get("reason")) or r[f"summary_{ui}"],
-            "next_step": _s(p.get("next_step")) or r[f"what_to_do_{ui}"],
+            "summary": r[f"summary_{ui}"], "what_to_do": r[f"what_to_do_{ui}"],
+            "reason": grounded_text(p.get("reason"), kb) or r[f"summary_{ui}"],
+            "next_step": grounded_text(p.get("next_step"), kb) or r[f"what_to_do_{ui}"],
             "done": False})
     return out
 
 
 def fallback_next_steps(checklist: list[dict], ui: str, kb: dict[str, dict]) -> list[dict]:
-    open_ = [i for i in checklist if i["applies"] and not i["done"]]
+    open_ = [i for i in checklist if i["applies"] and not i["done"] and i["rule_id"] in kb]
     open_.sort(key=lambda i: (-LEVEL_WEIGHTS[i["level"]], int(i["rule_id"][1:])))
     return [{"rule_id": i["rule_id"], "text": kb[i["rule_id"]][f"what_to_do_{ui}"]} for i in open_[:3]]
 
 
 async def next_steps(checklist: list[dict], rules_by_id: dict[str, dict], company: dict, ui: str,
                      job_id: str | None) -> list[dict]:
-    open_ = [i for i in checklist if i["applies"] and not i["done"]]
+    open_ = [i for i in checklist if i["applies"] and not i["done"] and i["rule_id"] in rules_by_id]
     allowed = {i["rule_id"] for i in open_}
     ctx = {"ui_language": ui, "open_items": [
         {"id": i["rule_id"], "title": i[f"title_{ui}"], "summary": rules_by_id[i["rule_id"]][f"summary_{ui}"],
@@ -139,8 +158,11 @@ async def next_steps(checklist: list[dict], rules_by_id: dict[str, dict], compan
     async def call(t):
         out = await generate_json("next_steps", ctx, NextStepsOut, run_type="next_steps",
                                   company_id=str(company["_id"]), timeout=t)
-        steps = [{"rule_id": s["rule_id"], "text": _s(s["text"])}
-                 for s in keep_known([s.model_dump() for s in out.steps], allowed, "rule_id") if _s(s["text"])]
+        steps = []
+        for s in keep_known([s.model_dump() for s in out.steps], allowed, "rule_id"):
+            r = rules_by_id[s["rule_id"]]
+            kb = [r[f"title_{ui}"], r[f"summary_{ui}"], r[f"what_to_do_{ui}"]]
+            steps.append({"rule_id": s["rule_id"], "text": grounded_text(s["text"], kb) or r[f"what_to_do_{ui}"]})
         if not steps:
             raise LLMInvalidOutput("no valid next steps")
         return steps
@@ -177,6 +199,8 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
         out = await generate_json("rules_explain", ctx, RuleExplainOut, run_type="rules_explain",
                                   company_id=cid, timeout=t)
         kept = keep_known([i.model_dump() for i in out.items], set(rules_by_id), "rule_id")
+        if not kept:
+            raise LLMInvalidOutput("no valid rule items")
         return {i["rule_id"]: i for i in kept}
 
     if no_match:  # nothing but the Turkish-side rule: no target-market data, so nothing to explain
@@ -195,7 +219,9 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
         kept = keep_known([i.model_dump() for i in out.items], set(incs_by_id), "incentive_id")
         if not kept:
             raise LLMInvalidOutput("no valid incentives")
-        return [(i["incentive_id"], _s(i["why"])) for i in kept if i["applies"]]
+        return [(i["incentive_id"], grounded_text(i["why"], [incs_by_id[i["incentive_id"]][f"{k}_{ui}"]
+                                                             for k in ("name", "summary", "what_to_do")]))
+                for i in kept if i["applies"]]
 
     if incs:
         chosen, _ = await agent_steps.run_ai_step(job_id, "incentives", company, explain_incentives,
@@ -205,6 +231,7 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
         chosen = []
     incentives = [{"incentive_id": iid, "name_tr": incs_by_id[iid]["name_tr"], "name_en": incs_by_id[iid]["name_en"],
                    "provider": incs_by_id[iid]["provider"], "source_url": incs_by_id[iid]["source_url"],
+                   "summary": incs_by_id[iid][f"summary_{ui}"],
                    "why": why or incs_by_id[iid][f"summary_{ui}"]} for iid, why in chosen]
 
     steps = await next_steps(checklist, rules_by_id, company, ui, job_id)

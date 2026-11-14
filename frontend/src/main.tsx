@@ -8,14 +8,22 @@ import './index.css'
 import PublicBoundary from './storefront/PublicBoundary'
 
 // Buyer-facing routes load a separate chunk with no producer i18n/auth.
-const Root = lazy(() => (location.pathname.startsWith('/s/') ? import('./PublicApp') : import('./ProducerApp')))
+const isPublic = location.pathname.startsWith('/s/')
+const PublicApp = lazy(() => import('./PublicApp'))
+const ProducerRoot = lazy(() => import('./ProducerRoot'))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <PublicBoundary>
+    {isPublic ? (
+      <PublicBoundary>
+        <Suspense fallback={null}>
+          <PublicApp />
+        </Suspense>
+      </PublicBoundary>
+    ) : (
       <Suspense fallback={null}>
-        <Root />
+        <ProducerRoot />
       </Suspense>
-    </PublicBoundary>
+    )}
   </StrictMode>,
 )

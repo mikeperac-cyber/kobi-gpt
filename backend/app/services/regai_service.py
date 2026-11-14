@@ -111,6 +111,7 @@ _NUM = re.compile(r"\d+(?:[.,]\d+)*")
 _MONEY = re.compile(r"[€$%]|\b(?:TL|TRY|EUR|USD|euro|dolar|lira)\b", re.I)
 
 
+# shortcut: lexical guard — digit/%/currency tokens only; number words ("on sekiz ay", "yüzde otuz") pass. Upgrade to a stricter check if real LLM output shows them.
 def grounded_text(llm_text, kb_texts: list[str]) -> str | None:
     """LLM text, or None when it carries a number/amount that the KB record's own text does not contain."""
     text = _s(llm_text)

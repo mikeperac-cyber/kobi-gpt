@@ -12,12 +12,13 @@ export default function KbImportExport({ kind, onImported }: { kind: Kind; onImp
 
   async function upload(f: File) {
     setMsg(''); setErr('')
+    if (f.size > 2 * 1024 * 1024) { setErr(t('errors.file_too_large')); return }
     try {
       const r = await api<{ imported: number }>(`/api/admin/kb/${kind}/import`, { method: 'POST', body: await f.arrayBuffer(), headers: { 'Content-Type': 'text/csv' } })
       setMsg(t('adminKb.imported', { n: r.imported }))
       onImported()
     } catch (x) {
-      setErr(t(x instanceof ApiError ? x.messageKey : 'errors.network'))
+      setErr(x instanceof ApiError ? t(x.messageKey) + (x.rows.length ? ' ' + t('adminKb.badRows', { rows: x.rows.map((r) => r.row).join(', ') }) : '') : t('errors.network'))
     }
     if (file.current) file.current.value = ''
   }

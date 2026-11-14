@@ -86,6 +86,7 @@
     "too_large": "File is too large (8 MB at most).",
     "bad_type": "Unsupported file type (upload jpg, png or webp).",
     "slug_taken": "This web address is used by another company. Try another name.",
+    "file_too_large": "File too large (max 2 MB).",
     "kb_id_exists": "A record with this id already exists.",
     "import_invalid": "The CSV has invalid rows; nothing was written."
   },
@@ -417,6 +418,7 @@
     "verify": "Mark as verified",
     "export": "Download CSV",
     "import": "Upload CSV",
+    "badRows": "Invalid row numbers: {{rows}}",
     "imported": "{{n}} records imported.",
     "importRows": "Invalid rows: {{rows}}",
     "empty": "No records.",

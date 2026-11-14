@@ -13,6 +13,19 @@ from app.models.kb import KINDS
 
 router = APIRouter(prefix="/admin/kb", dependencies=[Depends(require_admin)])
 
+MAX_IMPORT = 2 * 1024 * 1024
+DANGER = ("=", "+", "-", "@", "\t", "\r")  # Excel treats these leading chars as formulas
+
+
+def _guard(c):
+    c = "" if c is None else str(c)
+    return "'" + c if c.startswith(DANGER) else c
+
+
+def _unguard(c: str) -> str:
+    return c[1:] if c.startswith("'") and c[1:].startswith(DANGER) else c
+
+
 RESET = {"verified": False, "last_verified": None, "verified_by": None}
 
 
@@ -38,6 +51,11 @@ def _validate(model, data) -> dict:
 
 def _public(d: dict) -> dict:
     d = {k: v for k, v in d.items() if k != "_id"}
+    lv = d.get("last_verified")
+    if lv is not None and lv.tzinfo is None:  # mongo returns naive UTC
+        d["last_verified"] = lv.replace(tzinfo=timezone.utc)
+    if lv is not None:
+        d["last_verified"] = d["last_verified"].isoformat()
     d.setdefault("verified", False)
     d.setdefault("last_verified", None)
     return d
@@ -83,8 +101,7 @@ async def export_csv(kind: str):
     w = csv.writer(out)
     w.writerow(cols)
     async for d in coll.find({}).sort("id", 1):
-        w.writerow([";".join(d.get(c) or []) if c in lists else (d.get(c) if d.get(c) is not None else "")
-                    for c in cols])
+        w.writerow([_guard(";".join(d.get(c) or []) if c in lists else d.get(c)) for c in cols])
     return Response("\ufeff" + out.getvalue(), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": f'attachment; filename="kb_{kind}.csv"'})
 
@@ -92,7 +109,14 @@ async def export_csv(kind: str):
 @router.post("/{kind}/import")
 async def import_csv(kind: str, request: Request):
     coll, model = _kind(kind)
-    raw = await request.body()
+    too_big = HTTPException(413, {"code": "file_too_large", "message_key": "errors.file_too_large"})
+    if int(request.headers.get("content-length") or 0) > MAX_IMPORT:
+        raise too_big
+    raw = b""
+    async for chunk in request.stream():
+        raw += chunk
+        if len(raw) > MAX_IMPORT:
+            raise too_big
     try:
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError:
@@ -102,7 +126,7 @@ async def import_csv(kind: str, request: Request):
     lists = _list_fields(model)
     recs, errors = [], []
     for n, row in enumerate(csv.DictReader(io.StringIO(text), delimiter=delim), start=2):  # row 1 = header
-        data = {k.strip(): (v or "").strip() for k, v in row.items() if k}
+        data = {k.strip(): _unguard((v or "").strip()) for k, v in row.items() if k}
         for k in list(data):
             if k in lists:
                 data[k] = [x.strip() for x in data[k].split(";") if x.strip()]

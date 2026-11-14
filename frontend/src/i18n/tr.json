@@ -86,6 +86,7 @@
     "too_large": "Dosya çok büyük (en fazla 8 MB).",
     "bad_type": "Desteklenmeyen dosya türü (jpg, png veya webp yükleyin).",
     "slug_taken": "Bu web adresi başka bir firma tarafından kullanılıyor. Başka bir ad deneyin.",
+    "file_too_large": "Dosya çok büyük (en fazla 2 MB).",
     "kb_id_exists": "Bu kimlikle bir kayıt zaten var.",
     "import_invalid": "CSV içinde geçersiz satırlar var; hiçbir kayıt yazılmadı."
   },
@@ -417,6 +418,7 @@
     "verify": "Doğrulandı olarak işaretle",
     "export": "CSV indir",
     "import": "CSV yükle",
+    "badRows": "Geçersiz satır numaraları: {{rows}}",
     "imported": "{{n}} kayıt içe aktarıldı.",
     "importRows": "Geçersiz satırlar: {{rows}}",
     "empty": "Kayıt yok.",

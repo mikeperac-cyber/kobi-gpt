@@ -342,7 +342,66 @@
     "instructionPh": "Örn. daha kısa, daha teknik"
   },
   "compliance": {
-    "title": "Uyum"
+    "title": "Mevzuat Bekçisi",
+    "intro": "Ürününüzün gümrük kodunu belirleyin, hedef pazardaki kuralları ve devlet desteklerini görün. Tüm bilgiler resmî kaynaklara bağlanır.",
+    "product": "Ürün",
+    "noProducts": "Önce bir ürün ekleyin.",
+    "channel": "Satış kanalı",
+    "channelB2b": "B2B Toptan",
+    "channelB2c": "B2C Perakende",
+    "structural": "Ürün yapısal / taşıyıcı amaçla kullanılıyor",
+    "structuralHelp": "Örneğin vida, cıvata veya bağlantı elemanı inşaat ya da taşıyıcı yapıda kullanılacaksa işaretleyin; ek kurallar gerekebilir.",
+    "processing": "Ürününüz kavrulmuş mu, çiğ mi?",
+    "processingRoasted": "Kavrulmuş",
+    "processingRaw": "Çiğ",
+    "processingNa": "Uygulanmaz / bilmiyorum",
+    "start": "GTİP adaylarını bul",
+    "rerun": "Yeniden kontrol et",
+    "gtipTitle": "GTİP (ürününüzün gümrük kodu)",
+    "gtipHelp": "Aşağıdakiler birer öneridir, kesin sonuç değildir. Size en uygun olanı seçip onaylayın.",
+    "gtipWarning": "Kesin GTİP (12 hane) için gümrük müşavirinize danışın.",
+    "tariffLink": "Türk Gümrük Tarife Cetveli",
+    "inKb": "listemizde mevcut",
+    "reasoning": "Gerekçe",
+    "confidenceLabel": "Güven",
+    "confidence": {
+      "yüksek": "Yüksek",
+      "orta": "Orta",
+      "düşük": "Düşük"
+    },
+    "confirm": "Seçimi onayla ve kontrol et",
+    "pickOne": "Devam etmek için bir kod seçin.",
+    "level": {
+      "zorunlu": "Zorunlu",
+      "koşullu": "Koşullu",
+      "önerilen": "Önerilen"
+    },
+    "sideTR": "Türkiye tarafı",
+    "sideDEST": "Hedef pazar",
+    "officialText": "Resmî bilgi (bilgi tabanı)",
+    "aiExplanation": "Yapay zekâ açıklaması",
+    "nextStep": "Sonraki adım",
+    "source": "Kaynak",
+    "done": "Bu bende var / tamamlandı",
+    "tickFailed": "Değişiklik kaydedilemedi, işaret geri alındı. Tekrar deneyin.",
+    "notApplicable": "Uygulanmaz",
+    "score": "Hazırlık skoru %{{score}}",
+    "estimated": "tahmini",
+    "formulaButton": "Skor nasıl hesaplanır?",
+    "formula": "Zorunlu 3, koşullu 2, önerilen 1 ağırlıkla; işaretlenen uygulanabilir maddelerin ağırlıklı yüzdesi.",
+    "incentives": "Devlet destekleri",
+    "whyEligible": "Neden uygun?",
+    "nextSteps": "Sonraki 3 adım",
+    "refresh": "Yenile",
+    "pdf": "PDF indir",
+    "langNote": "Yapay zekâ metinleri raporun hazırlandığı dilde. Seçili dilde görmek için yeniden kontrol edin.",
+    "noMatchTitle": "Bu ürün/ülke için doğrulanmış verimiz henüz yok",
+    "noMatchBody": "Bilgi uydurmuyoruz. Aşağıdaki kurumlardan destek almanızı öneririz:",
+    "contactTim": "İhracatçı Birliği (üyesi olduğunuz birlik; genel bilgi: https://tim.org.tr)",
+    "contactChamber": "İTO / İSO (bağlı olduğunuz ticaret veya sanayi odası)",
+    "contactAttache": "Hedef ülkedeki Ticaret Müşavirliği",
+    "back": "Geri",
+    "unconfirmed": "Henüz doğrulanmamış (demo verisi)"
   },
   "leads": {
     "title": "Alıcılar"
@@ -383,6 +442,22 @@
       "theme": {
         "label": "Tasarım şablonu seçiliyor…",
         "explain": "Sektörünüze uygun renk ve yerleşim seçilir."
+      },
+      "gtip": {
+        "label": "GTİP adayları belirleniyor…",
+        "explain": "Ürün bilgileriniz, bilgi tabanımızdaki gümrük kodlarıyla karşılaştırılır."
+      },
+      "rules": {
+        "label": "Bilgi tabanındaki kurallar eşleştiriliyor…",
+        "explain": "Yalnızca doğrulanabilir kaynağı olan kurallar kullanılır."
+      },
+      "incentives": {
+        "label": "Devlet destekleri eşleştiriliyor…",
+        "explain": "Firmanıza uygun görünen destekler bilgi tabanından seçilir."
+      },
+      "next_steps": {
+        "label": "Sonraki adımlar hazırlanıyor…",
+        "explain": "Eksik maddelerden en önemli üçü öne çıkarılır."
       }
     },
     "state": {

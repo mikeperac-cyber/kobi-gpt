@@ -342,7 +342,66 @@
     "instructionPh": "E.g. shorter, more technical"
   },
   "compliance": {
-    "title": "Compliance"
+    "title": "Compliance Guard",
+    "intro": "Find your product's customs code, then see the target market's rules and Turkish state incentives. Every item links to an official source.",
+    "product": "Product",
+    "noProducts": "Add a product first.",
+    "channel": "Sales channel",
+    "channelB2b": "B2B Wholesale",
+    "channelB2c": "B2C Retail",
+    "structural": "The product is used for structural / load-bearing purposes",
+    "structuralHelp": "For example, tick this if screws, bolts or fasteners will be used in construction or load-bearing structures; extra rules may apply.",
+    "processing": "Is your product roasted or raw?",
+    "processingRoasted": "Roasted",
+    "processingRaw": "Raw",
+    "processingNa": "Not applicable / not sure",
+    "start": "Find HS code candidates",
+    "rerun": "Run again",
+    "gtipTitle": "HS code (your product's customs code)",
+    "gtipHelp": "These are suggestions, not final answers. Choose the best match and confirm it.",
+    "gtipWarning": "Confirm the exact 12-digit code with your customs broker.",
+    "tariffLink": "Turkish Customs Tariff",
+    "inKb": "in our list",
+    "reasoning": "Reasoning",
+    "confidenceLabel": "Confidence",
+    "confidence": {
+      "yüksek": "High",
+      "orta": "Medium",
+      "düşük": "Low"
+    },
+    "confirm": "Confirm choice and run check",
+    "pickOne": "Choose a code to continue.",
+    "level": {
+      "zorunlu": "Mandatory",
+      "koşullu": "Conditional",
+      "önerilen": "Recommended"
+    },
+    "sideTR": "Turkish side",
+    "sideDEST": "Target market",
+    "officialText": "Official information (knowledge base)",
+    "aiExplanation": "AI explanation",
+    "nextStep": "Next step",
+    "source": "Source",
+    "done": "I have this / done",
+    "tickFailed": "Could not save the change; the tick was undone. Please try again.",
+    "notApplicable": "Not applicable",
+    "score": "Readiness score {{score}}%",
+    "estimated": "estimated",
+    "formulaButton": "How is the score calculated?",
+    "formula": "Weighted 3 for mandatory, 2 for conditional, 1 for recommended; the weighted percentage of applicable items you have ticked.",
+    "incentives": "State incentives",
+    "whyEligible": "Why eligible?",
+    "nextSteps": "Next 3 steps",
+    "refresh": "Refresh",
+    "pdf": "Download PDF",
+    "langNote": "AI texts are in the language the report was created in. Run the check again to see them in the selected language.",
+    "noMatchTitle": "We do not yet have verified information for this product and country",
+    "noMatchBody": "We do not make rules up. We recommend asking these bodies:",
+    "contactTim": "Exporters' Association (the one you belong to; general info: https://tim.org.tr)",
+    "contactChamber": "ITO / ISO (your chamber of commerce or industry)",
+    "contactAttache": "Trade Counsellor's office in the target country",
+    "back": "Back",
+    "unconfirmed": "Not yet verified (demo data)"
   },
   "leads": {
     "title": "Buyers"
@@ -383,6 +442,22 @@
       "theme": {
         "label": "Choosing a design template…",
         "explain": "A colour scheme and layout that suit your sector are selected."
+      },
+      "gtip": {
+        "label": "Finding HS code candidates…",
+        "explain": "Your product details are compared with the customs codes in our knowledge base."
+      },
+      "rules": {
+        "label": "Matching knowledge-base rules…",
+        "explain": "Only rules with a verifiable source are used."
+      },
+      "incentives": {
+        "label": "Matching state incentives…",
+        "explain": "Incentives that look relevant to your company are picked from the knowledge base."
+      },
+      "next_steps": {
+        "label": "Preparing next steps…",
+        "explain": "The three most important open items are highlighted."
       }
     },
     "state": {

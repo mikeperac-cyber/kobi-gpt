@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.core.db import get_db
 from app.core.security import current_company, current_user, owned
 from app.core.serialize import to_json
-from app.models.compliance import GtipConfirmIn, GtipIn
+from app.models.compliance import CheckIn, GtipConfirmIn, GtipIn, TickIn
 from app.services import agent_steps, regai_service as regai
 
 router = APIRouter(prefix="/compliance")
@@ -58,3 +58,57 @@ async def confirm(body: GtipConfirmIn, company: dict = Depends(current_company))
         upsert=True)
     await db.products.update_one({"_id": product["_id"]}, {"$set": {"hs_code_confirmed": code}})
     return to_json(await db.classifications.find_one({"product_id": body.product_id}))
+
+
+@router.post("/check")
+async def check(body: CheckIn, user: dict = Depends(current_user), company: dict = Depends(current_company)):
+    db, cid = get_db(), str(company["_id"])
+    product = await owned("products", body.product_id, cid)
+    if not product.get("hs_code_confirmed"):
+        raise HTTPException(409, {"code": "gtip_not_confirmed", "message_key": "errors.gtip_not_confirmed"})
+    market = await db.markets.find_one({"company_id": cid}) or {}
+    country, ui = (market.get("country_code") or "DE").upper(), user.get("ui_language", "tr")
+    job_id = await agent_steps.create_job(db, cid, "compliance", ["rules", "incentives", "next_steps"])
+
+    async def run():
+        doc = await regai.build_report(product, company, country=country, channel=body.channel,
+                                       structural_use=body.structural_use, ui=ui, job_id=job_id)
+        doc["created_at"] = datetime.now(timezone.utc)
+        rid = str((await db.readiness_reports.insert_one(doc)).inserted_id)
+        await agent_steps.finish_job(job_id, {"report_id": rid})
+
+    agent_steps.spawn(run(), job_id)
+    return {"job_id": job_id}
+
+
+@router.get("/reports/latest")
+async def latest_report(product_id: str, company: dict = Depends(current_company)):
+    await owned("products", product_id, str(company["_id"]))
+    docs = await get_db().readiness_reports.find({"product_id": product_id}).sort("created_at", -1).to_list(1)
+    if not docs:
+        raise HTTPException(404, {"code": "not_found", "message_key": "errors.not_found"})
+    return to_json(docs[0])
+
+
+@router.patch("/reports/{report_id}/items/{rule_id}")
+async def tick(report_id: str, rule_id: str, body: TickIn, company: dict = Depends(current_company)):
+    rep = await owned("readiness_reports", report_id, str(company["_id"]))
+    if rule_id not in {i["rule_id"] for i in rep["checklist"]}:
+        raise HTTPException(404, {"code": "not_found", "message_key": "errors.not_found"})
+    for i in rep["checklist"]:
+        if i["rule_id"] == rule_id:
+            i["done"] = body.done
+    score = regai.readiness_score(rep["checklist"])
+    await get_db().readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"checklist": rep["checklist"], "score": score}})
+    return {"score": score}
+
+
+@router.post("/reports/{report_id}/next-steps")
+async def refresh_next_steps(report_id: str, user: dict = Depends(current_user),
+                             company: dict = Depends(current_company)):
+    db = get_db()
+    rep = await owned("readiness_reports", report_id, str(company["_id"]))
+    kb = {r["id"]: r for r in await db.kb_rules.find({}).to_list(500)}
+    steps = await regai.next_steps(rep["checklist"], kb, company, user.get("ui_language", "tr"), None)
+    await db.readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"next_steps": steps}})
+    return {"next_steps": steps}

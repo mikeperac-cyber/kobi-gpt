@@ -83,3 +83,133 @@ async def suggest_gtip(product: dict, company: dict, processing: str | None, ui_
     value, _ = await agent_steps.run_ai_step(
         job_id, "gtip", company, guarded, lambda: _fallback(kb, company.get("sector", ""), processing, ui_language))
     return value
+
+
+# ---- Compliance report: KB-grounded, LLM may only explain ----------------------------------------------
+
+from app.models.compliance import IncentiveExplainOut, NextStepsOut, RuleExplainOut  # noqa: E402
+from app.services.scoring import LEVEL_WEIGHTS, readiness_score  # noqa: E402,F401
+
+
+def keep_known(items: list[dict], allowed_ids: set[str], key: str) -> list[dict]:
+    """Drop items whose id is not in the KB selection, and duplicates (first wins)."""
+    seen: set[str] = set()
+    out = []
+    for i in items:
+        if i.get(key) in allowed_ids and i[key] not in seen:
+            seen.add(i[key])
+            out.append(i)
+    return out
+
+
+def _s(v, cap: int = 300) -> str:
+    return str(v or "").strip()[:cap]
+
+
+def build_checklist(rules: list[dict], picked: dict[str, dict], ui: str) -> list[dict]:
+    """Every matched KB rule appears; the LLM contributes only applies/reason/next_step."""
+    out = []
+    for r in rules:
+        p = picked.get(r["id"], {})
+        out.append({
+            "rule_id": r["id"], "title_tr": r["title_tr"], "title_en": r["title_en"], "side": r["side"],
+            "level": r["level"], "source_url": r["source_url"], "last_verified": r.get("last_verified"),
+            "verified": r.get("verified", False),
+            "applies": p.get("applies", True),
+            "reason": _s(p.get("reason")) or r[f"summary_{ui}"],
+            "next_step": _s(p.get("next_step")) or r[f"what_to_do_{ui}"],
+            "done": False})
+    return out
+
+
+def fallback_next_steps(checklist: list[dict], ui: str, kb: dict[str, dict]) -> list[dict]:
+    open_ = [i for i in checklist if i["applies"] and not i["done"]]
+    open_.sort(key=lambda i: (-LEVEL_WEIGHTS[i["level"]], int(i["rule_id"][1:])))
+    return [{"rule_id": i["rule_id"], "text": kb[i["rule_id"]][f"what_to_do_{ui}"]} for i in open_[:3]]
+
+
+async def next_steps(checklist: list[dict], rules_by_id: dict[str, dict], company: dict, ui: str,
+                     job_id: str | None) -> list[dict]:
+    open_ = [i for i in checklist if i["applies"] and not i["done"]]
+    allowed = {i["rule_id"] for i in open_}
+    ctx = {"ui_language": ui, "open_items": [
+        {"id": i["rule_id"], "title": i[f"title_{ui}"], "summary": rules_by_id[i["rule_id"]][f"summary_{ui}"],
+         "level": i["level"]} for i in open_]}
+
+    async def call(t):
+        out = await generate_json("next_steps", ctx, NextStepsOut, run_type="next_steps",
+                                  company_id=str(company["_id"]), timeout=t)
+        steps = [{"rule_id": s["rule_id"], "text": _s(s["text"])}
+                 for s in keep_known([s.model_dump() for s in out.steps], allowed, "rule_id") if _s(s["text"])]
+        if not steps:
+            raise LLMInvalidOutput("no valid next steps")
+        return steps
+
+    if not open_:
+        await agent_steps._set_step(job_id, "next_steps", status="done", source="template", elapsed_ms=0)
+        return []
+    value, _ = await agent_steps.run_ai_step(job_id, "next_steps", company, call,
+                                             lambda: fallback_next_steps(checklist, ui, rules_by_id))
+    return value
+
+
+async def build_report(product: dict, company: dict, *, country: str, channel: str, structural_use: bool,
+                       ui: str, job_id: str | None) -> dict:
+    db, cid = get_db(), str(company["_id"])
+    hs6 = normalize_hs6(product["hs_code_confirmed"])
+    rules = match_rules(await db.kb_rules.find({}).to_list(500), country=country, hs6=hs6,
+                        sector=company.get("sector", ""), channel=channel, structural_use=structural_use)
+    rules_by_id = {r["id"]: r for r in rules}
+    incs = filter_incentives(await db.kb_incentives.find({}).to_list(500), company.get("sector", ""))
+    incs_by_id = {i["id"]: i for i in incs}
+    no_match = not any(r["side"] == "DEST" for r in rules)
+    pub = public_product(product)
+    base = {"ui_language": ui,
+            "company": {"sector": company.get("sector"), "city": company.get("city"),
+                        "description_tr": company.get("description_tr"),
+                        "certifications": company.get("certifications", [])}}
+
+    async def explain_rules(t):
+        ctx = {**base, "country": country, "channel": channel,
+               "product": {k: pub.get(k) for k in ("name_tr", "description_tr", "material_or_ingredients", "unit")},
+               "records": [{"id": r["id"], "title": r[f"title_{ui}"], "summary": r[f"summary_{ui}"],
+                            "level": r["level"], "side": r["side"]} for r in rules]}
+        out = await generate_json("rules_explain", ctx, RuleExplainOut, run_type="rules_explain",
+                                  company_id=cid, timeout=t)
+        kept = keep_known([i.model_dump() for i in out.items], set(rules_by_id), "rule_id")
+        return {i["rule_id"]: i for i in kept}
+
+    if no_match:  # nothing but the Turkish-side rule: no target-market data, so nothing to explain
+        await agent_steps._set_step(job_id, "rules", status="done", source="template", elapsed_ms=0)
+        picked = {}
+    else:
+        picked, _ = await agent_steps.run_ai_step(job_id, "rules", company, explain_rules, dict)
+    checklist = build_checklist(rules, picked, ui)
+
+    async def explain_incentives(t):
+        ctx = {**base, "checklist": [{"id": i["rule_id"], "title": i[f"title_{ui}"]} for i in checklist],
+               "incentives": [{"id": i["id"], "name": i[f"name_{ui}"], "provider": i["provider"],
+                               "summary": i[f"summary_{ui}"]} for i in incs]}
+        out = await generate_json("incentives_explain", ctx, IncentiveExplainOut, run_type="incentives_explain",
+                                  company_id=cid, timeout=t)
+        kept = keep_known([i.model_dump() for i in out.items], set(incs_by_id), "incentive_id")
+        if not kept:
+            raise LLMInvalidOutput("no valid incentives")
+        return [(i["incentive_id"], _s(i["why"])) for i in kept if i["applies"]]
+
+    if incs:
+        chosen, _ = await agent_steps.run_ai_step(job_id, "incentives", company, explain_incentives,
+                                                  lambda: [(i["id"], i[f"summary_{ui}"]) for i in incs])
+    else:
+        await agent_steps._set_step(job_id, "incentives", status="done", source="template", elapsed_ms=0)
+        chosen = []
+    incentives = [{"incentive_id": iid, "name_tr": incs_by_id[iid]["name_tr"], "name_en": incs_by_id[iid]["name_en"],
+                   "provider": incs_by_id[iid]["provider"], "source_url": incs_by_id[iid]["source_url"],
+                   "why": why or incs_by_id[iid][f"summary_{ui}"]} for iid, why in chosen]
+
+    steps = await next_steps(checklist, rules_by_id, company, ui, job_id)
+    classification = await get_db().classifications.find_one({"product_id": str(product["_id"])}) or {}
+    return {"product_id": str(product["_id"]), "company_id": cid, "country": country, "channel": channel,
+            "structural_use": structural_use, "hs6": hs6, "candidates": classification.get("candidates", []),
+            "checklist": checklist, "incentives": incentives, "next_steps": steps,
+            "score": readiness_score(checklist), "no_match": no_match, "ui_language": ui}

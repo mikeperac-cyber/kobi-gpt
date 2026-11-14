@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 Confidence = Literal["yüksek", "orta", "düşük"]
 
@@ -28,3 +28,43 @@ class GtipIn(BaseModel):
 class GtipConfirmIn(BaseModel):
     product_id: str
     code: str
+
+
+class CheckIn(BaseModel):
+    product_id: str
+    channel: Literal["b2b", "b2c"] = "b2b"
+    structural_use: bool = False
+
+
+class TickIn(BaseModel):
+    done: bool
+
+
+class RuleExplainItem(BaseModel):
+    rule_id: str
+    applies: bool
+    reason: str = ""
+    next_step: str = ""
+
+
+class RuleExplainOut(BaseModel):
+    items: list[RuleExplainItem]
+
+
+class IncentiveExplainItem(BaseModel):
+    incentive_id: str
+    applies: bool
+    why: str = ""
+
+
+class IncentiveExplainOut(BaseModel):
+    items: list[IncentiveExplainItem]
+
+
+class NextStep(BaseModel):
+    rule_id: str
+    text: str
+
+
+class NextStepsOut(BaseModel):
+    steps: list[NextStep] = Field(max_length=3)

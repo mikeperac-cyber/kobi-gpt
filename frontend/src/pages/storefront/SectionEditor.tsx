@@ -33,12 +33,13 @@ const set = (o: any, path: string, v: unknown): any => {
   return copy
 }
 
-export default function SectionEditor({ section, content, missing, readOnly, regenBusy, onChange, onRegen }: {
+export default function SectionEditor({ section, content, missing, readOnly, regenBusy, note, onChange, onRegen }: {
   section: Section
   content: LocalizedContent
   missing: string[]
   readOnly: boolean
   regenBusy: boolean
+  note?: boolean
   onChange(next: LocalizedContent): void
   onRegen?(instruction?: string): void
 }) {
@@ -74,6 +75,7 @@ export default function SectionEditor({ section, content, missing, readOnly, reg
           </Button>
         )}
       </div>
+      <p aria-live="polite" className="text-sm text-slate-500 empty:hidden">{note ? t('storefront.regenUnchanged') : ''}</p>
       {!readOnly && onRegen && (
         <input type="text" maxLength={200} value={instr ?? ''} onChange={(e) => setInstr(e.target.value)}
           aria-label={t('storefront.instruction')} placeholder={t('storefront.instructionPh')}

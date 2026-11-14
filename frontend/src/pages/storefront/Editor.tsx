@@ -26,9 +26,10 @@ export default function Editor({ initial, onPublished, onRestart }: {
   const [busy, setBusy] = useState<'' | 'save' | 'publish' | 'regen'>('')
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
+  const [unchanged, setUnchanged] = useState<string | null>(null) // `${tab}-${section}` whose regen fell back
 
   const content = cfg[tab]
-  const setContent = (c: LocalizedContent) => setCfg((x) => ({ ...x, [tab]: c }))
+  const setContent = (c: LocalizedContent) => { setUnchanged(null); setCfg((x) => ({ ...x, [tab]: c })) }
   const body = () => ({
     site_config: { ...cfg, template, de: clean(cfg.de), en: clean(cfg.en) },
     slug,
@@ -64,12 +65,12 @@ export default function Editor({ initial, onPublished, onRestart }: {
   const regen = async (section: Section, instruction?: string) => {
     if (tab === 'review') return
     if (!(await save())) return // server regenerates from the saved copy: persist local edits first
-    setBusy('regen'); setErr(''); setMsg('')
+    setBusy('regen'); setErr(''); setMsg(''); setUnchanged(null)
     try {
       const r = await api<{ section: unknown; fallback: boolean; missing: string[] }>('/api/storefronts/mine/regenerate-section', {
         method: 'POST', json: { section, lang: tab, instruction: instruction ?? null },
       })
-      if (r.fallback) setMsg(t('storefront.regenUnchanged'))
+      if (r.fallback) setUnchanged(`${tab}-${section}`)
       else {
         setCfg((c) => ({ ...c, [tab]: { ...c[tab], [section]: r.section }, missing: r.missing }))
         setMsg(t('storefront.regenDone'))
@@ -117,7 +118,7 @@ export default function Editor({ initial, onPublished, onRestart }: {
           </Field>
           {SECTIONS.map((s) => (
             <SectionEditor key={`${tab}-${s}`} section={s} content={content} missing={cfg.missing} readOnly={tab === 'review'}
-              regenBusy={busy !== ''} onChange={setContent} onRegen={(i) => void regen(s, i)} />
+              regenBusy={busy !== ''} note={unchanged === `${tab}-${s}`} onChange={setContent} onRegen={(i) => void regen(s, i)} />
           ))}
           <Field label={t('storefront.slug')} hint={t('storefront.slugHint', { origin: window.location.origin })}>
             <Input value={slug} maxLength={60} onChange={(e) => setSlug(e.target.value)} />

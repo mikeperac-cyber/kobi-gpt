@@ -267,7 +267,7 @@
     "regen": "Rewrite this section",
     "regenShorter": "shorter",
     "regenTechnical": "more technical",
-    "regenUnchanged": "The AI could not answer right now; the section is unchanged.",
+    "regenUnchanged": "The AI did not respond right now; the text is unchanged. You can edit it by hand or try again.",
     "regenDone": "Section rewritten.",
     "legalNote": "These texts are templates; have a lawyer check them before publishing.",
     "template": "Template",

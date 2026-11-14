@@ -4,7 +4,7 @@ import { api, ApiError } from '../../api/client'
 import Button from '../../components/ui/Button'
 import type { Storefront } from '../../storefront/types'
 import Editor from './Editor'
-import Intake from './Intake'
+import Intake, { type IntakeValues } from './Intake'
 import PublishSuccess from './PublishSuccess'
 
 type View = { kind: 'loading' } | { kind: 'error'; key: string } | { kind: 'intake' } | { kind: 'edit'; sf: Storefront } | { kind: 'done'; slug: string; sf: Storefront }
@@ -12,6 +12,7 @@ type View = { kind: 'loading' } | { kind: 'error'; key: string } | { kind: 'inta
 export default function StorefrontPage() {
   const { t } = useTranslation()
   const [view, setView] = useState<View>({ kind: 'loading' })
+  const [lastIntake, setLastIntake] = useState<IntakeValues>()
 
   const load = useCallback(async () => {
     try {
@@ -28,7 +29,7 @@ export default function StorefrontPage() {
     case 'error': return (
       <div className="space-y-3"><p>{t(view.key)}</p><Button onClick={() => { setView({ kind: 'loading' }); void load() }}>{t('common.retry')}</Button></div>
     )
-    case 'intake': return <Intake onDone={() => void load()} onCancel={undefined} />
+    case 'intake': return <Intake initial={lastIntake} onSubmitted={setLastIntake} onDone={() => void load()} onCancel={undefined} />
     case 'edit': return <Editor key={view.sf._id} initial={view.sf} onPublished={(slug) => setView({ kind: 'done', slug, sf: view.sf })} onRestart={() => setView({ kind: 'intake' })} />
     case 'done': return <PublishSuccess slug={view.slug} onBack={() => void load()} />
   }

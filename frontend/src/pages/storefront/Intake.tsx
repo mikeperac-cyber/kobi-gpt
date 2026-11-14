@@ -13,14 +13,16 @@ import { useSpeech } from '../../hooks/useSpeech'
 const KEYS = ['analysis', 'adaptation', 'content', 'theme']
 const INCOTERMS = ['EXW', 'FCA', 'FOB', 'CIF', 'DAP']
 
-export default function Intake({ onDone, onCancel }: { onDone(): void; onCancel?(): void }) {
+export type IntakeValues = { text: string; positioning: 'b2b' | 'b2c'; leadTime: string; samplePolicy: string; incoterms: string[] }
+
+export default function Intake({ onDone, onCancel, initial, onSubmitted }: { onDone(): void; onCancel?(): void; initial?: IntakeValues; onSubmitted?(v: IntakeValues): void }) {
   const { t } = useTranslation()
   const { user } = useAuth()
-  const [text, setText] = useState('')
-  const [positioning, setPositioning] = useState<'b2b' | 'b2c'>('b2b')
-  const [leadTime, setLeadTime] = useState('')
-  const [samplePolicy, setSamplePolicy] = useState('')
-  const [incoterms, setIncoterms] = useState<string[]>([])
+  const [text, setText] = useState(initial?.text ?? '')
+  const [positioning, setPositioning] = useState<'b2b' | 'b2c'>(initial?.positioning ?? 'b2b')
+  const [leadTime, setLeadTime] = useState(initial?.leadTime ?? '')
+  const [samplePolicy, setSamplePolicy] = useState(initial?.samplePolicy ?? '')
+  const [incoterms, setIncoterms] = useState<string[]>(initial?.incoterms ?? [])
   const [jobId, setJobId] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -32,6 +34,7 @@ export default function Intake({ onDone, onCancel }: { onDone(): void; onCancel?
   const submit = async () => {
     setBusy(true)
     setErr('')
+    onSubmitted?.({ text, positioning, leadTime, samplePolicy, incoterms })
     try {
       const r = await api<{ job_id: string }>('/api/storefronts/generate', {
         method: 'POST',

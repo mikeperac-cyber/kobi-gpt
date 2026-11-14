@@ -1,6 +1,11 @@
+import io
+
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+import qrcode
+from fastapi import APIRouter, Depends, HTTPException, Response
+
+from app.core.config import get_settings
 
 from app.core.db import get_db
 from app.core.security import current_company, current_user
@@ -72,3 +77,36 @@ async def regenerate(body: RegenIn, user: dict = Depends(current_user), company:
         cfg.missing = sf.compute_missing(cfg)
         await db.storefronts.update_one({"_id": doc["_id"]}, {"$set": {"site_config": cfg.model_dump()}})
     return {"section": section, "fallback": fallback, "missing": cfg.missing}
+
+
+async def _set_status(company: dict, status: str, stamp: str) -> dict:
+    doc = await _mine(company)
+    patch = {"status": status, stamp: datetime.now(timezone.utc)}
+    await get_db().storefronts.update_one({"_id": doc["_id"]}, {"$set": patch})
+    return to_json({**doc, **patch})
+
+
+@router.post("/mine/publish")
+async def publish(company: dict = Depends(current_company)):
+    return await _set_status(company, "published", "published_at")
+
+
+@router.post("/mine/unpublish")
+async def unpublish(company: dict = Depends(current_company)):
+    return await _set_status(company, "draft", "unpublished_at")
+
+
+@router.get("/mine/qr.png")
+async def qr_png(company: dict = Depends(current_company)):
+    doc = await _mine(company)
+    buf = io.BytesIO()
+    qrcode.make(f"{get_settings().frontend_origin}/s/{doc['slug']}").save(buf, format="PNG")
+    return Response(buf.getvalue(), media_type="image/png")
+
+
+@router.get("/mine/impressum-checklist")
+async def impressum_checklist(company: dict = Depends(current_company)):
+    c = company.get("contact") or {}
+    have = {"name": company.get("name"), "address": company.get("city"), "phone": c.get("phone"),
+            "email": c.get("email"), "representative": None, "register": None}  # not collected yet: always to-check
+    return [{"field": k, "present": bool(v)} for k, v in have.items()]

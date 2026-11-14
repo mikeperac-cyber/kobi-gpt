@@ -19,3 +19,9 @@
 17. **Floor-number detection is defence in depth.** Generated de/en/review text or a regenerated section containing the floor as a number triggers the fallback. Limitation: exact decimal forms only (9.5 / 9,5 / 9.50), not rounded or thousand-formatted variants; the floor never enters any prompt, so the model cannot know it.
 18. **`regenerate-section` returns `{section, fallback, missing}`** and persists the section only when not a fallback. `PUT /storefronts/mine` re-slugs through `slugify_tr` (junk becomes `shop`) and recomputes `missing` server-side.
 19. **`LocalStorage.read` is root-confined** (only `/uploads/...` files under the storage root; else None). Analysis sends at most 3 product photos.
+
+## Task 14: publish, public API, RFQ
+- Public storefront payload is an explicit allow-list (`site_config.{de,en,template}`, company name/city/logo/contact/founded_year, legal, slug); `review`, `missing`, ids and floors are never read into the response.
+- Impressum `representative` and `register` are not collected yet: returned as null, checklist marks `present: false` (producer adds via Firmam later; out of scope now).
+- RFQ: honeypot `website_hp` non-empty returns 204 and stores nothing; 5/hour per client IP + slug (in-memory); lead `score` is 0 until Task 25 back-fills; every RFQ lead is `is_hot` and carries `source_note`.
+- Unpublished slugs 404 for both GET and RFQ POST (checked before honeypot/rate limit, so slug existence of drafts is not leaked).

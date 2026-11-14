@@ -52,8 +52,8 @@ Date: 2026-11-14.
 8 PASS (5 with caveats: rows 1, 2, 6 partial/fallback-only; others fully walked), 0 FAIL. The live-LLM halves of rows 1 and 2 are NOT VERIFIED.
 
 ### Defects / follow-ups (none block acceptance)
-1. Regenerate-section in fallback mode gives no feedback: clicking "daha kısa"/"daha teknik" returns without error but also with no message that nothing changed (no toast or alert was added to the DOM). A producer may think the button did nothing. Likely the storefront editor's regenerate handler (frontend/src/pages/ storefront editor component) and `POST /api/storefronts/mine/regenerate-section`.
-2. "Baştan oluştur" (start over) returns to an intake form with an empty text area; the previous intake text is not kept. Minor.
+1. Regenerate-section in fallback mode gives no feedback: clicking "daha kısa"/"daha teknik" returns without error but also with no message that nothing changed (no toast or alert was added to the DOM). A producer may think the button did nothing. Likely the storefront editor's regenerate handler (frontend/src/pages/ storefront editor component) and `POST /api/storefronts/mine/regenerate-section`. Fixed in 1e2f309 (not re-walked in browser).
+2. "Baştan oluştur" (start over) returns to an intake form with an empty text area; the previous intake text is not kept. Minor. Fixed in 1e2f309 (not re-walked in browser).
 3. The hot-lead flag is set server side but has no UI until Phase 4 (expected, noted).
 
 ### Not verified

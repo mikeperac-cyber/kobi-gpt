@@ -21,7 +21,8 @@ Date: 2026-11-14.
 | 8 | pytest passes | PASS | `83 passed in 31.17s`. `npm run build` (tsc + vite) succeeded: `index-DtJ5h9kn.js 365.54 kB (gzip 115.05 kB)`, `built in 165ms`. |
 
 ### Tally
-8 PASS, 0 FAIL, but rows 1, 2, 3, 4, 6 are partial or limited: row 1 and 2 passed on the fallback path only (live LLM NOT VERIFIED); row 3 regenerate exercised only on fallback (text unchanged); row 4 checked via DOM metrics, no screenshots; row 6 lead counted and notified, lead list UI arrives in Phase 4. Rows 5, 7, 8 fully walked.
+8 PASS (2 with noted caveat/deviation), 0 FAIL. Partial: row 4 (TR-language onboarding steps not walked; EN walked); caveats on rows 2 and 3. In-memory DB, so persistence across a server restart is not proven.
+
 ### Defects / follow-ups (none block acceptance)
 1. Dashboard card titles in TR differ from the spec names (see row 3). Wording only. Fixed in 123efd1 (not re-walked in the browser after the fix).
 2. EN logo helper "Up to 1 photos." (plural). File likely the shared photo-upload component / i18n key. Fixed in 123efd1 (not re-walked in the browser after the fix).
@@ -48,7 +49,7 @@ Date: 2026-11-14.
 | 8 | pytest passes; frontend builds | PASS | `130 passed in 38.40s`. `npm run build`: `index-Bj8jwu1E.js 228.07 kB (gzip 72.51 kB)`, `built in 192ms`. |
 
 ### Tally
-8 PASS (5 with caveats: rows 1, 2, 6 partial/fallback-only; others fully walked), 0 FAIL. The live-LLM halves of rows 1 and 2 are NOT VERIFIED.
+8 PASS, 0 FAIL, but rows 1, 2, 3, 4, 6 are partial or limited: row 1 and 2 passed on the fallback path only (live LLM NOT VERIFIED); row 3 regenerate exercised only on fallback (text unchanged); row 4 checked via DOM metrics, no screenshots; row 6 lead counted and notified, lead list UI arrives in Phase 4. Rows 5, 7, 8 fully walked.
 
 ### Defects / follow-ups (none block acceptance)
 1. Regenerate-section in fallback mode gives no feedback: clicking "daha kısa"/"daha teknik" returns without error but also with no message that nothing changed (no toast or alert was added to the DOM). A producer may think the button did nothing. Likely the storefront editor's regenerate handler (frontend/src/pages/ storefront editor component) and `POST /api/storefronts/mine/regenerate-section`. Fixed in 1e2f309 (not re-walked in browser).

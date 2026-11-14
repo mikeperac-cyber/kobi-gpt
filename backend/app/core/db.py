@@ -28,3 +28,4 @@ async def ensure_indexes(db) -> None:
     await db.companies.create_index("owner_id", unique=True)
     await db.storefronts.create_index("slug", unique=True)
     await db.storefronts.create_index([("company_id", 1), ("country", 1)], unique=True)
+    await db.classifications.create_index("product_id", unique=True)

@@ -17,6 +17,8 @@ async def gtip(body: GtipIn, user: dict = Depends(current_user), company: dict =
     product = await owned("products", body.product_id, cid)
     job_id = await agent_steps.create_job(db, cid, "gtip", ["gtip"])
     ui = user.get("ui_language", "tr")
+    # a re-run means re-classify: drop the old confirmation so product and classification agree
+    await db.products.update_one({"_id": product["_id"]}, {"$set": {"hs_code_confirmed": None}})
 
     async def run():
         cands = [c.model_dump() for c in await regai.suggest_gtip(product, company, body.processing, ui, job_id)]

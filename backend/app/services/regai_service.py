@@ -35,7 +35,7 @@ RANK = {"roasted": ["2008.19"], "raw": ["0802.51", "0802.52"]}
 
 def normalize_hs6(code: str) -> str | None:
     s = re.sub(r"[.\s]", "", str(code))
-    return f"{s[:4]}.{s[4:6]}" if s.isdigit() and len(s) >= 6 else None
+    return f"{s[:4]}.{s[4:6]}" if s.isdigit() and len(s) in (6, 8, 10, 12) else None
 
 
 def gtip_context(kb: list[dict], ui: str) -> list[dict]:

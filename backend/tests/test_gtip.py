@@ -16,7 +16,7 @@ async def kb(db):
 
 
 @pytest.mark.parametrize("raw,want", [("200819", "2008.19"), ("2008.19.00", "2008.19"), ("2008 19", "2008.19"),
-                                      ("20A8", None), ("2008", None), ("", None)])
+                                      ("20A8", None), ("12345678901", None), ("200819000000", "2008.19"), ("2008", None), ("", None)])
 def test_hs_code_normalization(raw, want):
     assert normalize_hs6(raw) == want
 
@@ -101,3 +101,14 @@ async def test_gtip_prompt_has_ui_language(producer, kb, fake_llm):
     assert "ui_language: en" in fake_llm.prompts[0]
     assert HS[2]["description_en"] in fake_llm.prompts[0] and HS[2]["description_tr"] not in fake_llm.prompts[0]
     assert "price_floor" not in fake_llm.prompts[0]
+
+
+async def test_rerun_clears_confirmation(producer, kb, fake_llm):
+    p = await producer("Ali")
+    c, pid = p["client"], p["product"]["id"]
+    fake_llm.responses = [LLMError("x"), LLMError("x")]
+    await _run(p, "roasted")
+    await c.post("/api/compliance/gtip/confirm", json={"product_id": pid, "code": "2008.19"})
+    await _run(p, "roasted")
+    assert (await c.get(f"/api/compliance/gtip?product_id={pid}")).json()["confirmed_code"] is None
+    assert (await c.get(f"/api/products/{pid}")).json()["hs_code_confirmed"] is None

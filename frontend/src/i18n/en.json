@@ -81,7 +81,8 @@
     "rate_limited": "Too many attempts. Wait a moment and try again.",
     "unauthenticated": "Your session expired. Please log in.",
     "too_large": "File is too large (8 MB at most).",
-    "bad_type": "Unsupported file type (upload jpg, png or webp)."
+    "bad_type": "Unsupported file type (upload jpg, png or webp).",
+    "slug_taken": "This web address is used by another company. Try another name."
   },
   "onboarding": {
     "title": "Introduce your company",
@@ -237,7 +238,95 @@
     "errPositive": "Enter a number greater than 0 (e.g. 12.50)."
   },
   "storefront": {
-    "title": "Storefront"
+    "title": "Storefront",
+    "intakeTitle": "Let's build your storefront",
+    "intakeHelp": "Describe your product and company in your own words. You can type or speak into the microphone.",
+    "textLabel": "Describe your product",
+    "textPlaceholder": "E.g. We process pistachios from our own orchards in Gaziantep; we sell roasted in-shell and shelled kernels.",
+    "positioning": "Who do you sell to?",
+    "b2b": "Wholesalers / companies (B2B)",
+    "b2c": "Individual customers (B2C)",
+    "leadTime": "Lead time (optional)",
+    "leadTimePh": "E.g. 3-4 weeks",
+    "samplePolicy": "Sample policy (optional)",
+    "samplePolicyPh": "E.g. Paid samples, credited against an order",
+    "incoterms": "Delivery terms (Incoterms)",
+    "mic": "Speak instead",
+    "micStop": "Stop listening",
+    "listening": "Listening…",
+    "generate": "Generate storefront",
+    "generating": "Preparing your storefront…",
+    "generatingHelp": "This takes a few seconds. You can follow the steps below.",
+    "regenerateAll": "Start over",
+    "editorTitle": "Edit your storefront",
+    "tabDe": "German",
+    "tabEn": "English",
+    "tabReview": "Review ({{lang}}, read-only)",
+    "reviewNote": "This tab is a summary of the German text in your own language; it is read-only.",
+    "mustEnter": "You must enter this information",
+    "regen": "Rewrite this section",
+    "regenShorter": "shorter",
+    "regenTechnical": "more technical",
+    "regenUnchanged": "The AI could not answer right now; the section is unchanged.",
+    "regenDone": "Section rewritten.",
+    "legalNote": "These texts are templates; have a lawyer check them before publishing.",
+    "template": "Template",
+    "tpl": {
+      "industrial": "Industrial",
+      "natural": "Natural",
+      "textile": "Textile"
+    },
+    "sections": {
+      "hero": "Top banner",
+      "about": "About us",
+      "products": "Products",
+      "why_us": "Why us",
+      "export_info": "Export info",
+      "rfq": "Quote form",
+      "footer": "Footer",
+      "seo": "Search engine (SEO)"
+    },
+    "f": {
+      "headline": "Headline",
+      "subheadline": "Subheadline",
+      "cta": "Button text",
+      "story": "Story",
+      "name": "Product name",
+      "short": "Short description",
+      "long": "Long description",
+      "moq": "Minimum order",
+      "packaging": "Packaging",
+      "whyUs": "Your strengths (one per line)",
+      "leadTime": "Lead time",
+      "samplePolicy": "Sample policy",
+      "title": "Title",
+      "intro": "Introduction",
+      "note": "Note",
+      "seoTitle": "Page title",
+      "seoDescription": "Page description"
+    },
+    "photos": "Product photos",
+    "save": "Save",
+    "saved": "Saved.",
+    "saving": "Saving…",
+    "slug": "Web address",
+    "slugHint": "Your storefront is published at: {{origin}}/s/…",
+    "publish": "Publish",
+    "publishing": "Publishing…",
+    "missingCount": "{{n}} field(s) are waiting for your information. You can still publish.",
+    "preview": "Preview",
+    "showPreview": "Show preview",
+    "hidePreview": "Hide preview",
+    "desktop": "Desktop",
+    "mobile": "Phone",
+    "successTitle": "Your storefront is live!",
+    "successHelp": "Share this link or the QR code with your buyers.",
+    "qrAlt": "Storefront QR code",
+    "share": "Share",
+    "copied": "Link copied.",
+    "open": "Open storefront",
+    "backToEditor": "Back to editor",
+    "stubNoText": "(no text yet)"
   },
   "compliance": {
     "title": "Compliance"
@@ -264,7 +353,33 @@
     "title": "My account"
   },
   "agent": {
-    "title": "Assistant"
+    "title": "Assistant",
+    "steps": {
+      "analysis": {
+        "label": "Extracting product features from the photos…",
+        "explain": "Your product details and photos are reviewed; the storefront only uses facts found in them."
+      },
+      "adaptation": {
+        "label": "Adapting the text to German buyer expectations…",
+        "explain": "Tone and emphasis are tuned to what German wholesalers expect."
+      },
+      "content": {
+        "label": "Writing German and English storefront copy…",
+        "explain": "Headline, about, product and export-info sections are drafted."
+      },
+      "theme": {
+        "label": "Choosing a design template…",
+        "explain": "A colour scheme and layout that suit your sector are selected."
+      }
+    },
+    "state": {
+      "waiting": "waiting",
+      "running": "running",
+      "done": "done",
+      "fallback": "fallback used"
+    },
+    "failed": "This step could not finish right now. Nothing was lost; you can try again.",
+    "retry": "Try again"
   },
   "photos": {
     "add": "Add photo",

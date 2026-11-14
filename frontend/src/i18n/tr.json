@@ -81,7 +81,8 @@
     "rate_limited": "Çok fazla deneme. Biraz bekleyip tekrar deneyin.",
     "unauthenticated": "Oturum süreniz doldu. Lütfen giriş yapın.",
     "too_large": "Dosya çok büyük (en fazla 8 MB).",
-    "bad_type": "Desteklenmeyen dosya türü (jpg, png veya webp yükleyin)."
+    "bad_type": "Desteklenmeyen dosya türü (jpg, png veya webp yükleyin).",
+    "slug_taken": "Bu web adresi başka bir firma tarafından kullanılıyor. Başka bir ad deneyin."
   },
   "onboarding": {
     "title": "Firmanızı tanıtın",
@@ -237,7 +238,95 @@
     "errPositive": "0'dan büyük bir sayı girin (örn. 12,50)."
   },
   "storefront": {
-    "title": "Vitrin"
+    "title": "Vitrin",
+    "intakeTitle": "Vitrininizi oluşturalım",
+    "intakeHelp": "Ürününüzü ve firmanızı kendi cümlelerinizle anlatın. Yazabilir ya da mikrofonla söyleyebilirsiniz.",
+    "textLabel": "Ürününüzü anlatın",
+    "textPlaceholder": "Örn. Gaziantep'te kendi bahçelerimizden Antep fıstığı işliyoruz; kavrulmuş, kabuklu ve iç fıstık satıyoruz.",
+    "positioning": "Kime satıyorsunuz?",
+    "b2b": "Toptancı / firma (B2B)",
+    "b2c": "Bireysel müşteri (B2C)",
+    "leadTime": "Teslim süresi (isteğe bağlı)",
+    "leadTimePh": "Örn. 3-4 hafta",
+    "samplePolicy": "Numune politikası (isteğe bağlı)",
+    "samplePolicyPh": "Örn. Ücretli numune, siparişte düşülür",
+    "incoterms": "Teslim şekilleri (Incoterms)",
+    "mic": "Mikrofonla söyle",
+    "micStop": "Dinlemeyi durdur",
+    "listening": "Dinleniyor…",
+    "generate": "Vitrini oluştur",
+    "generating": "Vitrin hazırlanıyor…",
+    "generatingHelp": "Bu birkaç saniye sürer. Aşağıda adımları izleyebilirsiniz.",
+    "regenerateAll": "Baştan oluştur",
+    "editorTitle": "Vitrininizi düzenleyin",
+    "tabDe": "Almanca",
+    "tabEn": "İngilizce",
+    "tabReview": "Kontrol ({{lang}}, salt okunur)",
+    "reviewNote": "Bu sekme, Almanca metnin kendi dilinizdeki özetidir; yalnızca okumak içindir.",
+    "mustEnter": "Bu bilgiyi siz girmelisiniz",
+    "regen": "Bu bölümü yeniden yaz",
+    "regenShorter": "daha kısa",
+    "regenTechnical": "daha teknik",
+    "regenUnchanged": "Yapay zekâ şu an yanıt veremedi; bölüm değişmedi.",
+    "regenDone": "Bölüm yeniden yazıldı.",
+    "legalNote": "Bu metinler şablondur; yayın öncesi bir hukukçuya kontrol ettiriniz.",
+    "template": "Şablon",
+    "tpl": {
+      "industrial": "Endüstriyel",
+      "natural": "Doğal",
+      "textile": "Tekstil"
+    },
+    "sections": {
+      "hero": "Üst başlık",
+      "about": "Hakkımızda",
+      "products": "Ürünler",
+      "why_us": "Neden biz",
+      "export_info": "İhracat bilgisi",
+      "rfq": "Teklif formu",
+      "footer": "Alt bilgi",
+      "seo": "Arama motoru (SEO)"
+    },
+    "f": {
+      "headline": "Başlık",
+      "subheadline": "Alt başlık",
+      "cta": "Buton metni",
+      "story": "Hikâye",
+      "name": "Ürün adı",
+      "short": "Kısa açıklama",
+      "long": "Uzun açıklama",
+      "moq": "Asgari sipariş",
+      "packaging": "Ambalaj",
+      "whyUs": "Güçlü yanlarınız (her satıra bir madde)",
+      "leadTime": "Teslim süresi",
+      "samplePolicy": "Numune politikası",
+      "title": "Başlık",
+      "intro": "Giriş",
+      "note": "Not",
+      "seoTitle": "Sayfa başlığı",
+      "seoDescription": "Sayfa açıklaması"
+    },
+    "photos": "Ürün fotoğrafları",
+    "save": "Kaydet",
+    "saved": "Kaydedildi.",
+    "saving": "Kaydediliyor…",
+    "slug": "Web adresi",
+    "slugHint": "Vitrininiz bu adreste yayınlanır: {{origin}}/s/…",
+    "publish": "Yayınla",
+    "publishing": "Yayınlanıyor…",
+    "missingCount": "{{n}} alan sizin bilginizi bekliyor. Yine de yayınlayabilirsiniz.",
+    "preview": "Önizleme",
+    "showPreview": "Önizlemeyi göster",
+    "hidePreview": "Önizlemeyi gizle",
+    "desktop": "Bilgisayar",
+    "mobile": "Telefon",
+    "successTitle": "Vitrininiz yayında!",
+    "successHelp": "Bu bağlantıyı veya QR kodu alıcılarınızla paylaşın.",
+    "qrAlt": "Vitrin QR kodu",
+    "share": "Paylaş",
+    "copied": "Bağlantı kopyalandı.",
+    "open": "Vitrini aç",
+    "backToEditor": "Düzenlemeye dön",
+    "stubNoText": "(henüz metin yok)"
   },
   "compliance": {
     "title": "Uyum"
@@ -264,7 +353,33 @@
     "title": "Hesabım"
   },
   "agent": {
-    "title": "Asistan"
+    "title": "Asistan",
+    "steps": {
+      "analysis": {
+        "label": "Fotoğraflardan ürün özellikleri çıkarılıyor…",
+        "explain": "Ürün bilgileriniz ve fotoğraflarınız incelenir; vitrinde yalnızca bunlarda geçen bilgiler kullanılır."
+      },
+      "adaptation": {
+        "label": "Alman alıcı beklentilerine göre metin uyarlanıyor…",
+        "explain": "Metnin tonu ve vurguları Alman toptancıların beklentisine göre ayarlanır."
+      },
+      "content": {
+        "label": "Almanca ve İngilizce vitrin metinleri yazılıyor…",
+        "explain": "Başlık, hakkımızda, ürün ve ihracat bilgisi bölümleri hazırlanır."
+      },
+      "theme": {
+        "label": "Tasarım şablonu seçiliyor…",
+        "explain": "Sektörünüze uygun renk ve yerleşim seçilir."
+      }
+    },
+    "state": {
+      "waiting": "bekliyor",
+      "running": "çalışıyor",
+      "done": "tamamlandı",
+      "fallback": "yedek kullanıldı"
+    },
+    "failed": "Bu adım şu an tamamlanamadı. Hiçbir şey kaybolmadı; tekrar deneyebilirsiniz.",
+    "retry": "Tekrar dene"
   },
   "photos": {
     "add": "Fotoğraf ekle",

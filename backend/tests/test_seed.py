@@ -98,7 +98,7 @@ async def test_demo_leads_marked(db, seeded_env):
     assert len(leads) == 18
     for lead in leads:
         assert lead["is_demo"] is True and lead["email"].endswith("@example.com")
-        assert lead["source"] == "demo" and lead["country"] == "DE" and lead["status"] == "new" and lead["score"] == 0
+        assert lead["source"] == "demo" and lead["country"] == "DE" and lead["status"] == "new" and lead["score"] >= 30
         assert lead["source_note"] == "DEMO – kurgusal firma" and lead["company_id"]
     assert len({lead["email"] for lead in leads}) == 18
 

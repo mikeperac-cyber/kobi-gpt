@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.core.db import ensure_indexes, get_db
-from app.routers import admin, admin_kb, auth, company, compliance, dashboard, health, jobs, products, public, storefronts, uploads
+from app.routers import admin, admin_kb, auth, company, compliance, dashboard, health, jobs, leads, products, public, storefronts, uploads
 
 KNOWN_CODES = {"password_too_long", "invalid_city", "invalid_certification", "photo_required"}
 
@@ -69,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(storefronts.router, prefix="/api")
     app.include_router(public.router, prefix="/api")
     app.include_router(compliance.router, prefix="/api")
+    app.include_router(leads.router, prefix="/api")
     app.add_exception_handler(RequestValidationError, validation_handler)
     UPLOADS.mkdir(exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=UPLOADS), name="uploads")

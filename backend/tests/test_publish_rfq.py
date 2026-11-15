@@ -65,7 +65,7 @@ async def test_rfq_creates_lead_and_notification(producer, db, client):
     assert r.status_code == 201
     lead = await db.leads.find_one({})
     assert lead["company_id"] == p["company"]["id"] and lead["source"] == "rfq" and lead["status"] == "new"
-    assert lead["is_hot"] is True and lead["is_demo"] is False and lead["score"] == 0
+    assert lead["is_hot"] is True and lead["is_demo"] is False and lead["score"] >= 40
     assert lead["notes"] == "Bitte Angebot" and lead["products_of_interest"] == ["Pistazien"]
     n = await db.notifications.find_one({})
     assert n["type"] == "rfq" and n["params"] == {"company": "Müller GmbH"} and n["read"] is False

@@ -1,0 +1,6 @@
+{
+  "gida": ["pistazien", "pistachio", "nuss", "nusse", "nuts", "trockenfruchte", "dried", "fistik", "baklava", "lebensmittel", "food"],
+  "tekstil": ["handtuch", "handtucher", "towel", "bademantel", "bathrobe", "frottee", "textil", "textile", "pamuk", "cotton", "baumwolle"],
+  "otomotiv_yan_sanayi": ["schraube", "schrauben", "bolt", "mutter", "nut", "fastener", "befestigung", "automotive", "kfz", "civata"],
+  "diger": []
+}

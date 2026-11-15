@@ -7,23 +7,18 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import ValidationError
 
+from app.core.csvutil import DANGER, MAX_IMPORT, decode, delimiter, unguard as _unguard
 from app.core.db import get_db
 from app.core.security import require_admin
 from app.models.kb import KINDS
 
 router = APIRouter(prefix="/admin/kb", dependencies=[Depends(require_admin)])
 
-MAX_IMPORT = 2 * 1024 * 1024
-DANGER = ("=", "+", "-", "@", "\t", "\r")  # Excel treats these leading chars as formulas
 
 
 def _guard(c):
     c = "" if c is None else str(c)
     return "'" + c if c.startswith(DANGER) else c
-
-
-def _unguard(c: str) -> str:
-    return c[1:] if c.startswith("'") and c[1:].startswith(DANGER) else c
 
 
 RESET = {"verified": False, "last_verified": None, "verified_by": None}

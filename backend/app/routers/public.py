@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.core.db import get_db
 from app.core.ratelimit import RateLimiter
+from app.services.scoring import score_for_company
 
 router = APIRouter(prefix="/public")
 _limiter = RateLimiter(5, 3600)
@@ -81,11 +82,13 @@ async def rfq(slug: str, body: RfqIn, request: Request):
     _limiter.check(f"{request.client.host if request.client else '-'}|{slug}")
     db, now = get_db(), datetime.now(timezone.utc)
     cid = doc["company_id"]
-    await db.leads.insert_one({
+    lead = {
         "company_id": cid, "source": "rfq", "company_name": body.company_name, "country": body.country,
         "contact_name": body.contact_name, "email": body.email, "website": None, "notes": body.message,
-        "score": 0, "status": "new", "is_demo": False, "is_hot": True, "products_of_interest": body.products,
-        "quantity": body.quantity, "source_note": f"RFQ /s/{slug}", "created_at": now})
+        "status": "new", "is_demo": False, "is_hot": True, "products_of_interest": body.products,
+        "quantity": body.quantity, "source_note": f"RFQ /s/{slug}", "created_at": now}
+    s = await score_for_company(db, await _company(doc), lead)
+    await db.leads.insert_one({**lead, "score": s["total"], "score_breakdown": s["breakdown"]})
     await db.notifications.insert_one({
         "company_id": cid, "type": "rfq", "params": {"company": body.company_name},
         "message_tr": f"Yeni teklif talebi: {body.company_name}", "read": False, "created_at": now})

@@ -2,11 +2,14 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from bson import ObjectId
+
 from app.core.config import get_settings
 from app.core.db import ensure_indexes
 from app.core.security import hash_password
 from app.models.company import CompanyIn
 from app.models.product import ProductIn
+from app.services.scoring import score_for_company
 from app.seed.images import make_placeholder
 from app.services.storage_service import get_storage
 
@@ -64,11 +67,15 @@ async def seed(db) -> dict[str, int]:
     leads = _load("demo_leads")
     for spec in _load("companies"):
         cid = await _seed_company(db, spec, s.seed_password, now)
+        company = await db.companies.find_one({"_id": ObjectId(cid)})
         for lead in leads[spec["key"]]:
+            doc = {**lead, "company_id": cid, "source": "demo", "country": "DE", "is_demo": True,
+                   "source_note": DEMO_LEAD_NOTE}
+            sc = await score_for_company(db, company, doc)
             await db.leads.update_one(
                 {"company_id": cid, "email": lead["email"]},
-                {"$set": {**lead, "company_id": cid, "source": "demo", "country": "DE", "score": 0, "status": "new",
-                          "is_demo": True, "source_note": DEMO_LEAD_NOTE}, "$setOnInsert": {"created_at": now}},
+                {"$set": {**doc, "score": sc["total"], "score_breakdown": sc["breakdown"]},
+                 "$setOnInsert": {"created_at": now, "status": "new"}},  # keeps status across re-seeds
                 upsert=True)
     await _upsert_kb(db.kb_rules, _load("kb_rules"))
     await _upsert_kb(db.kb_incentives, _load("kb_incentives"))

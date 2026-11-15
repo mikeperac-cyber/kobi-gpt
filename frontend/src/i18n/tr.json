@@ -88,7 +88,9 @@
     "slug_taken": "Bu web adresi başka bir firma tarafından kullanılıyor. Başka bir ad deneyin.",
     "file_too_large": "Dosya çok büyük (en fazla 2 MB).",
     "kb_id_exists": "Bu kimlikle bir kayıt zaten var.",
-    "import_invalid": "CSV içinde geçersiz satırlar var; hiçbir kayıt yazılmadı."
+    "import_invalid": "CSV içinde geçersiz satırlar var; hiçbir kayıt yazılmadı.",
+    "source_note_required": "Bu kişinin nereden geldiğini yazın (kaynak notu).",
+    "lead_blocked": "Bu kişi iletişimi reddetti; durumu değiştirilemez."
   },
   "onboarding": {
     "title": "Firmanızı tanıtın",

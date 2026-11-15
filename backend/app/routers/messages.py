@@ -79,4 +79,9 @@ async def approvals(company: dict = Depends(current_company)):
         lead = leads.get(m["lead_id"], {})
         m["lead"] = {"company_name": lead.get("company_name"), "email": lead.get("email"),
                      "country": lead.get("country"), "is_demo": bool(lead.get("is_demo"))}
-    return {"messages": to_json(drafts), "quotes": []}  # quotes arrive in Task 28
+    quotes = await db.quotes.find({"company_id": cid, "status": "draft"}).to_list(500)
+    quotes.sort(key=lambda q: q["created_at"].timestamp(), reverse=True)
+    for q in quotes:
+        lead = leads.get(q["lead_id"], {})
+        q["lead"] = {"company_name": lead.get("company_name"), "country": lead.get("country")}
+    return {"messages": to_json(drafts), "quotes": to_json(quotes)}

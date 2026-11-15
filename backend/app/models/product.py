@@ -13,6 +13,7 @@ class ProductIn(BaseModel):
     moq: float = Field(gt=0)
     unit_weight_kg: float | None = Field(default=None, gt=0)
     price_floor: float = Field(gt=0)  # private: owner only, never in buyer/LLM output
+    price_floor_currency: Literal["EUR", "USD"] = "EUR"
     photos: list[str] = Field(default_factory=list, max_length=6)
 
 

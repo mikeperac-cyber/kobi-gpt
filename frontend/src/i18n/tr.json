@@ -94,7 +94,14 @@
     "do_not_contact": "Bu kişi iletişimi reddetti; mesaj hazırlanamaz veya onaylanamaz.",
     "price_in_message": "Mesajlarda fiyat veya tutar bulunamaz. Lütfen kaldırıp tekrar deneyin.",
     "daily_limit": "Günlük 20 ilk iletişim onayı sınırına ulaşıldı. Yarın tekrar deneyin.",
-    "not_draft": "Bu mesaj artık taslak değil."
+    "not_draft": "Bu mesaj artık taslak değil.",
+    "below_floor": "Birim fiyat, belirlediğiniz taban fiyatın altında.",
+    "floor_currency_mismatch": "Teklif para birimi, ürünün taban fiyat para biriminden farklı; döviz çevrimi yapılmaz.",
+    "freight_currency_mismatch": "CIF/DAP navlun tahmini EUR cinsindendir; USD teklife eklenemez. EUR seçin veya EXW/FCA/FOB kullanın.",
+    "invalid_quantity": "Miktar sıfırdan büyük olmalı.",
+    "needs_weight": "Navlun tahmini için ürünün birim ağırlığını (kg) girin.",
+    "invalid_valid_until": "Geçerlilik tarihi bugünden önce olamaz.",
+    "rates_missing": "Lojistik tarifeleri tanımlı değil."
   },
   "onboarding": {
     "title": "Firmanızı tanıtın",
@@ -554,5 +561,13 @@
     },
     "no_summary": "Özet yok",
     "title": "Alıcı yanıtı"
+  },
+  "logistics": {
+    "lines": {
+      "gross": "Brüt ağırlık (tahmini, ambalaj dahil)",
+      "ltl": "Parsiyel navlun (tahmini)",
+      "ftl": "Komple kamyon navlunu (tahmini)",
+      "courier": "Kurye ücreti (tahmini)"
+    }
   }
 }

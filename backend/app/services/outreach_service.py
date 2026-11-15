@@ -199,6 +199,31 @@ def assert_sent_has_approval(doc: dict) -> None:
         raise RuntimeError("message cannot be sent without approval")
 
 
+async def claim_draft(coll, doc_id, now) -> None:
+    """Atomic draft -> sending; the shared first step of every approval (messages and quotes)."""
+    res = await coll.update_one({"_id": doc_id, "status": "draft"}, {"$set": {"status": "sending", "approved_at": now}})
+    if not res.matched_count:
+        raise err(409, "not_draft")
+
+
+async def approve_quote(db, quote_id, user: dict) -> dict:
+    """The ONLY code path that sets a quote to `sent` (same gate as messages; no daily limit)."""
+    q = await db.quotes.find_one({"_id": quote_id})
+    if not q or q["status"] != "draft":
+        raise err(409, "not_draft")
+    lead = await db.leads.find_one({"_id": ObjectId(q["lead_id"])})
+    if lead and lead.get("status") == "do_not_contact":
+        raise err(409, "do_not_contact")
+    now = datetime.now(timezone.utc)
+    await claim_draft(db.quotes, q["_id"], now)
+    upd = {"status": "sent", "approved_by": str(user["_id"]), "approved_at": now, "delivery_channel": "mailto"}
+    assert_sent_has_approval({**q, **upd})
+    await db.quotes.update_one({"_id": q["_id"], "status": "sending"}, {"$set": upd})
+    if lead and lead.get("status") not in ("won", "lost", "do_not_contact"):
+        await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "quoted"}})
+    return {**q, **upd}
+
+
 async def approve_and_send(db, message_id, user: dict) -> dict:
     """The ONLY code path that sets a message to `sent`."""
     msg = await db.messages.find_one({"_id": message_id})
@@ -209,10 +234,7 @@ async def approve_and_send(db, message_id, user: dict) -> dict:
         raise err(409, "do_not_contact")
     now = datetime.now(timezone.utc)
     # claim first, then count (including this claim): two concurrent approves can't both pass the limit or both send
-    res = await db.messages.update_one({"_id": msg["_id"], "status": "draft"},
-                                       {"$set": {"status": "sending", "approved_at": now}})
-    if not res.matched_count:
-        raise err(409, "not_draft")
+    await claim_draft(db.messages, msg["_id"], now)
 
     async def release():
         await db.messages.update_one({"_id": msg["_id"]}, {"$set": {"status": "draft", "approved_at": None}})

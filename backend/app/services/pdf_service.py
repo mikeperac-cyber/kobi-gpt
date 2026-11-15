@@ -11,7 +11,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer
+from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, Table, TableStyle
 
 BRAND = colors.HexColor("#C8102E")
 _APP = Path(__file__).resolve().parents[1]
@@ -105,6 +105,67 @@ def readiness_pdf(report: dict, company_public: dict, lang: str) -> bytes:
         canvas.setFillColor(colors.HexColor("#555555"))
         canvas.setFont("NotoSans", 7.5)
         canvas.drawString(18 * mm, 10 * mm, t["footer"])
+        canvas.drawRightString(A4[0] - 18 * mm, 10 * mm, t["page"].format(n=doc.page))
+        canvas.restoreState()
+
+    buf = io.BytesIO()
+    doc = BaseDocTemplate(buf, pagesize=A4, title=t["title"], author="KOBİ-GPT")
+    doc.addPageTemplates(PageTemplate(id="p", onPage=page, frames=[
+        Frame(18 * mm, 16 * mm, A4[0] - 36 * mm, A4[1] - 34 * mm, id="f")]))
+    doc.build(story)
+    return buf.getvalue()
+
+
+def _money(v: float, cur: str, lang: str) -> str:
+    s = f"{v:,.2f}"
+    if lang != "en":  # de / tr: 1.234,56
+        s = s.replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"{s} {cur}"
+
+
+def quote_pdf(quote: dict, company_public: dict, product_public: dict, lang: str) -> bytes:
+    """Buyer quote. Inputs are already public (no floor): see Decision 12."""
+    register_fonts()
+    t = STRINGS["quote"][lang if lang in STRINGS["quote"] else "en"]
+    h1 = _style("h1", "NotoSans-Bold", 20, textColor=BRAND)
+    h2 = _style("h2", "NotoSans-Bold", 11, textColor=BRAND, spaceBefore=10, spaceAfter=3)
+    b, bold = _style("b"), _style("bold", "NotoSans-Bold")
+    small = _style("small", size=8.5, textColor=colors.HexColor("#444444"))
+    d = lambda v: _fmt_date(v, "en" if lang == "en" else "tr", STRINGS["en"]["months"])  # noqa: E731
+    cur, buyer = quote["currency"], quote.get("buyer") or {}
+    contact = company_public.get("contact") or {}
+    city = f', {company_public["city"]}' if company_public.get("city") else ""
+    unit = t["units"].get(quote.get("unit"), quote.get("unit") or "")
+    cell = lambda x, st=b: Paragraph(escape(str(x)), st)  # noqa: E731
+    line_total = round(quote["quantity"] * quote["unit_price"], 2)
+    rows = [[cell(t[k], bold) for k in ("product", "qty", "unit_price", "line_total")],
+            [cell(product_public.get("name_tr", "")), cell(f'{quote["quantity"]:g} {unit}'),
+             cell(_money(quote["unit_price"], cur, lang)), cell(_money(line_total, cur, lang))]]
+    tbl = Table(rows, colWidths=[70 * mm, 30 * mm, 35 * mm, 35 * mm])
+    tbl.setStyle(TableStyle([("LINEBELOW", (0, 0), (-1, 0), 0.8, BRAND), ("VALIGN", (0, 0), (-1, -1), "TOP")]))
+    story = [_p(t["title"], h1), Spacer(1, 4), _p(f'{company_public.get("name", "")}{city}', bold),
+             _p(" · ".join(str(contact[k]) for k in ("email", "phone", "website") if contact.get(k)), small),
+             _p(f'{t["to"]}: {buyer.get("company_name", "")} {buyer.get("contact_name", "")}'.strip(), b),
+             _p(f'{t["date"]}: {d(quote.get("created_at") or datetime.now())} · {t["valid"]}: {d(quote["valid_until"])}', b),
+             Spacer(1, 8), tbl, _p(t["incoterm"], h2),
+             _p(f'{quote["incoterm"]} – {t["incoterms"][quote["incoterm"]]}', b),
+             _p(t["terms"], h2), _p(t["payment"][quote["payment_terms"]], b), _p(t["logistics"], h2)]
+    est = quote.get("logistics_estimate") or {}
+    if quote.get("freight_included") and est:
+        story.append(_p(f'{t["freight_est"]} ({t["estimated"]})', bold))
+        for ln in est.get("lines", []):
+            story.append(_p(f'{t[ln["label_key"].rsplit(".", 1)[1]]}: {ln["formula"]}', small))
+    else:
+        story.append(_p(t["not_included"], b))
+    story += [Spacer(1, 8), _p(f'{t["total"]}: {_money(quote["total"], cur, lang)}', _style("tot", "NotoSans-Bold", 13)),
+              Spacer(1, 6), _p(t["footer"], small)]
+
+    def page(canvas, doc):
+        canvas.saveState()
+        canvas.setFillColor(BRAND)
+        canvas.rect(0, A4[1] - 8 * mm, A4[0], 8 * mm, stroke=0, fill=1)
+        canvas.setFillColor(colors.HexColor("#555555"))
+        canvas.setFont("NotoSans", 7.5)
         canvas.drawRightString(A4[0] - 18 * mm, 10 * mm, t["page"].format(n=doc.page))
         canvas.restoreState()
 

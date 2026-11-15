@@ -19,7 +19,7 @@ def to_json(value: Any) -> Any:
 
 def public_product(doc: dict) -> dict:
     """Buyer/LLM-safe product: the private floor price is dropped."""
-    return to_json({k: v for k, v in doc.items() if k != "price_floor"})
+    return to_json({k: v for k, v in doc.items() if not k.startswith("price_floor")})
 
 
 def owner_product(doc: dict) -> dict:

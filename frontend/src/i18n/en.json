@@ -94,7 +94,14 @@
     "do_not_contact": "This contact opted out; no message can be drafted or approved.",
     "price_in_message": "Outreach messages must not contain prices or amounts. Remove them and try again.",
     "daily_limit": "Daily limit of 20 first-contact approvals reached. Try again tomorrow.",
-    "not_draft": "This message is no longer a draft."
+    "not_draft": "This message is no longer a draft.",
+    "below_floor": "The unit price is below the floor price you set.",
+    "floor_currency_mismatch": "The quote currency differs from the product's floor-price currency; no conversion is done.",
+    "freight_currency_mismatch": "The CIF/DAP freight estimate is in EUR and cannot be added to a USD quote. Use EUR or EXW/FCA/FOB.",
+    "invalid_quantity": "Quantity must be greater than zero.",
+    "needs_weight": "Enter the product's unit weight (kg) to estimate freight.",
+    "invalid_valid_until": "The validity date cannot be in the past.",
+    "rates_missing": "Logistics rates are not configured."
   },
   "onboarding": {
     "title": "Introduce your company",
@@ -554,5 +561,13 @@
     },
     "no_summary": "No summary available",
     "title": "Buyer reply"
+  },
+  "logistics": {
+    "lines": {
+      "gross": "Gross weight (estimated, incl. packaging)",
+      "ltl": "Part-load freight (estimated)",
+      "ftl": "Full-truck freight (estimated)",
+      "courier": "Courier charge (estimated)"
+    }
   }
 }

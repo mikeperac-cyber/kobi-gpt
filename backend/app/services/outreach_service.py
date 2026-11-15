@@ -23,7 +23,7 @@ _CUR = r"(?:EUR|USD|TL|euros?|dollars?|cents?|lira)"
 # shortcut: digits only; word-form numbers ("zwölf Euro") slip through. Upgrade: LLM/number-word check if it matters.
 _AMOUNT = re.compile(
     rf"\d[\d.,]*\s?(?:€|\$|₺|{_CUR}\b)|(?:€|\$|₺|\b{_CUR}\b)\s?\d"
-    r"|(?:\d\s?%|%\s?\d)\s?(?:Rabatt|discount|indirim)|\b(?:Rabatt|discount|indirim)\w*[^\d\n]{0,15}\d"
+    r"|(?:\d\s?%|%\s?\d+)\s?(?:Rabatt|discount|indirim)|\b(?:Rabatt|discount|indirim)\w*[^\d\n]{0,15}\d"
     r"|\b(?:Preis\w*|price\w*|fiyat\w*)[^\d\n]{0,12}\d", re.I)
 
 

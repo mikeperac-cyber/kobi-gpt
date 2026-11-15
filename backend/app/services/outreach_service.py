@@ -19,7 +19,12 @@ FALLBACK = json.loads((Path(__file__).resolve().parents[1] / "seed" / "data" / "
                       .read_text(encoding="utf-8"))
 OPTOUT = FALLBACK["optout"]
 MAX_WORDS, DAILY_LIMIT, TONES = 150, 20, {"formal", "shorter", "samples"}
-_AMOUNT = re.compile(r"\d[\d.,]*\s?(?:€|\$|₺|(?:EUR|USD|TL)\b)|(?:€|\$|₺|\b(?:EUR|USD|TL))\s?\d", re.I)
+_CUR = r"(?:EUR|USD|TL|euros?|dollars?|cents?|lira)"
+# shortcut: digits only; word-form numbers ("zwölf Euro") slip through. Upgrade: LLM/number-word check if it matters.
+_AMOUNT = re.compile(
+    rf"\d[\d.,]*\s?(?:€|\$|₺|{_CUR}\b)|(?:€|\$|₺|\b{_CUR}\b)\s?\d"
+    r"|(?:\d\s?%|%\s?\d)\s?(?:Rabatt|discount|indirim)|\b(?:Rabatt|discount|indirim)\w*[^\d\n]{0,15}\d"
+    r"|\b(?:Preis\w*|price\w*|fiyat\w*)[^\d\n]{0,12}\d", re.I)
 
 
 class EmailProvider(Protocol):
@@ -93,7 +98,8 @@ async def translate(text: str, ui_language: str, company: dict, lang: str) -> tu
                                   company_id=cid, timeout=t)
         return out.text
 
-    return await agent_steps.run_ai_step(None, "translate", company, call, lambda: None)
+    tr, fb = await agent_steps.run_ai_step(None, "translate", company, call, lambda: None)
+    return (None, True) if tr and has_amount(tr) else (tr, fb)
 
 
 async def draft_first_contact(lead: dict, company: dict, products: list[dict], storefront_url: str | None,
@@ -165,21 +171,34 @@ async def approve_and_send(db, message_id, user: dict) -> dict:
     if lead and lead.get("status") == "do_not_contact":
         raise err(409, "do_not_contact")
     now = datetime.now(timezone.utc)
+    # claim first, then count (including this claim): two concurrent approves can't both pass the limit or both send
+    res = await db.messages.update_one({"_id": msg["_id"], "status": "draft"},
+                                       {"$set": {"status": "sending", "approved_at": now}})
+    if not res.matched_count:
+        raise err(409, "not_draft")
+
+    async def release():
+        await db.messages.update_one({"_id": msg["_id"]}, {"$set": {"status": "draft", "approved_at": None}})
+
     if msg["kind"] == "cold":
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         n = await db.messages.count_documents({"company_id": msg["company_id"], "kind": "cold",
+                                               "status": {"$in": ["sending", "sent"]},
                                                "approved_at": {"$gte": midnight}})
-        if n >= DAILY_LIMIT:
+        if n > DAILY_LIMIT:
+            await release()
             raise err(429, "daily_limit")
     channel, provider = "mailto", get_email_provider()
     if get_settings().email_provider and provider:
-        await provider.send((lead or {}).get("email", ""), msg["subject"], msg["body"])
+        try:
+            await provider.send((lead or {}).get("email", ""), msg["subject"], msg["body"])
+        except Exception:
+            await release()
+            raise
         channel = get_settings().email_provider
     upd = {"status": "sent", "approved_by": str(user["_id"]), "approved_at": now, "delivery_channel": channel}
     assert_sent_has_approval({**msg, **upd})
-    res = await db.messages.update_one({"_id": msg["_id"], "status": "draft"}, {"$set": upd})
-    if not res.matched_count:
-        raise err(409, "not_draft")
+    await db.messages.update_one({"_id": msg["_id"], "status": "sending"}, {"$set": upd})
     if lead and lead.get("status") in ("new", "draft_ready"):
         await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "sent"}})
     return {**msg, **upd}

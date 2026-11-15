@@ -1,3 +1,4 @@
+from bson import ObjectId
 from fastapi import APIRouter, Depends
 
 from app.core.config import get_settings
@@ -50,6 +51,10 @@ async def reject(message_id: str, body: RejectIn, company: dict = Depends(curren
         raise svc.err(409, "not_draft")
     upd = {"status": "rejected", "reject_reason": body.reason.strip()}
     await get_db().messages.update_one({"_id": msg["_id"]}, {"$set": upd})
+    db = get_db()  # lead goes back to "new" if this was its only draft
+    if not await db.messages.count_documents({"lead_id": msg["lead_id"], "status": "draft"}):
+        await db.leads.update_one({"_id": ObjectId(msg["lead_id"]), "status": "draft_ready"},
+                                  {"$set": {"status": "new"}})
     return to_json({**msg, **upd})
 
 

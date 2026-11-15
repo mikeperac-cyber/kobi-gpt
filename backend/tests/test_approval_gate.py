@@ -115,3 +115,32 @@ async def test_approvals_ownership(db, producer, fake_llm):
     assert (await c.post(f"/api/messages/{mid}/approve")).status_code == 404
     assert (await c.post(f"/api/messages/{mid}/reject", json={"reason": "x"})).status_code == 404
     assert (await db.messages.find_one({}))["status"] == "draft"
+
+
+async def test_reject_resets_lead_status(db, producer, fake_llm):
+    from bson import ObjectId
+    fake_llm.responses = _llm()
+    p = await producer("Ali")
+    lid, mid = await _draft(db, p)
+    await p["client"].post(f"/api/messages/{mid}/reject", json={"reason": "x"})
+    assert (await db.leads.find_one({"_id": ObjectId(lid)}))["status"] == "new"
+
+
+async def test_failed_provider_releases_claim(db, producer, fake_llm, monkeypatch):
+    from app.services import outreach_service as o
+
+    class Boom:
+        async def send(self, *a):
+            raise RuntimeError("smtp down")
+
+    monkeypatch.setattr(o, "get_email_provider", lambda: Boom())
+    monkeypatch.setenv("EMAIL_PROVIDER", "x")
+    from app.core.config import get_settings
+    get_settings.cache_clear()
+    fake_llm.responses = _llm()
+    p = await producer("Ali")
+    _, mid = await _draft(db, p)
+    with pytest.raises(RuntimeError):
+        await p["client"].post(f"/api/messages/{mid}/approve")
+    m = await db.messages.find_one({})
+    assert m["status"] == "draft" and m["approved_at"] is None

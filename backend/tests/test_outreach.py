@@ -126,3 +126,22 @@ async def test_edit_rechecks_and_retranslates(db, producer, fake_llm):
     assert r.status_code == 422 and r.json()["detail"]["code"] == "price_in_message"
     assert (await c.put(f"/api/messages/{mid}", json={"subject": "S", "body": "x", "status": "sent"})).status_code == 422
     assert (await db.messages.find_one({}))["status"] == "draft"
+
+
+@pytest.mark.parametrize("text", ["5 Euro", "1.000 Euro pro Tonne", "12 Euro pro kg", "10 dollars", "20% Rabatt",
+                                  "%20 indirim", "Preis 12,50", "Euro 5", "price: 8", "fiyat 12", "7 cents"])
+def test_currency_words_and_discounts_rejected(text):
+    assert enforce_outreach_rules(f"Guten Tag. {text}.", [], "de") is None
+
+
+@pytest.mark.parametrize("text", ["500 kg MOQ", "ISO 22000", "1998 gegründet", "100% Baumwolle", "%100 pamuk",
+                                  "OEKO-TEX Standard 100"])
+def test_facts_not_mistaken_for_prices(text):
+    assert enforce_outreach_rules(f"Guten Tag. {text}.", [], "de") is not None
+
+
+async def test_translation_with_amount_is_dropped(db, producer, fake_llm):
+    p = await producer("Ali")
+    fake_llm.responses = _llm(tr="Fiyat 5 Euro")
+    m = (await p["client"].post(f"/api/leads/{await _lead(db, p)}/draft", json={})).json()
+    assert m["body_tr"] is None and m["translation_fallback"] is True

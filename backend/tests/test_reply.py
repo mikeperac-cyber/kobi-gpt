@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from app.services.outreach_service import detect_red_flags, has_amount
 from tests.helpers import assert_no_floor  # noqa: F401
 
@@ -127,3 +129,22 @@ async def test_reply_prompt_has_no_floor(db, producer, fake_llm):
     fake_llm.responses = _llm()
     await _post(p, await _lead(db, p))
     assert "price_floor" not in fake_llm.prompts[0] and "9.5" not in fake_llm.prompts[0]
+
+
+@pytest.mark.parametrize("text", ["Bitte kontaktieren Sie uns nicht mehr", "Lütfen bizimle iletisime gecmeyin",
+                                  "Please do not contact us", "Bitte keine E-Mails mehr"])
+async def test_explicit_optout_overrides_llm(db, producer, fake_llm, text):
+    p = await producer("Ali")
+    fake_llm.responses = _llm({**ANALYSIS, "intent": "interested", "opt_out": False})
+    lid = await _lead(db, p)
+    j = (await _post(p, lid, text)).json()
+    assert j["draft"] is None and j["analysis"]["opt_out_source"] == "keyword"
+    assert j["inbound"]["language"] in ("de", "en")
+    assert (await db.leads.find_one({"company_id": p["company"]["id"]}))["status"] == "do_not_contact"
+
+
+async def test_broad_phrase_not_blocked_when_llm_works(db, producer, fake_llm):
+    p = await producer("Ali")
+    fake_llm.responses = _llm({**ANALYSIS, "intent": "interested"})
+    j = (await _post(p, await _lead(db, p), "Kein Interesse an Salz, aber an Pistazien")).json()
+    assert j["draft"] is not None and "opt_out_source" not in j["analysis"]

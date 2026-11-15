@@ -39,13 +39,21 @@ _FLAG_RES = {
         r"|(?:vorkasse|peşin|advance payment|upfront)\W{0,3}(?:100\s?%|%\s?100|100\b)"
         r"|full prepayment|vollst(?:ae|ä)ndige vorauszahlung", re.I),
 }
-_OPTOUT_WORDS = ("unsubscribe", "nicht mehr kontaktieren", "kein interesse", "not interested", "remove me",
-                 "iletisim kurmayin")
+# matched on tr_fold(text): "iletişim"/"iletisim" both hit
+_EXPLICIT_OPTOUT = re.compile(
+    r"\b(?:kontaktieren sie uns nicht mehr|nicht mehr kontaktieren|nicht mehr kontaktiert werden"
+    r"|keine weiteren (?:e-?mails?|nachrichten|kontakt\w*)|bitte keine (?:e-?mails?|werbung)"
+    r"|do not contact|don't contact|stop contacting|stop emailing|unsubscribe|remove (?:me|us)|take (?:me|us) off"
+    r"|iletisim kurmayin|bizimle iletisime gecmeyin|bize yazmayin|listeden cikarin)\b")
+_BROAD_OPTOUT = ("kein interesse", "not interested", "ilgilenmiyoruz")  # only trusted when the LLM is down
+
+
+def explicit_opt_out(text: str) -> bool:
+    return bool(_EXPLICIT_OPTOUT.search(tr_fold(text or "")))
 
 
 def heuristic_opt_out(text: str) -> bool:
-    t = tr_fold(text or "")
-    return any(w in t for w in _OPTOUT_WORDS)
+    return explicit_opt_out(text) or any(w in tr_fold(text or "") for w in _BROAD_OPTOUT)
 
 
 def detect_red_flags(text: str, lead: dict) -> list[str]:
@@ -254,13 +262,17 @@ async def analyze_reply(lead: dict, company: dict, products: list[dict], text: s
         flags = sorted(set(heur) | (set(out.red_flags) & set(RED_FLAGS)), key=RED_FLAGS.index)
         analysis = {**out.model_dump(exclude={"suggested_reply"}), "red_flags": flags}
         optout = out.opt_out or out.intent == "not_interested"
+        if explicit_opt_out(text):
+            if not optout:
+                analysis["opt_out_source"] = "keyword"
+            analysis["opt_out"] = optout = True
     else:
         analysis = {"translation": None, "summary": [], "intent": "other", "red_flags": heur, "opt_out": False,
                     "terms": {"quantity": None, "incoterm": None, "delivery_date": None, "certifications": []}}
         optout = heuristic_opt_out(text)
     now = datetime.now(timezone.utc)
     inbound = {"lead_id": str(lead["_id"]), "company_id": cid, "direction": "inbound", "kind": "reply",
-               "language": None, "subject": None, "body": text, "body_tr": analysis["translation"],
+               "language": lang, "subject": None, "body": text, "body_tr": analysis["translation"],
                "translation_language": ui_language, "translation_fallback": fell_back, "status": "received",
                "analysis": analysis, "created_at": now}
     inbound["_id"] = (await db.messages.insert_one(inbound)).inserted_id

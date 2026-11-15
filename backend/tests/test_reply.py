@@ -132,7 +132,9 @@ async def test_reply_prompt_has_no_floor(db, producer, fake_llm):
 
 
 @pytest.mark.parametrize("text", ["Bitte kontaktieren Sie uns nicht mehr", "Lütfen bizimle iletisime gecmeyin",
-                                  "Please do not contact us", "Bitte keine E-Mails mehr"])
+                                  "Please do not contact us", "Bitte keine E-Mails mehr",
+                                  "Please don’t contact us", "Bitte kontaktieren Sie mich nicht mehr",
+                                  "Ich möchte mich nicht mehr kontaktieren lassen"])
 async def test_explicit_optout_overrides_llm(db, producer, fake_llm, text):
     p = await producer("Ali")
     fake_llm.responses = _llm({**ANALYSIS, "intent": "interested", "opt_out": False})

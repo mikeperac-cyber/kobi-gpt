@@ -41,7 +41,7 @@ _FLAG_RES = {
 }
 # matched on tr_fold(text): "iletişim"/"iletisim" both hit
 _EXPLICIT_OPTOUT = re.compile(
-    r"\b(?:kontaktieren sie uns nicht mehr|nicht mehr kontaktieren|nicht mehr kontaktiert werden"
+    r"\b(?:kontaktieren sie (?:uns|mich) nicht mehr|nicht mehr kontaktieren|nicht mehr kontaktiert werden"
     r"|keine weiteren (?:e-?mails?|nachrichten|kontakt\w*)|bitte keine (?:e-?mails?|werbung)"
     r"|do not contact|don't contact|stop contacting|stop emailing|unsubscribe|remove (?:me|us)|take (?:me|us) off"
     r"|iletisim kurmayin|bizimle iletisime gecmeyin|bize yazmayin|listeden cikarin)\b")
@@ -49,7 +49,7 @@ _BROAD_OPTOUT = ("kein interesse", "not interested", "ilgilenmiyoruz")  # only t
 
 
 def explicit_opt_out(text: str) -> bool:
-    return bool(_EXPLICIT_OPTOUT.search(tr_fold(text or "")))
+    return bool(_EXPLICIT_OPTOUT.search(tr_fold(text or "").replace("’", "'")))
 
 
 def heuristic_opt_out(text: str) -> bool:

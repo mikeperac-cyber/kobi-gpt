@@ -473,7 +473,7 @@
       "website": "Website",
       "notes": "Notes",
       "submit": "Add lead",
-      "added": "Lead added."
+      "badCountry": "Country code must be 2 letters (e.g. DE).", "added": "Lead added."
     },
     "csv": {
       "title": "Import CSV",

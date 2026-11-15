@@ -75,12 +75,12 @@ export default function LeadDetail() {
           </div>
         )}
         <div className="flex flex-wrap gap-2">
-          <Button onClick={prepare} disabled={busy || blocked}>{busy ? t('leads.detail.preparing') : t('leads.detail.prepare')}</Button>
+          <Button onClick={prepare} disabled={busy || blocked} aria-describedby={blocked ? 'dnc-note' : undefined}>{busy ? t('leads.detail.preparing') : t('leads.detail.prepare')}</Button>
           {!closed && <Button variant="secondary" onClick={() => setConfirm('won')}>{t('leads.detail.markWon')}</Button>}
           {!closed && <Button variant="secondary" onClick={() => setConfirm('lost')}>{t('leads.detail.markLost')}</Button>}
           {!blocked && <Button variant="secondary" onClick={() => setConfirm('do_not_contact')}>{t('leads.detail.markDnc')}</Button>}
         </div>
-        {blocked && <p className="text-sm text-slate-700">{t('leads.detail.blocked')}</p>}
+        {blocked && <p id="dnc-note" className="text-sm text-slate-700">{t('leads.detail.blocked')}</p>}
         {err && <p role="alert" className="text-brand font-semibold">{err}</p>}
       </Card>
 

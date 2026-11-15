@@ -28,6 +28,7 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
   useEffect(() => { setSubject(message.subject ?? ''); setBody(message.body); setMsg(''); setErr('') }, [message.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isDraft = message.status === 'draft'
+  const canRegenerate = isDraft && message.kind !== 'reply' // reply drafts can only be edited, not regenerated as first contact
   const toggle = (k: string) => setTones(tones.includes(k) ? tones.filter((x) => x !== k) : [...tones, k])
 
   async function save() {
@@ -42,10 +43,9 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
   async function regenerate() {
     setBusy(true); setMsg(''); setErr('')
     try {
-      const m = await api<Message>(`/api/leads/${lead}/draft`, { method: 'POST', json: { tone: tones } })
-      // The superseded draft must not stay in the approval queue.
-      await api(`/api/messages/${message.id}/reject`, { method: 'POST', json: { reason: 'regenerated' } }).catch(() => undefined)
-      onReplace(m)
+      // Reject the superseded draft first: if that fails, no second draft is created.
+      await api(`/api/messages/${message.id}/reject`, { method: 'POST', json: { reason: 'regenerated' } })
+      onReplace(await api<Message>(`/api/leads/${lead}/draft`, { method: 'POST', json: { tone: tones } }))
     } catch (x) { setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network')) }
     setBusy(false)
   }
@@ -74,7 +74,7 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
       {isDraft && (
         <>
           <Button onClick={save} disabled={busy || !subject.trim() || !body.trim()}>{t('leads.draft.save')}</Button>
-          <fieldset className="space-y-2">
+          {canRegenerate && <fieldset className="space-y-2">
             <legend className="font-semibold">{t('leads.draft.tones')}</legend>
             <div className="flex flex-wrap gap-2">
               {TONES.map((k) => (
@@ -82,7 +82,7 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
               ))}
               <Button type="button" variant="secondary" onClick={regenerate} disabled={busy}>{t('leads.draft.regenerate')}</Button>
             </div>
-          </fieldset>
+          </fieldset>}
         </>
       )}
       {msg && <p role="status" className="font-semibold">{msg}</p>}

@@ -473,7 +473,7 @@
       "website": "Web sitesi",
       "notes": "Notlar",
       "submit": "Lead ekle",
-      "added": "Lead eklendi."
+      "badCountry": "Ülke kodu 2 harf olmalı (ör. DE).", "added": "Lead eklendi."
     },
     "csv": {
       "title": "CSV içe aktar",

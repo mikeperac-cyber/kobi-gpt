@@ -27,7 +27,9 @@ export default function LeadForm({ onDone, onCancel }: { onDone(): void; onCance
 
   async function submit(e: FormEvent) {
     e.preventDefault()
-    setErr(''); setBusy(true)
+    setErr('')
+    if (!/^[A-Z]{2}$/.test(f.country)) { setErr(t('leads.form.badCountry')); return }
+    setBusy(true)
     try {
       await api('/api/leads', { method: 'POST', json: { ...f, website: f.website.trim() || null } })
       onDone()
@@ -43,7 +45,7 @@ export default function LeadForm({ onDone, onCancel }: { onDone(): void; onCance
         <h2 className="text-lg font-semibold">{t('leads.form.title')}</h2>
         <Field label={t('leads.form.company_name')}><Input required maxLength={200} value={f.company_name} onChange={set('company_name')} /></Field>
         <div className="grid sm:grid-cols-2 gap-3">
-          <Field label={t('leads.form.country')}><Input required maxLength={2} value={f.country} onChange={set('country')} /></Field>
+          <Field label={t('leads.form.country')}><Input required maxLength={2} value={f.country} onChange={(e) => setF({ ...f, country: e.target.value.toUpperCase() })} /></Field>
           <Field label={t('leads.form.contact_name')}><Input value={f.contact_name} onChange={set('contact_name')} /></Field>
           <Field label={t('leads.form.email')}><Input type="email" value={f.email} onChange={set('email')} /></Field>
           <Field label={t('leads.form.website')}><Input value={f.website} onChange={set('website')} /></Field>

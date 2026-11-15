@@ -20,7 +20,7 @@ async def lead_messages(lead_id: str, company: dict = Depends(current_company)):
     cid = str(company["_id"])
     await owned("leads", lead_id, cid)
     docs = await get_db().messages.find({"lead_id": lead_id, "company_id": cid}).to_list(500)
-    docs.sort(key=lambda m: m["created_at"].timestamp())
+    docs.sort(key=lambda m: m["created_at"].timestamp() if m.get("created_at") else 0)
     return to_json(docs)
 
 

@@ -417,7 +417,173 @@
     "unconfirmed": "Not yet verified (demo data)"
   },
   "leads": {
-    "title": "Buyers"
+    "title": "Buyers",
+    "intro": "Your potential buyers are here. Prepare a first contact; nothing is sent without your approval.",
+    "colCompany": "Company",
+    "colCountry": "Country",
+    "colSource": "Source",
+    "colScore": "Score",
+    "colStatus": "Status",
+    "colCreated": "Added",
+    "sortLabel": "Sort",
+    "sortDefault": "Hot leads first",
+    "sortScore": "By score",
+    "sortDate": "By date",
+    "filterLabel": "Filter by status",
+    "filterAll": "All statuses",
+    "hot": "Hot lead",
+    "src": {
+      "rfq": "Quote request",
+      "csv_import": "CSV",
+      "manual": "Added manually",
+      "demo": "Demo"
+    },
+    "empty": "No leads yet. Import a CSV or add a contact manually.",
+    "emptyFiltered": "No leads with this status.",
+    "importCsv": "Import CSV",
+    "addManual": "Add manually",
+    "scoreEstimated": "The score is an estimate: the sum of source, product match, country and email points.",
+    "scoreOf": "Score {{n}}; show breakdown",
+    "breakdown": {
+      "title": "Score breakdown (estimated)",
+      "source": "Source",
+      "product_match": "Product match",
+      "country": "Country",
+      "email": "Email"
+    },
+    "status": {
+      "new": "New",
+      "draft_ready": "Draft ready",
+      "sent": "Sent",
+      "replied": "Reply received",
+      "quoted": "Quote sent",
+      "won": "Won",
+      "lost": "Lost",
+      "do_not_contact": "Do not contact"
+    },
+    "sourceNoteLabel": "Where did you find this contact?",
+    "sourceNoteHint": "Under GDPR/KVKK you must record where you got a person's data, so you can show the source if they ask. Examples: Anuga 2025 trade fair catalogue, Kolay İhracat Platformu buyer list, business card.",
+    "sourceNotePlaceholder": "Anuga 2025 trade fair catalogue",
+    "form": {
+      "title": "Add a lead manually",
+      "company_name": "Company name",
+      "country": "Country code (e.g. DE)",
+      "contact_name": "Contact person",
+      "email": "Email",
+      "website": "Website",
+      "notes": "Notes",
+      "submit": "Add lead",
+      "added": "Lead added."
+    },
+    "csv": {
+      "title": "Import CSV",
+      "file": "Choose a CSV file",
+      "previewTitle": "File preview (first rows, {{n}} rows in total)",
+      "mapTitle": "Map the columns",
+      "none": "— not used —",
+      "company_name": "Company name (required)",
+      "country": "Country (target market if empty)",
+      "contact_name": "Contact person",
+      "email": "Email",
+      "website": "Website",
+      "notes": "Notes",
+      "run": "Import",
+      "result": "{{imported}} leads added, {{skipped}} rows skipped.",
+      "errorsTitle": "Skipped rows",
+      "row": "Row {{row}}",
+      "reasons": {
+        "no_company_name": "Company name is empty",
+        "bad_country": "Invalid country code (must be 2 letters)",
+        "bad_email": "Invalid email",
+        "duplicate": "This email is already saved"
+      }
+    },
+    "detail": {
+      "back": "Back to buyers",
+      "contact": "Contact",
+      "website": "Website",
+      "sourceNote": "Source note",
+      "notes": "Notes",
+      "rfqMessage": "Quote request message",
+      "products": "Products of interest",
+      "quantity": "Quantity",
+      "prepare": "Prepare first contact",
+      "preparing": "Preparing…",
+      "blocked": "This contact opted out; a message cannot be prepared.",
+      "markWon": "Won",
+      "markLost": "Lost",
+      "markDnc": "Do not contact",
+      "confirmTitle": "Change status",
+      "confirmBody": "This lead's status will be changed to '{{status}}'. Are you sure?",
+      "confirm": "Yes, change it",
+      "dncWarn": "'Do not contact' cannot be undone: no further messages can be prepared for this contact.",
+      "history": "Message history",
+      "noHistory": "No messages yet.",
+      "inbound": "Incoming reply",
+      "outbound": "Outgoing message",
+      "openDraft": "Open draft",
+      "msgStatus": {
+        "draft": "Draft",
+        "approved": "Approved",
+        "sent": "Handed to your mail app",
+        "rejected": "Rejected",
+        "received": "Received"
+      }
+    },
+    "draft": {
+      "title": "First contact draft",
+      "notSent": "This draft has not been sent yet; you must approve it from the approval queue.",
+      "fallback": "The AI did not respond right now; a ready-made template was used. Review it before sending.",
+      "subject": "Subject",
+      "body": "Message",
+      "buyerLang": "In the buyer's language ({{lang}})",
+      "translation": "Translation ({{lang}}, read-only)",
+      "translationUnavailable": "Translation unavailable right now",
+      "save": "Save",
+      "saved": "Saved; translation refreshed.",
+      "tones": "Tone",
+      "formal": "More formal",
+      "shorter": "Shorter",
+      "samples": "Emphasise the sample offer",
+      "regenerate": "Regenerate",
+      "toApprovals": "Go to approval queue",
+      "close": "Close draft"
+    },
+    "reply": {
+      "title": "Buyer reply assistant",
+      "label": "Paste the buyer's reply",
+      "analyze": "Analyse",
+      "analyzing": "Analysing…",
+      "translation": "Translation",
+      "summary": "Summary",
+      "intent": "Intent",
+      "terms": "Detected terms",
+      "none": "—",
+      "quantity": "Quantity",
+      "incoterm": "Delivery term (Incoterm)",
+      "delivery_date": "Delivery date",
+      "certifications": "Certifications",
+      "noAnalysis": "The AI could not analyse this right now; only the safety checks ran. Please read the reply yourself.",
+      "intents": {
+        "interested": "Interested",
+        "asks_price": "Asks for a price",
+        "asks_samples": "Asks for samples",
+        "not_interested": "Not interested",
+        "other": "Other"
+      },
+      "flagsTitle": "Things to watch out for",
+      "flags": {
+        "payment_change": "The reply says payment details (account/IBAN) changed. This is a very common export scam; verify by phone.",
+        "urgency": "There is heavy pressure to hurry. Scammers try to leave you no time to think.",
+        "domain_mismatch": "An email domain in the reply differs from the lead's saved email domain. This could be impersonation.",
+        "upfront_payment": "Full or upfront payment is requested. This is common in scams; prefer a letter of credit or partial payment."
+      },
+      "suggested": "A suggested reply draft is ready; it has not been sent.",
+      "editDraft": "Edit the draft",
+      "toApprovals": "Go to approval queue",
+      "optOut": "The buyer does not want contact — lead marked 'Do not contact'.",
+      "optOutKeyword": "This was decided automatically from an explicit 'do not contact us' phrase in the reply."
+    }
   },
   "approvals": {
     "title": "Approvals"
@@ -432,7 +598,8 @@
     "title": "Admin"
   },
   "demo": {
-    "title": "Demo"
+    "title": "Demo",
+    "badge": "DEMO – fictional company"
   },
   "account": {
     "title": "My account"

@@ -417,7 +417,173 @@
     "unconfirmed": "Henüz doğrulanmamış (demo verisi)"
   },
   "leads": {
-    "title": "Alıcılar"
+    "title": "Alıcılar",
+    "intro": "Potansiyel alıcılarınız burada. İlk teması hazırlayın; hiçbir mesaj sizin onayınız olmadan gönderilmez.",
+    "colCompany": "Firma",
+    "colCountry": "Ülke",
+    "colSource": "Kaynak",
+    "colScore": "Skor",
+    "colStatus": "Durum",
+    "colCreated": "Eklenme",
+    "sortLabel": "Sırala",
+    "sortDefault": "Sıcak lead önce",
+    "sortScore": "Skora göre",
+    "sortDate": "Tarihe göre",
+    "filterLabel": "Duruma göre filtrele",
+    "filterAll": "Tüm durumlar",
+    "hot": "Sıcak lead",
+    "src": {
+      "rfq": "Teklif talebi",
+      "csv_import": "CSV",
+      "manual": "Elle eklendi",
+      "demo": "Demo"
+    },
+    "empty": "Henüz lead yok. Bir CSV içe aktarın veya bir kişiyi elle ekleyin.",
+    "emptyFiltered": "Bu durumda lead yok.",
+    "importCsv": "CSV içe aktar",
+    "addManual": "Elle ekle",
+    "scoreEstimated": "Skor tahminidir: kaynak, ürün uyumu, ülke ve e-posta puanlarının toplamı.",
+    "scoreOf": "Skor {{n}}; ayrıntıyı göster",
+    "breakdown": {
+      "title": "Skor ayrıntısı (tahmini)",
+      "source": "Kaynak",
+      "product_match": "Ürün uyumu",
+      "country": "Ülke",
+      "email": "E-posta"
+    },
+    "status": {
+      "new": "Yeni",
+      "draft_ready": "Taslak hazır",
+      "sent": "Gönderildi",
+      "replied": "Yanıt geldi",
+      "quoted": "Teklif verildi",
+      "won": "Kazanıldı",
+      "lost": "Kaybedildi",
+      "do_not_contact": "İletişim kurma"
+    },
+    "sourceNoteLabel": "Bu kişiyi nereden buldunuz?",
+    "sourceNoteHint": "KVKK/GDPR gereği bir kişinin verisini nereden aldığınızı kaydetmeniz gerekir; kişi sorarsa kaynağı gösterebilirsiniz. Örnekler: Anuga 2025 fuar kataloğu, Kolay İhracat Platformu alıcı listesi, kartvizit.",
+    "sourceNotePlaceholder": "Anuga 2025 fuar kataloğu",
+    "form": {
+      "title": "Elle lead ekle",
+      "company_name": "Firma adı",
+      "country": "Ülke kodu (ör. DE)",
+      "contact_name": "İletişim kişisi",
+      "email": "E-posta",
+      "website": "Web sitesi",
+      "notes": "Notlar",
+      "submit": "Lead ekle",
+      "added": "Lead eklendi."
+    },
+    "csv": {
+      "title": "CSV içe aktar",
+      "file": "CSV dosyası seçin",
+      "previewTitle": "Dosya önizlemesi (ilk satırlar, toplam {{n}} satır)",
+      "mapTitle": "Sütunları eşleştirin",
+      "none": "— kullanma —",
+      "company_name": "Firma adı (zorunlu)",
+      "country": "Ülke (boşsa hedef pazar)",
+      "contact_name": "İletişim kişisi",
+      "email": "E-posta",
+      "website": "Web sitesi",
+      "notes": "Notlar",
+      "run": "İçe aktar",
+      "result": "{{imported}} lead eklendi, {{skipped}} satır atlandı.",
+      "errorsTitle": "Atlanan satırlar",
+      "row": "Satır {{row}}",
+      "reasons": {
+        "no_company_name": "Firma adı boş",
+        "bad_country": "Ülke kodu geçersiz (2 harf olmalı)",
+        "bad_email": "E-posta geçersiz",
+        "duplicate": "Bu e-posta zaten kayıtlı"
+      }
+    },
+    "detail": {
+      "back": "Alıcılara dön",
+      "contact": "İletişim",
+      "website": "Web sitesi",
+      "sourceNote": "Kaynak notu",
+      "notes": "Notlar",
+      "rfqMessage": "Teklif talebi mesajı",
+      "products": "İlgilendiği ürünler",
+      "quantity": "Miktar",
+      "prepare": "İlk teması hazırla",
+      "preparing": "Hazırlanıyor…",
+      "blocked": "Bu kişi iletişimi reddetti; mesaj hazırlanamaz.",
+      "markWon": "Kazanıldı",
+      "markLost": "Kaybedildi",
+      "markDnc": "İletişim kurma",
+      "confirmTitle": "Durumu değiştir",
+      "confirmBody": "Bu lead'in durumu '{{status}}' olarak değiştirilecek. Emin misiniz?",
+      "confirm": "Evet, değiştir",
+      "dncWarn": "'İletişim kurma' geri alınamaz: bu kişiye bir daha mesaj hazırlanamaz.",
+      "history": "Mesaj geçmişi",
+      "noHistory": "Henüz mesaj yok.",
+      "inbound": "Gelen yanıt",
+      "outbound": "Giden mesaj",
+      "openDraft": "Taslağı aç",
+      "msgStatus": {
+        "draft": "Taslak",
+        "approved": "Onaylandı",
+        "sent": "Mail uygulamasına aktarıldı",
+        "rejected": "Reddedildi",
+        "received": "Alındı"
+      }
+    },
+    "draft": {
+      "title": "İlk temas taslağı",
+      "notSent": "Bu taslak henüz gönderilmedi; onay kuyruğundan onaylamanız gerekir.",
+      "fallback": "Yapay zekâ şu an yanıt vermedi; hazır bir şablon kullanıldı. Göndermeden önce gözden geçirin.",
+      "subject": "Konu",
+      "body": "Mesaj",
+      "buyerLang": "Alıcının dilinde ({{lang}})",
+      "translation": "Çeviri ({{lang}}, salt okunur)",
+      "translationUnavailable": "Çeviri şu an kullanılamıyor",
+      "save": "Kaydet",
+      "saved": "Kaydedildi; çeviri yenilendi.",
+      "tones": "Üslup",
+      "formal": "Daha resmi",
+      "shorter": "Daha kısa",
+      "samples": "Numune teklifini vurgula",
+      "regenerate": "Yeniden oluştur",
+      "toApprovals": "Onay kuyruğuna git",
+      "close": "Taslağı kapat"
+    },
+    "reply": {
+      "title": "Alıcı yanıt asistanı",
+      "label": "Alıcının yanıtını yapıştırın",
+      "analyze": "Analiz et",
+      "analyzing": "Analiz ediliyor…",
+      "translation": "Çeviri",
+      "summary": "Özet",
+      "intent": "Niyet",
+      "terms": "Tespit edilen şartlar",
+      "none": "—",
+      "quantity": "Miktar",
+      "incoterm": "Teslim şekli (Incoterm)",
+      "delivery_date": "Teslim tarihi",
+      "certifications": "Sertifikalar",
+      "noAnalysis": "Yapay zekâ şu an analiz yapamadı; yalnızca güvenlik kontrolleri çalıştı. Yanıtı kendiniz okuyun.",
+      "intents": {
+        "interested": "İlgileniyor",
+        "asks_price": "Fiyat soruyor",
+        "asks_samples": "Numune istiyor",
+        "not_interested": "İlgilenmiyor",
+        "other": "Diğer"
+      },
+      "flagsTitle": "Dikkat edilmesi gerekenler",
+      "flags": {
+        "payment_change": "Ödeme bilgisinin (hesap/IBAN) değiştiği söyleniyor. Bu, ihracat dolandırıcılığında çok görülen bir yöntemdir; telefonla doğrulayın.",
+        "urgency": "Aşırı acele ettiriliyor. Dolandırıcılar düşünmenize zaman bırakmamaya çalışır.",
+        "domain_mismatch": "Yanıttaki e-posta alanı, lead'in kayıtlı e-posta alanından farklı. Kimlik taklidi olabilir.",
+        "upfront_payment": "Peşin veya tam ön ödeme isteniyor. Bu, dolandırıcılıkta sık görülür; akreditif veya kısmi ödeme tercih edin."
+      },
+      "suggested": "Önerilen yanıt taslağı hazır; henüz gönderilmedi.",
+      "editDraft": "Taslağı düzenle",
+      "toApprovals": "Onay kuyruğuna git",
+      "optOut": "Alıcı iletişim istemiyor — lead 'İletişim kurma' olarak işaretlendi.",
+      "optOutKeyword": "Bu karar, yanıttaki açık bir 'iletişim kurmayın' ifadesinden otomatik alındı."
+    }
   },
   "approvals": {
     "title": "Onaylar"
@@ -432,7 +598,8 @@
     "title": "Yönetim"
   },
   "demo": {
-    "title": "Demo"
+    "title": "Demo",
+    "badge": "DEMO – kurgusal firma"
   },
   "account": {
     "title": "Hesabım"

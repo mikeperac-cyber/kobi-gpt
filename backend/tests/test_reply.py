@@ -89,7 +89,7 @@ async def test_red_flag_heuristics_without_llm(db, producer, fake_llm):
     # keyword opt-out still honoured without LLM
     lid2 = await _lead(db, p, company_name="C")
     j2 = (await _post(p, lid2, "Bitte nicht mehr kontaktieren")).json()
-    assert j2["draft"] is None
+    assert j2["draft"] is None and j2["analysis"]["opt_out"] is True
     assert (await db.leads.find_one({"company_name": "C"}))["status"] == "do_not_contact"
 
 
@@ -150,3 +150,14 @@ async def test_broad_phrase_not_blocked_when_llm_works(db, producer, fake_llm):
     fake_llm.responses = _llm({**ANALYSIS, "intent": "interested"})
     j = (await _post(p, await _lead(db, p), "Kein Interesse an Salz, aber an Pistazien")).json()
     assert j["draft"] is not None and "opt_out_source" not in j["analysis"]
+
+
+async def test_lead_messages_owned_and_ordered(db, producer, fake_llm):
+    a, b = await producer("Ali"), await producer("Veli")
+    fake_llm.responses = _llm()
+    lid = await _lead(db, a)
+    await _post(a, lid)
+    r = await a["client"].get(f"/api/leads/{lid}/messages")
+    assert r.status_code == 200 and [m["direction"] for m in r.json()] == ["inbound", "outbound"]
+    assert_no_floor(r.json())
+    assert (await b["client"].get(f"/api/leads/{lid}/messages")).status_code == 404

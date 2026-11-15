@@ -309,6 +309,9 @@ async def analyze_reply(lead: dict, company: dict, products: list[dict], text: s
         analysis = {"translation": None, "summary": [], "intent": "other", "red_flags": heur, "opt_out": False,
                     "terms": {"quantity": None, "incoterm": None, "delivery_date": None, "certifications": []}}
         optout = heuristic_opt_out(text)
+        analysis["opt_out"] = optout
+        if explicit_opt_out(text):
+            analysis["opt_out_source"] = "keyword"
     now = datetime.now(timezone.utc)
     inbound = {"lead_id": str(lead["_id"]), "company_id": cid, "direction": "inbound", "kind": "reply",
                "language": lang, "subject": None, "body": text, "body_tr": analysis["translation"],

@@ -12,7 +12,9 @@ const ProductsPage = lazy(() => import('./pages/products/ProductsPage'))
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'))
 const StorefrontPage = lazy(() => import('./pages/storefront/Index'))
 const CompliancePage = lazy(() => import('./pages/compliance/Index'))
-const LeadsPage = lazy(() => import('./pages/leads/Index'))
+const LeadsPage = lazy(() => import('./pages/leads/LeadsTable'))
+const LeadDetail = lazy(() => import('./pages/leads/LeadDetail'))
+const Placeholder = lazy(() => import('./components/Placeholder'))
 const KbList = lazy(() => import('./pages/admin/KbList'))
 const PrivacyNotice = lazy(() => import('./pages/privacy/PrivacyNotice'))
 
@@ -32,6 +34,8 @@ export default function App() {
           <Route path="/storefront" element={<StorefrontPage />} />
           <Route path="/compliance" element={<CompliancePage />} />
           <Route path="/leads" element={<LeadsPage />} />
+          <Route path="/leads/:id" element={<LeadDetail />} />
+          <Route path="/approvals" element={<Placeholder titleKey="approvals.title" />} />
           <Route element={<AdminRoute />}>
             <Route path="/admin/kb" element={<KbList />} />
           </Route>

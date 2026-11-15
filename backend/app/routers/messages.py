@@ -15,6 +15,15 @@ async def _products(cid: str) -> list[dict]:
     return await get_db().products.find({"company_id": cid}).to_list(100)
 
 
+@router.get("/leads/{lead_id}/messages")
+async def lead_messages(lead_id: str, company: dict = Depends(current_company)):
+    cid = str(company["_id"])
+    await owned("leads", lead_id, cid)
+    docs = await get_db().messages.find({"lead_id": lead_id, "company_id": cid}).to_list(500)
+    docs.sort(key=lambda m: m["created_at"].timestamp())
+    return to_json(docs)
+
+
 @router.post("/leads/{lead_id}/draft", status_code=201)
 async def draft(lead_id: str, body: DraftIn, company: dict = Depends(current_company),
                 user: dict = Depends(current_user)):

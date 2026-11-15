@@ -81,11 +81,11 @@ Date: 2026-11-14.
 7 PASS, 0 FAIL. Partial rows: 2a (fallback only; "why 2008.19 rather than 0802.51" NOT VERIFIED, needs a live LLM), 2b and 2c (fallback path; 2c API only), 5 (text layer and fonts only, glyphs not seen). Rows 1, 3, 4, 6, 7 fully run. In-memory DB; no live LLM.
 
 ### Defects / follow-ups (none block acceptance)
-1. PDF labels fallback text as AI output. On a fallback report each item prints "Yapay zekâ açıklaması: <same sentence as the summary>" right under the summary (all items in `phase3-report.pdf`). The UI hides that block when `why == summary`; the PDF does not. Misleading label (honest-output principle) and a duplicated line. Likely `backend/app/services/pdf_service.py` (per-item AI-explanation line); fix: skip it when `reason == summary`.
-2. In fallback the incentive cards show no "Neden uygun?" (hidden by `frontend/src/pages/compliance/ReportPage.tsx` when `why == summary`), so spec step 4 ("each with Neden uygun?") is met only with a live LLM.
-3. The score formula is a click-to-open toggle, not a hover tooltip (spec says tooltip). Works on touch; wording only.
-4. Pistachio: calling the API without `processing` makes the fallback rank 0802.51 first. The UI requires a processing choice for food products, so the demo path is not affected.
-5. A report snapshots KB verification: after an admin verifies a rule, existing reports keep "doğrulanmadı" until the producer re-runs the check (a re-run restarts ticks and score at 0).
+1. PDF labels fallback text as AI output. On a fallback report each item prints "Yapay zekâ açıklaması: <same sentence as the summary>" right under the summary (all items in `phase3-report.pdf`). The UI hides that block when `why == summary`; the PDF does not. Misleading label (honest-output principle) and a duplicated line. Likely `backend/app/services/pdf_service.py` (per-item AI-explanation line); fix: skip it when `reason == summary`. **Fixed in a9ba3f4 (not re-walked in browser)**
+2. In fallback the incentive cards show no "Neden uygun?" (hidden by `frontend/src/pages/compliance/ReportPage.tsx` when `why == summary`), so spec step 4 ("each with Neden uygun?") is met only with a live LLM. **Fixed in a9ba3f4 (not re-walked in browser)**
+3. The score formula is a click-to-open toggle, not a hover tooltip (spec says tooltip). Works on touch; wording only. **Accepted — keyboard-accessible click toggle works on touch; wording only.**
+4. Pistachio: calling the API without `processing` makes the fallback rank 0802.51 first. The UI requires a processing choice for food products, so the demo path is not affected. **Accepted — the UI requires the processing choice, so the demo path is unaffected.**
+5. A report snapshots KB verification: after an admin verifies a rule, existing reports keep "doğrulanmadı" until the producer re-runs the check (a re-run restarts ticks and score at 0). **Fixed in a9ba3f4 (not re-walked in browser)**
 
 ### Not verified
 - Any real LLM call: GTİP reasoning (incl. "why 2008.19 not 0802.51"), personalized reasons and next steps, "Neden uygun?" text.

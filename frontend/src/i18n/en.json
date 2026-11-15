@@ -47,7 +47,7 @@
     "compliance": "Compliance",
     "leads": "Buyers",
     "admin": "Admin",
-    "approvals": "Approvals",
+    "approvals": "Pending approvals",
     "pipeline": "Pipeline",
     "rates": "Logistics rates"
   },
@@ -457,7 +457,7 @@
     "status": {
       "new": "New",
       "draft_ready": "Draft ready",
-      "sent": "Handed off",
+      "sent": "Sent",
       "replied": "Reply received",
       "quoted": "Quote sent",
       "won": "Won",
@@ -611,13 +611,13 @@
     "handed": "Handed to your mail app",
     "copied": "Copied to clipboard",
     "attachPdf": "Attach the PDF to the email",
-    "noEmail": "This contact has no email; the text was copied to the clipboard.",
     "quoteSummary": "{{qty}} · {{incoterm}} · total {{total}}",
     "createdAt": "Created",
     "lang": "Language",
     "loadError": "Could not load the list.",
     "downloadFail": "Could not download the PDF; try again from the quote page.",
-    "quoteReadOnly": "To change a quote, reject it and prepare a new one."
+    "quoteReadOnly": "To change a quote, reject it and prepare a new one.",
+    "copyFailed": "Could not copy; copy the text below manually."
   },
   "quotes": {
     "title": "Prepare quote",
@@ -675,7 +675,7 @@
     "col": {
       "new": "New",
       "draft_ready": "Draft ready",
-      "sent": "Handed off",
+      "sent": "Sent",
       "replied": "Reply received",
       "quoted": "Quote sent",
       "won": "Won",

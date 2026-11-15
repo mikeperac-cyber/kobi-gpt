@@ -20,19 +20,21 @@ type Item = { kind: 'message'; at: string; m: Msg } | { kind: 'quote'; at: strin
 
 const MAILTO_MAX = 1800
 
-async function copyText(text: string) {
-  try { await navigator.clipboard.writeText(text); return }
+async function copyText(text: string): Promise<boolean> {
+  try { await navigator.clipboard.writeText(text); return true }
   catch { /* fall through to the textarea route */ }
   const ta = document.createElement('textarea')
   ta.value = text
   document.body.appendChild(ta)
   ta.select()
-  document.execCommand('copy')
+  let ok = false
+  try { ok = document.execCommand('copy') } catch { /* ok stays false */ }
   ta.remove()
+  return ok
 }
 
 /** mailto cannot be long or empty-addressed: those go to the clipboard instead. */
-async function handOff(email: string | undefined, subject: string, body: string): Promise<'mailto' | 'clipboard'> {
+async function handOff(email: string | undefined, subject: string, body: string): Promise<'mailto' | 'clipboard' | 'failed'> {
   const url = `mailto:${email ?? ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   if (!email || url.length > MAILTO_MAX) {
     await copyText(`Subject: ${subject}\n\n${body}`)
@@ -59,12 +61,15 @@ async function downloadPdf(id: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10000)
 }
 
+const HOW = { mailto: 'approvals.handed', clipboard: 'approvals.copied', failed: 'approvals.copyFailed' } as const
+
 export default function ApprovalQueue() {
   const { t } = useTranslation()
   const [items, setItems] = useState<Item[] | null>(null)
   const [busy, setBusy] = useState('')
   const [toast, setToast] = useState<string[]>([])
   const [err, setErr] = useState('')
+  const [manual, setManual] = useState('')
   const [rejecting, setRejecting] = useState<Item | null>(null)
   const [reason, setReason] = useState('')
   const [rejErr, setRejErr] = useState('')
@@ -84,13 +89,17 @@ export default function ApprovalQueue() {
   const remove = (i: Item) => setItems((cur) => cur && cur.filter((x) => idOf(x) !== idOf(i)))
 
   async function approve(i: Item) {
-    setBusy(idOf(i)); setErr(''); setToast([])
+    setBusy(idOf(i)); setErr(''); setToast([]); setManual('')
     try {
       if (i.kind === 'message') {
         const m = await api<Message>(`/api/messages/${i.m.id}/approve`, { method: 'POST' })
-        const how = await handOff(i.m.lead.email, m.subject ?? i.m.subject ?? '', m.body ?? i.m.body)
+        const subj = m.subject ?? i.m.subject ?? '', bod = m.body ?? i.m.body
+        const how = await handOff(i.m.lead.email, subj, bod)
         remove(i)
-        setToast([t(how === 'mailto' ? 'approvals.handed' : 'approvals.copied')])
+        if (how === 'failed') setManual(`Subject: ${subj}
+
+${bod}`)
+        setToast([t(HOW[how])])
       } else {
         const q = i.q
         await api(`/api/quotes/${q.id}/approve`, { method: 'POST' })
@@ -99,8 +108,12 @@ export default function ApprovalQueue() {
         const msgs: string[] = []
         try { await downloadPdf(q.id) } catch { msgs.push(t('approvals.downloadFail')) }
         const cover = quoteCover[lang]
-        const how = await handOff(q.lead.email, cover.subject, cover.body(q.lead.contact_name ?? ''))
-        setToast([t(how === 'mailto' ? 'approvals.handed' : 'approvals.copied'), t('approvals.attachPdf'), ...msgs])
+        const text = cover.body(q.lead.contact_name ?? '')
+        const how = await handOff(q.lead.email, cover.subject, text)
+        if (how === 'failed') setManual(`Subject: ${cover.subject}
+
+${text}`)
+        setToast([t(HOW[how]), t('approvals.attachPdf'), ...msgs])
       }
     } catch (x) { setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network')); void load() }
     setBusy('')
@@ -127,6 +140,7 @@ export default function ApprovalQueue() {
           {toast.map((m) => <p key={m}>{m}</p>)}
         </div>
       )}
+      {manual && <Textarea readOnly rows={8} value={manual} aria-label={t('approvals.copyFailed')} onFocus={(e) => e.currentTarget.select()} />}
       {err && <p role="alert" className="text-brand font-semibold">{err}</p>}
       {items === null && !err && <p role="status">{t('common.loading')}</p>}
       {items?.length === 0 && <p className="text-slate-700">{t('approvals.empty')}</p>}

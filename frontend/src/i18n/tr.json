@@ -47,7 +47,7 @@
     "compliance": "Mevzuat",
     "leads": "Alıcılar",
     "admin": "Yönetim",
-    "approvals": "Onaylar",
+    "approvals": "Onay Bekleyenler",
     "pipeline": "Süreç",
     "rates": "Lojistik tarifeleri"
   },
@@ -457,7 +457,7 @@
     "status": {
       "new": "Yeni",
       "draft_ready": "Taslak hazır",
-      "sent": "Aktarıldı",
+      "sent": "Gönderildi",
       "replied": "Yanıt geldi",
       "quoted": "Teklif verildi",
       "won": "Kazanıldı",
@@ -611,13 +611,13 @@
     "handed": "Mail uygulamasına aktarıldı",
     "copied": "Panoya kopyalandı",
     "attachPdf": "PDF'i e-postaya ekleyin",
-    "noEmail": "Bu kişinin e-postası yok; metin panoya kopyalandı.",
     "quoteSummary": "{{qty}} · {{incoterm}} · toplam {{total}}",
     "createdAt": "Oluşturulma",
     "lang": "Dil",
     "loadError": "Liste yüklenemedi.",
     "downloadFail": "PDF indirilemedi; teklif sayfasından tekrar deneyin.",
-    "quoteReadOnly": "Teklifi değiştirmek için reddedip yenisini hazırlayın."
+    "quoteReadOnly": "Teklifi değiştirmek için reddedip yenisini hazırlayın.",
+    "copyFailed": "Kopyalanamadı; metni aşağıdan elle kopyalayın."
   },
   "quotes": {
     "title": "Teklif hazırla",
@@ -675,7 +675,7 @@
     "col": {
       "new": "Yeni",
       "draft_ready": "Taslak hazır",
-      "sent": "Aktarıldı",
+      "sent": "Gönderildi",
       "replied": "Yanıt geldi",
       "quoted": "Teklif verildi",
       "won": "Kazanıldı",

@@ -29,5 +29,5 @@
 ## Task 29b: approvals, quotes, pipeline
 - `mailto:` cannot attach files. Approving a quote hands a short cover note (German or English by buyer country, kept in `frontend/src/data/buyerStrings.ts`, not producer i18n) to the mail app and, at the same moment, downloads the buyer-language PDF; the toast adds "Attach the PDF to the email". mailto URLs over 1800 characters, or leads without an email, copy "Subject: ...\n\n..." to the clipboard instead ("Copied to clipboard").
 - Quote drafts have no edit route: the queue shows them read-only with Approve and Reject; `POST /api/quotes/{id}/reject {reason}` was added (same shape as messages).
-- `GET /api/pipeline/stats` counts real records for the caller's company only; the pipeline "sent" column is labelled "Handed off" / "Aktarıldı" (lead status `sent` no longer reads "Gönderildi").
+- `GET /api/pipeline/stats` counts real records for the caller's company only; lead status `sent` and the pipeline "sent" column keep the spec labels "Gönderildi" / "Sent". The "never Gönderildi" rule applies only to the approve toast ("Mail uygulamasına aktarıldı" / "Handed to your mail app"). If neither mailto nor clipboard works, the text is shown in a read-only textarea with "Kopyalanamadı".
 - `/api/approvals` lead summaries (messages and quotes) now include `email`, `contact_name`, `is_demo`.

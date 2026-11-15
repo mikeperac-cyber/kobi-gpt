@@ -7,11 +7,11 @@ from app.core.csvutil import MAX_IMPORT, parse_csv
 from app.core.db import get_db
 from app.core.security import current_company, owned
 from app.core.serialize import to_json
+from app.core.text import EMAIL as _EMAIL
 from app.models.lead import PATCHABLE, STATUSES, ImportIn, LeadIn, StatusIn
 from app.services.scoring import score_for_company
 
 router = APIRouter(prefix="/leads")
-_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 IMPORT_TTL = timedelta(hours=1)
 
 
@@ -43,6 +43,8 @@ def _ts(d):
 async def list_leads(sort: str | None = None, status: str | None = None, company: dict = Depends(current_company)):
     q = {"company_id": str(company["_id"])}
     if status:
+        if status not in STATUSES:
+            raise _err(422, "validation_error")
         q["status"] = status
     docs = await get_db().leads.find(q).to_list(5000)
     if sort == "score":
@@ -86,17 +88,17 @@ async def import_leads(body: ImportIn, company: dict = Depends(current_company))
     imported, skipped, errors = 0, 0, []
     seen = {d["email"].lower() async for d in db.leads.find({"company_id": cid, "email": {"$ne": ""}})}
     now = datetime.now(timezone.utc)
+    default_cc = ((await db.markets.find_one({"company_id": cid})) or {}).get("country_code") or "DE"
 
     for n, row in enumerate(imp["rows"], start=2):  # row 1 = header
         def get(k):
             col = getattr(m, k)
             return (row.get(col) or "").strip() if col else ""
 
-        name, country, email = get("company_name"), get("country").upper(), get("email")
+        name, country, email = get("company_name"), get("country").upper() or default_cc, get("email")
         if not name:
-            skipped += 1
-            continue
-        if not re.fullmatch(r"[A-Z]{2}", country):
+            reason = "no_company_name"
+        elif not re.fullmatch(r"[A-Z]{2}", country):
             reason = "bad_country"
         elif email and not _EMAIL.match(email):
             reason = "bad_email"

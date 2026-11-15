@@ -1,4 +1,3 @@
-import re
 from datetime import datetime, timezone
 
 from bson import ObjectId
@@ -7,11 +6,11 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.core.db import get_db
 from app.core.ratelimit import RateLimiter
+from app.core.text import EMAIL as _EMAIL
 from app.services.scoring import score_for_company
 
 router = APIRouter(prefix="/public")
 _limiter = RateLimiter(5, 3600)
-_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 class RfqIn(BaseModel):

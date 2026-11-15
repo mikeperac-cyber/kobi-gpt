@@ -1,4 +1,7 @@
+import re
 import unicodedata
+
+EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 _TR = {**dict(zip("şŞğĞıIİöÖüÜçÇäÄ", "ssggiiioouuccaa")), "ß": "ss"}
 _TR = str.maketrans(_TR)

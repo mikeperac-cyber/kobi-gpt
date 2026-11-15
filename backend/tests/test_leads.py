@@ -52,7 +52,9 @@ async def test_csv_import_bom_cp1254_semicolon(producer, db):
     assert pv["headers"] == ["Firma", "Land", "Mail"] and pv["rows"][0][0] == "Şahin Handels GmbH"
     r = await c.post("/api/leads/import", json={"file_id": pv["file_id"], "mapping": MAP, "source_note": "Messe"})
     body = r.json()
-    assert body["imported"] == 1 and body["skipped"] == 3 and {e["row"] for e in body["errors"]} >= {3}
+    assert body["imported"] == 1 and body["skipped"] == 3 and len(body["errors"]) == body["skipped"]
+    assert body["errors"] == [{"row": 3, "reason": "duplicate"}, {"row": 4, "reason": "bad_country"},
+                              {"row": 5, "reason": "no_company_name"}]
     lead = await db.leads.find_one({"company_name": "Şahin Handels GmbH"})
     assert lead["source"] == "csv_import" and lead["source_note"] == "Messe" and lead["score"] == 20 + 15 + 15
     assert await db.lead_imports.count_documents({}) == 0
@@ -105,3 +107,17 @@ async def test_status_rules(producer):
     assert (await c.patch(f"/api/leads/{lid}", json={"status": "do_not_contact"})).json()["status"] == "do_not_contact"
     r = await c.patch(f"/api/leads/{lid}", json={"status": "new"})
     assert r.status_code == 409 and r.json()["detail"]["code"] == "lead_blocked"
+
+
+async def test_csv_import_country_defaults_to_market(producer, db):
+    c = (await producer("Ali"))["client"]
+    pv = (await _prev(c, b"Firma,Mail"+bytes([10])+b"A GmbH,a@a.de"+bytes([10])+b"B GmbH,b@b.de"+bytes([10]))).json()
+    r = await c.post("/api/leads/import", json={"file_id": pv["file_id"], "mapping": {"company_name": "Firma", "email": "Mail"},
+                                                "source_note": "x"})
+    assert r.json() == {"imported": 2, "skipped": 0, "errors": []}
+    assert {d["country"] async for d in db.leads.find({})} == {"DE"}
+
+
+async def test_status_filter_validated(producer):
+    c = (await producer("Ali"))["client"]
+    assert (await c.get("/api/leads?status=bogus")).status_code == 422

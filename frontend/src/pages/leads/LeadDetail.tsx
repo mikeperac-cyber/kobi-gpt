@@ -85,7 +85,7 @@ export default function LeadDetail() {
       </Card>
 
       <div ref={draftRef}>
-        {draft && <OutreachDraft lead={id} message={draft} onChange={(m) => { setDraft(m); void load() }} onReplace={(m) => { setDraft(m); void load() }} onClose={() => setDraft(null)} />}
+        {draft && <OutreachDraft lead={id} message={draft} onChange={(m) => { setDraft(m); void load() }} onReplace={(m) => { setDraft(m); void load() }} onClose={(e) => { setDraft(null); void load().then(() => e && setErr(e)) }} />}
       </div>
 
       <ReplyAssistant lead={id} blocked={blocked} onResult={load} onEditDraft={setDraft} />

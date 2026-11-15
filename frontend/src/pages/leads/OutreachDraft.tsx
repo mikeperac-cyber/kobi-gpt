@@ -16,7 +16,7 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
   message: Message
   onChange(m: Message): void
   onReplace(m: Message): void
-  onClose(): void
+  onClose(err?: string): void
 }) {
   const { t, i18n } = useTranslation()
   const [subject, setSubject] = useState(message.subject ?? '')
@@ -28,7 +28,7 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
   useEffect(() => { setSubject(message.subject ?? ''); setBody(message.body); setMsg(''); setErr('') }, [message.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isDraft = message.status === 'draft'
-  const canRegenerate = isDraft && message.kind !== 'reply' // reply drafts can only be edited, not regenerated as first contact
+  const canRegenerate = isDraft && (message.kind === 'cold' || message.kind === 'rfq_answer') // reply drafts are edit-only
   const toggle = (k: string) => setTones(tones.includes(k) ? tones.filter((x) => x !== k) : [...tones, k])
 
   async function save() {
@@ -42,11 +42,17 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
 
   async function regenerate() {
     setBusy(true); setMsg(''); setErr('')
+    let rejected = false
     try {
       // Reject the superseded draft first: if that fails, no second draft is created.
       await api(`/api/messages/${message.id}/reject`, { method: 'POST', json: { reason: 'regenerated' } })
+      rejected = true
       onReplace(await api<Message>(`/api/leads/${lead}/draft`, { method: 'POST', json: { tone: tones } }))
-    } catch (x) { setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network')) }
+    } catch (x) {
+      const m = x instanceof ApiError ? t(x.messageKey) : t('errors.network')
+      setErr(m)
+      if (rejected) onClose(m) // old draft is gone; parent closes it, reloads the lead and shows the error
+    }
     setBusy(false)
   }
 
@@ -54,7 +60,7 @@ export default function OutreachDraft({ lead, message, onChange, onReplace, onCl
     <Card className="space-y-4">
       <div className="flex items-start justify-between gap-2">
         <h2 className="text-lg font-semibold">{t('leads.draft.title')}</h2>
-        <Button variant="ghost" onClick={onClose}>{t('leads.draft.close')}</Button>
+        <Button variant="ghost" onClick={() => onClose()}>{t('leads.draft.close')}</Button>
       </div>
       <p role="note" className="bg-amber-50 border border-amber-300 rounded-md p-3 font-semibold">{t('leads.draft.notSent')}</p>
       {message.fallback && <p role="status" className="text-sm text-slate-700">{t('leads.draft.fallback')}</p>}

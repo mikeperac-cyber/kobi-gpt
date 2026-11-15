@@ -37,8 +37,7 @@ async function copyText(text: string): Promise<boolean> {
 async function handOff(email: string | undefined, subject: string, body: string): Promise<'mailto' | 'clipboard' | 'failed'> {
   const url = `mailto:${email ?? ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   if (!email || url.length > MAILTO_MAX) {
-    await copyText(`Subject: ${subject}\n\n${body}`)
-    return 'clipboard'
+    return (await copyText(`Subject: ${subject}\n\n${body}`)) ? 'clipboard' : 'failed'
   }
   const a = document.createElement('a')
   a.href = url

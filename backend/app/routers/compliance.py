@@ -90,7 +90,7 @@ async def latest_report(product_id: str, company: dict = Depends(current_company
     docs = await get_db().readiness_reports.find({"product_id": product_id}).sort("created_at", -1).to_list(1)
     if not docs:
         raise HTTPException(404, {"code": "not_found", "message_key": "errors.not_found"})
-    return to_json(docs[0])
+    return to_json(await regai.refresh_verification(get_db(), docs[0]))
 
 
 @router.patch("/reports/{report_id}/items/{rule_id}")
@@ -127,7 +127,7 @@ async def report_pdf(report_id: str, user: dict = Depends(current_user), company
     contact = company.get("contact") or {}
     public = {"name": company.get("name"), "city": company.get("city"), "sector": company.get("sector"),
               "contact": {k: contact.get(k) for k in ("email", "phone", "website")}}  # allow-list, never a product doc
-    data = readiness_pdf({**to_json(rep), "product_name": product.get("name_tr", "")}, public, lang)
+    data = readiness_pdf({**to_json(await regai.refresh_verification(db, rep)), "product_name": product.get("name_tr", "")}, public, lang)
     url = await get_storage().save_file(data, f"reports/{company['_id']}", ".pdf")
     await db.readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"pdf_url": url}})
     return Response(data, media_type="application/pdf",

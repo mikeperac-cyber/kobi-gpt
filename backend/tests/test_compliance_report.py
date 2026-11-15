@@ -229,3 +229,17 @@ async def test_zero_known_rule_ids_falls_back(producer, kb, fake_llm, db):
     assert all(i["applies"] for i in rep["checklist"])
     job = await db.jobs.find_one({"kind": "compliance"}, sort=[("created_at", -1)])
     assert next(s for s in job["steps"] if s["key"] == "rules")["status"] == "fallback"
+
+
+async def test_latest_report_shows_live_kb_verification(producer, kb, fake_llm, admin_client, db):
+    fake_llm.responses = fails
+    p = await producer("Ali")
+    rep = await check(p)
+    c = p["client"]
+    await c.patch(f"/api/compliance/reports/{rep['id']}/items/R1", json={"done": True})
+    before = next(i for i in rep["checklist"] if i["rule_id"] == "R1")
+    assert not before["verified"]
+    assert (await admin_client.post("/api/admin/kb/rules/R1/verify")).status_code == 200
+    latest = (await c.get(f"/api/compliance/reports/latest?product_id={p['product']['id']}")).json()
+    r1 = next(i for i in latest["checklist"] if i["rule_id"] == "R1")
+    assert r1["verified"] is True and r1["last_verified"] and r1["done"] is True

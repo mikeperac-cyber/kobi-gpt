@@ -78,7 +78,7 @@ def readiness_pdf(report: dict, company_public: dict, lang: str) -> bytes:
         for i in rows:
             na = "" if i.get("applies", True) else " — " + t["not_applicable"]
             story += [_p(f'{i[f"title_{lang}"]} — {t[i["level"]]}{na}', title_st), _p(i.get("summary"), body)]
-            if i.get("reason"):
+            if (i.get("reason") or "").strip() not in ("", (i.get("summary") or "").strip()):
                 story.append(_p(f'{t["ai"]}: {i["reason"]}', small))
             story += [_url(i["source_url"], small, t["source"]),
                       _p(t["verified"].format(d=d(i["last_verified"])) if i.get("last_verified") else t["unverified"], small),
@@ -88,8 +88,11 @@ def readiness_pdf(report: dict, company_public: dict, lang: str) -> bytes:
     if report.get("incentives"):
         story.append(_p(t["incentives"], h2))
         for i in report["incentives"]:
-            story += [_p(f'{i[f"name_{lang}"]} ({i.get("provider", "")})', title_st),
-                      _p(f'{t["why"]} {i.get("why", "")}', small), _url(i["source_url"], small, t["source"])]
+            story += [_p(f'{i[f"name_{lang}"]} ({i.get("provider", "")})', title_st), _p(f'{t["why"]}', bold),
+                      _p(i.get("summary"), body)]
+            if (i.get("why") or "").strip() not in ("", (i.get("summary") or "").strip()):
+                story.append(_p(f'{t["ai"]}: {i["why"]}', small))
+            story.append(_url(i["source_url"], small, t["source"]))
     story += [_p(t["score"], h2), _p(f'{report.get("score", 0)} / 100', bold), _p(t["formula"], small)]
     if report.get("next_steps"):
         story.append(_p(t["next_steps"], h2))

@@ -241,3 +241,14 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
             "structural_use": structural_use, "hs6": hs6, "candidates": classification.get("candidates", []),
             "checklist": checklist, "incentives": incentives, "next_steps": steps,
             "score": readiness_score(checklist), "no_match": no_match, "ui_language": ui}
+
+
+async def refresh_verification(db, report: dict) -> dict:
+    """Overlay live KB verified/last_verified (by id) on a report snapshot; everything else stays as snapshotted."""
+    for items, coll, key in ((report.get("checklist", []), db.kb_rules, "rule_id"),
+                             (report.get("incentives", []), db.kb_incentives, "incentive_id")):
+        live = {r["id"]: r for r in await coll.find({"id": {"$in": [i[key] for i in items]}}).to_list(500)}
+        for i in items:
+            if i[key] in live:
+                i["verified"], i["last_verified"] = live[i[key]].get("verified", False), live[i[key]].get("last_verified")
+    return report

@@ -41,10 +41,10 @@ export default function ReportPage({ initial, onRerun }: { initial: Report; onRe
     <Card key={i.incentive_id} className="space-y-2">
       <h3 className="font-semibold">{en ? i.name_en || i.name_tr : i.name_tr}</h3>
       {i.provider && <p className="text-sm text-slate-600">{i.provider}</p>}
-      {i.summary && <p><span className="text-xs font-semibold text-slate-600 block">{t('compliance.officialText')}</span>{i.summary}</p>}
-      {i.why && i.why !== i.summary && (
+      <p><span className="text-xs font-semibold text-slate-600 block">{t('compliance.whyEligible')}</span>{i.summary}</p>
+      {i.why && i.why.trim() !== (i.summary || '').trim() && (
         <p className="rounded-md bg-slate-50 border border-slate-200 p-2 text-sm">
-          <span className="text-xs font-semibold text-slate-600 block">{t('compliance.whyEligible')} · {t('compliance.aiExplanation')}</span>{i.why}
+          <span className="text-xs font-semibold text-slate-600 block">{t('compliance.aiExplanation')}</span>{i.why}
         </p>
       )}
       {i.source_url && <a href={i.source_url} target="_blank" rel="noopener noreferrer" className="text-sm underline text-navy break-all">{t('compliance.source')}: {i.source_url}</a>}

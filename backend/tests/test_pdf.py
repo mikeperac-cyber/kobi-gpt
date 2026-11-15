@@ -64,3 +64,13 @@ async def test_pdf_ownership_and_no_match(producer, kb, fake_llm, db):
     other = await producer("Veli")
     assert (await other["client"].get(f"/api/compliance/reports/{rep['id']}/pdf")).status_code == 404
 
+
+
+async def test_pdf_ai_label_only_when_it_adds_text(producer, kb, fake_llm):
+    p = await producer("Ali")
+    fake_llm.responses = fails
+    _, t = await pdf(p, await check(p))
+    assert "Yapay zekâ açıklaması" not in t and "Neden uygun?" in t
+    fake_llm.responses = selector()
+    _, t = await pdf(p, await check(p), "en")
+    assert "AI explanation" in t and "Why eligible?" in t

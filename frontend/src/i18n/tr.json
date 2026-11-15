@@ -90,7 +90,11 @@
     "kb_id_exists": "Bu kimlikle bir kayıt zaten var.",
     "import_invalid": "CSV içinde geçersiz satırlar var; hiçbir kayıt yazılmadı.",
     "source_note_required": "Bu kişinin nereden geldiğini yazın (kaynak notu).",
-    "lead_blocked": "Bu kişi iletişimi reddetti; durumu değiştirilemez."
+    "lead_blocked": "Bu kişi iletişimi reddetti; durumu değiştirilemez.",
+    "do_not_contact": "Bu kişi iletişimi reddetti; mesaj hazırlanamaz veya onaylanamaz.",
+    "price_in_message": "Mesajlarda fiyat veya tutar bulunamaz. Lütfen kaldırıp tekrar deneyin.",
+    "daily_limit": "Günlük 20 ilk iletişim onayı sınırına ulaşıldı. Yarın tekrar deneyin.",
+    "not_draft": "Bu mesaj artık taslak değil."
   },
   "onboarding": {
     "title": "Firmanızı tanıtın",

@@ -90,7 +90,11 @@
     "kb_id_exists": "A record with this id already exists.",
     "import_invalid": "The CSV has invalid rows; nothing was written.",
     "source_note_required": "Tell us where this contact came from (source note).",
-    "lead_blocked": "This contact opted out and cannot be changed."
+    "lead_blocked": "This contact opted out and cannot be changed.",
+    "do_not_contact": "This contact opted out; no message can be drafted or approved.",
+    "price_in_message": "Outreach messages must not contain prices or amounts. Remove them and try again.",
+    "daily_limit": "Daily limit of 20 first-contact approvals reached. Try again tomorrow.",
+    "not_draft": "This message is no longer a draft."
   },
   "onboarding": {
     "title": "Introduce your company",

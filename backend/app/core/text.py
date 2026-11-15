@@ -3,6 +3,8 @@ import unicodedata
 
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
+EMAIL_ANY = re.compile(r"[^@\s<>(),;:\"']+@[^@\s<>(),;:\"']+\.[^@\s<>(),;:\"'.]+")  # emails inside free text
+
 _TR = {**dict(zip("şŞğĞıIİöÖüÜçÇäÄ", "ssggiiioouuccaa")), "ß": "ss"}
 _TR = str.maketrans(_TR)
 

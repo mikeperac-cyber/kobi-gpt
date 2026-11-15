@@ -5,7 +5,7 @@ from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.security import current_company, current_user, owned
 from app.core.serialize import to_json
-from app.models.message import DraftIn, MessageEditIn, RejectIn
+from app.models.message import DraftIn, MessageEditIn, RejectIn, ReplyIn
 from app.services import outreach_service as svc
 
 router = APIRouter()
@@ -27,6 +27,17 @@ async def draft(lead_id: str, body: DraftIn, company: dict = Depends(current_com
     msg = await svc.draft_first_contact(lead, company, await _products(cid), url, body.tone,
                                         user.get("ui_language", "tr"))
     return to_json(msg)
+
+
+@router.post("/leads/{lead_id}/reply")
+async def reply(lead_id: str, body: ReplyIn, company: dict = Depends(current_company),
+                user: dict = Depends(current_user)):
+    cid = str(company["_id"])
+    lead = await owned("leads", lead_id, cid)
+    if lead["status"] == "do_not_contact":
+        raise svc.err(409, "do_not_contact")
+    return to_json(await svc.analyze_reply(lead, company, await _products(cid), body.text,
+                                           user.get("ui_language", "tr")))
 
 
 @router.put("/messages/{message_id}")

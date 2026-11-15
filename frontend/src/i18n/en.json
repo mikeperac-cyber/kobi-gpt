@@ -537,5 +537,22 @@
       "note_tr": "Note (TR)",
       "note_en": "Note (EN)"
     }
+  },
+  "reply": {
+    "intent": {
+      "interested": "Interested",
+      "asks_price": "Asks for a price",
+      "asks_samples": "Asks for samples",
+      "not_interested": "Not interested",
+      "other": "Other"
+    },
+    "red_flag": {
+      "payment_change": "Payment details changed: verify by phone before paying",
+      "urgency": "Pressure to act immediately",
+      "domain_mismatch": "Email address differs from the buyer's known domain",
+      "upfront_payment": "Demands full advance payment"
+    },
+    "no_summary": "No summary available",
+    "title": "Buyer reply"
   }
 }

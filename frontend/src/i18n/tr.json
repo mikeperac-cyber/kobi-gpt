@@ -537,5 +537,22 @@
       "note_tr": "Not (TR)",
       "note_en": "Not (EN)"
     }
+  },
+  "reply": {
+    "intent": {
+      "interested": "İlgileniyor",
+      "asks_price": "Fiyat soruyor",
+      "asks_samples": "Numune istiyor",
+      "not_interested": "İlgilenmiyor",
+      "other": "Diğer"
+    },
+    "red_flag": {
+      "payment_change": "Ödeme bilgileri değişmiş: ödemeden önce telefonla doğrulayın",
+      "urgency": "Hemen işlem yapmaya zorluyor",
+      "domain_mismatch": "E-posta adresi alıcının bilinen alan adından farklı",
+      "upfront_payment": "Tamamı peşin ödeme istiyor"
+    },
+    "no_summary": "Özet yok",
+    "title": "Alıcı yanıtı"
   }
 }

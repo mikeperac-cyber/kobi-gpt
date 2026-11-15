@@ -14,7 +14,9 @@
     "moq": "Mindestbestellmenge: {moq} {unit}.",
     "samples": "Gerne senden wir Ihnen Muster zu.",
     "link": "Mehr über uns: {url}",
-    "close": "Mit freundlichen Grüßen\n{company}"
+    "close": "Mit freundlichen Grüßen\n{company}",
+    "subject_reply": "Ihre Antwort – {company}",
+    "reply": "vielen Dank für Ihre Nachricht. Gerne erstellen wir Ihnen ein Angebot oder senden Ihnen Muster zu; wir melden uns persönlich bei Ihnen."
   },
   "en": {
     "subject_cold": "Enquiry about {products} – {company}",
@@ -27,6 +29,8 @@
     "moq": "Minimum order: {moq} {unit}.",
     "samples": "We are happy to send samples.",
     "link": "More about us: {url}",
-    "close": "Kind regards\n{company}"
+    "close": "Kind regards\n{company}",
+    "subject_reply": "Your reply – {company}",
+    "reply": "thank you for your message. We would be glad to prepare a quote or send you samples; we will get back to you personally."
   }
 }

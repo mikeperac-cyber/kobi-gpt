@@ -10,7 +10,8 @@ from fastapi import HTTPException
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.serialize import public_product
-from app.models.message import DraftOut, TranslationOut
+from app.core.text import EMAIL_ANY, tr_fold
+from app.models.message import DraftOut, ReplyAnalysisOut, TranslationOut
 from app.services import agent_steps
 from app.services.llm_service import generate_json
 from app.services.storefront_service import COMPANY_KEYS, contains_floor
@@ -25,6 +26,34 @@ _AMOUNT = re.compile(
     rf"\d[\d.,]*\s?(?:€|\$|₺|{_CUR}\b)|(?:€|\$|₺|\b{_CUR}\b)\s?\d"
     r"|(?:\d\s?%|%\s?\d+)\s?(?:Rabatt|discount|indirim)|\b(?:Rabatt|discount|indirim)\w*[^\d\n]{0,15}\d"
     r"|\b(?:Preis\w*|price\w*|fiyat\w*)[^\d\n]{0,12}\d", re.I)
+
+
+RED_FLAGS = ("payment_change", "urgency", "domain_mismatch", "upfront_payment")
+_FLAG_RES = {
+    "payment_change": re.compile(r"\biban\b|new account|neues konto|yeni hesap|bank details (?:have )?changed"
+                                 r"|bankverbindung ge(?:ae|ä)ndert", re.I),
+    "urgency": re.compile(r"\bsofort\b|\burgent|\bimmediately|\bdringend|\bacil\b|within 24 hours", re.I),
+    # "%100 pamuk" must not match: the 100% must sit next to a payment word
+    "upfront_payment": re.compile(
+        r"(?:100\s?%|%\s?100)\s*(?:advance|prepay\w*|upfront|vorkasse|vorauszahlung|peşin|ön ?ödeme)"
+        r"|(?:vorkasse|peşin|advance payment|upfront)\W{0,3}(?:100\s?%|%\s?100|100\b)"
+        r"|full prepayment|vollst(?:ae|ä)ndige vorauszahlung", re.I),
+}
+_OPTOUT_WORDS = ("unsubscribe", "nicht mehr kontaktieren", "kein interesse", "not interested", "remove me",
+                 "iletisim kurmayin")
+
+
+def heuristic_opt_out(text: str) -> bool:
+    t = tr_fold(text or "")
+    return any(w in t for w in _OPTOUT_WORDS)
+
+
+def detect_red_flags(text: str, lead: dict) -> list[str]:
+    out = [k for k in ("payment_change", "urgency", "upfront_payment") if _FLAG_RES[k].search(text or "")]
+    lead_dom = (lead.get("email") or "").rpartition("@")[2].lower()
+    if lead_dom and any(m.rpartition("@")[2].lower() != lead_dom for m in EMAIL_ANY.findall(text or "")):
+        out.append("domain_mismatch")
+    return sorted(out, key=RED_FLAGS.index)
 
 
 class EmailProvider(Protocol):
@@ -202,3 +231,57 @@ async def approve_and_send(db, message_id, user: dict) -> dict:
     if lead and lead.get("status") in ("new", "draft_ready"):
         await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "sent"}})
     return {**msg, **upd}
+
+
+async def analyze_reply(lead: dict, company: dict, products: list[dict], text: str, ui_language: str) -> dict:
+    """Stores the buyer's reply + analysis; creates ONE reply draft in the approval queue (never sends)."""
+    db, cid = get_db(), str(company["_id"])
+    lang = buyer_language(lead.get("country", ""))
+    pub = [{k: public_product(p).get(k) for k in ("name_tr", "material_or_ingredients", "unit", "moq")}
+           for p in products]
+    ctx = {"ui_language": ui_language, "buyer_language": lang, "company": {k: company.get(k) for k in COMPANY_KEYS},
+           "products": pub, "lead": {k: lead.get(k) for k in ("company_name", "country", "contact_name", "email")},
+           "reply_text": text}
+    floors = floors_of(products)
+
+    async def call(t):
+        return await generate_json("reply_analyze", ctx, ReplyAnalysisOut, run_type="reply_analyze",
+                                   company_id=cid, timeout=t)
+
+    out, fell_back = await agent_steps.run_ai_step(None, "analyze", company, call, lambda: None)
+    heur = detect_red_flags(text, lead)
+    if out:
+        flags = sorted(set(heur) | (set(out.red_flags) & set(RED_FLAGS)), key=RED_FLAGS.index)
+        analysis = {**out.model_dump(exclude={"suggested_reply"}), "red_flags": flags}
+        optout = out.opt_out or out.intent == "not_interested"
+    else:
+        analysis = {"translation": None, "summary": [], "intent": "other", "red_flags": heur, "opt_out": False,
+                    "terms": {"quantity": None, "incoterm": None, "delivery_date": None, "certifications": []}}
+        optout = heuristic_opt_out(text)
+    now = datetime.now(timezone.utc)
+    inbound = {"lead_id": str(lead["_id"]), "company_id": cid, "direction": "inbound", "kind": "reply",
+               "language": None, "subject": None, "body": text, "body_tr": analysis["translation"],
+               "translation_language": ui_language, "translation_fallback": fell_back, "status": "received",
+               "analysis": analysis, "created_at": now}
+    inbound["_id"] = (await db.messages.insert_one(inbound)).inserted_id
+    if optout:
+        await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "do_not_contact"}})
+        return {"inbound": inbound, "analysis": analysis, "draft": None}
+    sug, used_fb = None, True
+    if out:
+        body = enforce_outreach_rules(out.suggested_reply.body, floors, lang)
+        subj = out.suggested_reply.subject
+        if body is not None and not has_amount(subj) and not contains_floor(subj, floors):
+            sug, used_fb = {"subject": subj.strip(), "body": body}, False
+    if sug is None:
+        sug = fallback_draft(lead, company, [], None, ["shorter"], lang, "reply")
+    body_tr, tr_fb = await translate(sug["body"], ui_language, company, lang)
+    draft = {"lead_id": str(lead["_id"]), "company_id": cid, "direction": "outbound", "kind": "reply",
+             "language": lang, "subject": sug["subject"], "body": sug["body"], "body_tr": body_tr,
+             "translation_language": ui_language, "translation_fallback": tr_fb, "status": "draft",
+             "approved_by": None, "approved_at": None, "delivery_channel": None, "reject_reason": None,
+             "fallback": used_fb, "created_at": now}
+    draft["_id"] = (await db.messages.insert_one(draft)).inserted_id
+    if lead.get("status") in ("new", "draft_ready", "sent", "replied"):  # never move quoted/won/lost backwards
+        await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "replied"}})
+    return {"inbound": inbound, "analysis": analysis, "draft": draft}

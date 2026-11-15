@@ -217,12 +217,16 @@ async def approve_quote(db, quote_id, user: dict) -> dict:
     now = datetime.now(timezone.utc)
     await claim_draft(db.quotes, q["_id"], now)
     upd = {"status": "sent", "approved_by": str(user["_id"]), "approved_at": now, "delivery_channel": "mailto"}
+    moved = False
     try:
         assert_sent_has_approval({**q, **upd})
-        await db.quotes.update_one({"_id": q["_id"], "status": "sending"}, {"$set": upd})
         if lead and lead.get("status") not in ("won", "lost", "do_not_contact"):
             await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "quoted"}})
+            moved = True
+        await db.quotes.update_one({"_id": q["_id"], "status": "sending"}, {"$set": upd})  # final write: last
     except Exception:
+        if moved:
+            await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": lead["status"]}})
         await db.quotes.update_one({"_id": q["_id"], "status": "sending"},
                                    {"$set": {"status": "draft", "approved_at": None}})
         raise
@@ -261,10 +265,18 @@ async def approve_and_send(db, message_id, user: dict) -> dict:
             raise
         channel = get_settings().email_provider
     upd = {"status": "sent", "approved_by": str(user["_id"]), "approved_at": now, "delivery_channel": channel}
-    assert_sent_has_approval({**msg, **upd})
-    await db.messages.update_one({"_id": msg["_id"], "status": "sending"}, {"$set": upd})
-    if lead and lead.get("status") in ("new", "draft_ready"):
-        await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "sent"}})
+    moved = False
+    try:
+        assert_sent_has_approval({**msg, **upd})
+        if lead and lead.get("status") in ("new", "draft_ready"):
+            await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "sent"}})
+            moved = True
+        await db.messages.update_one({"_id": msg["_id"], "status": "sending"}, {"$set": upd})  # final write: last
+    except Exception:
+        if moved:
+            await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": lead["status"]}})
+        await release()
+        raise
     return {**msg, **upd}
 
 

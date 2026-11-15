@@ -206,3 +206,65 @@ async def test_approve_do_not_contact_and_sample_ownership(producer, db):
     lid2 = await lead(a)
     assert (await a["client"].post(f"/api/leads/{lid2}/sample-task",
                                    json={"product_id": b["product"]["id"]})).status_code == 404
+
+
+class _FailLeadUpdate:
+    """DB proxy (returned by a patched get_db): leads.update_one raises; everything else is the real db."""
+
+    def __init__(self, real):
+        self.real = real
+
+    def __getattr__(self, name):
+        coll = getattr(self.real, name)
+        if name != "leads":
+            return coll
+
+        class Leads:
+            def __getattr__(_self, n):
+                return getattr(coll, n)
+
+            async def update_one(_self, *a, **k):
+                raise RuntimeError("lead update failed")
+
+        return Leads()
+
+
+async def test_quote_approve_lead_update_failure_reverts(producer, db, monkeypatch):
+    from app.routers import quotes as qr
+
+    p = await producer("Ali")
+    q = (await make(p)).json()
+    before = (await db.leads.find_one({}))["status"]
+    monkeypatch.setattr(qr, "get_db", lambda: _FailLeadUpdate(db))
+    with pytest.raises(RuntimeError):
+        await p["client"].post(f"/api/quotes/{q['id']}/approve")
+    d = await db.quotes.find_one({})
+    assert d["status"] == "draft" and d["approved_at"] is None
+    assert (await db.leads.find_one({}))["status"] == before
+    monkeypatch.undo()
+    assert (await p["client"].post(f"/api/quotes/{q['id']}/approve")).status_code == 200
+
+
+async def test_message_approve_lead_update_failure_reverts(producer, db, monkeypatch):
+    from app.routers import messages as mr
+
+    p = await producer("Ali")
+    lid = await lead(p)
+    mid = (await db.messages.insert_one({"lead_id": lid, "company_id": p["company"]["id"], "direction": "outbound",
+                                         "kind": "reply", "language": "de", "subject": "s", "body": "b",
+                                         "status": "draft", "created_at": None})).inserted_id
+    before = (await db.leads.find_one({}))["status"]
+    monkeypatch.setattr(mr, "get_db", lambda: _FailLeadUpdate(db))
+    with pytest.raises(RuntimeError):
+        await p["client"].post(f"/api/messages/{mid}/approve")
+    assert (await db.messages.find_one({}))["status"] == "draft"
+    assert (await db.leads.find_one({}))["status"] == before
+
+
+async def test_nan_sample_weight_stores_no_task(producer, db):
+    p = await producer("Ali")
+    lid = await lead(p)
+    raw = '{"product_id": "%s", "sample_weight_kg": NaN}' % p["product"]["id"]
+    r = await p["client"].post(f"/api/leads/{lid}/sample-task", content=raw,
+                               headers={"content-type": "application/json"})
+    assert r.status_code == 422 and await db.tasks.count_documents({}) == 0

@@ -217,10 +217,15 @@ async def approve_quote(db, quote_id, user: dict) -> dict:
     now = datetime.now(timezone.utc)
     await claim_draft(db.quotes, q["_id"], now)
     upd = {"status": "sent", "approved_by": str(user["_id"]), "approved_at": now, "delivery_channel": "mailto"}
-    assert_sent_has_approval({**q, **upd})
-    await db.quotes.update_one({"_id": q["_id"], "status": "sending"}, {"$set": upd})
-    if lead and lead.get("status") not in ("won", "lost", "do_not_contact"):
-        await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "quoted"}})
+    try:
+        assert_sent_has_approval({**q, **upd})
+        await db.quotes.update_one({"_id": q["_id"], "status": "sending"}, {"$set": upd})
+        if lead and lead.get("status") not in ("won", "lost", "do_not_contact"):
+            await db.leads.update_one({"_id": lead["_id"]}, {"$set": {"status": "quoted"}})
+    except Exception:
+        await db.quotes.update_one({"_id": q["_id"], "status": "sending"},
+                                   {"$set": {"status": "draft", "approved_at": None}})
+        raise
     return {**q, **upd}
 
 

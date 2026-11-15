@@ -153,3 +153,56 @@ async def test_sample_task_created(producer):
         r = await p["client"].post(f"/api/leads/{lid}/sample-task",
                                    json={"product_id": p["product"]["id"], "sample_weight_kg": w})
         assert r.status_code == 422
+
+
+@pytest.mark.parametrize("field", ["unit_price", "quantity"])
+@pytest.mark.parametrize("bad", ["NaN", "Infinity", "-Infinity"])
+async def test_nan_inf_rejected(producer, db, field, bad):
+    p = await producer("Ali")
+    lid = await lead(p)
+    good = {"lead_id": lid, "product_id": p["product"]["id"], "quantity": "500", "unit_price": "12.0",
+            "currency": '"EUR"', "incoterm": '"DAP"', "payment_terms": '"lc"', "valid_until": '"2099-12-31"'}
+    good[field] = bad
+    raw = "{" + ",".join(f'"{k}": {v if v[0] in "\"N-I0123456789" and k not in ("lead_id", "product_id") else chr(34) + v + chr(34)}'
+                         for k, v in good.items()) + "}"
+    r = await p["client"].post("/api/quotes", content=raw, headers={"content-type": "application/json"})
+    assert r.status_code == 422 and await db.quotes.count_documents({}) == 0
+
+
+async def test_nan_sample_weight_rejected(producer):
+    p = await producer("Ali")
+    lid = await lead(p)
+    raw = '{"product_id": "%s", "sample_weight_kg": NaN}' % p["product"]["id"]
+    r = await p["client"].post(f"/api/leads/{lid}/sample-task", content=raw,
+                               headers={"content-type": "application/json"})
+    assert r.status_code == 422
+
+
+async def test_approve_failure_releases_claim(producer, db, monkeypatch):
+    from app.services import outreach_service as svc
+
+    p = await producer("Ali")
+    q = (await make(p)).json()
+
+    def boom(_doc):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(svc, "assert_sent_has_approval", boom)
+    with pytest.raises(RuntimeError):
+        await p["client"].post(f"/api/quotes/{q['id']}/approve")
+    d = await db.quotes.find_one({})
+    assert d["status"] == "draft" and d["approved_at"] is None
+
+
+async def test_approve_do_not_contact_and_sample_ownership(producer, db):
+    a, b = await producer("Ali"), await producer("Veli")
+    lid = await lead(a)
+    q = (await make(a, lid)).json()
+    await db.leads.update_one({}, {"$set": {"status": "do_not_contact"}})
+    assert (await a["client"].post(f"/api/quotes/{q['id']}/approve")).status_code == 409
+    url = f"/api/leads/{lid}/sample-task"
+    assert (await a["client"].post(url, json={"product_id": a["product"]["id"]})).status_code == 409
+    assert (await b["client"].post(url, json={"product_id": b["product"]["id"]})).status_code == 404
+    lid2 = await lead(a)
+    assert (await a["client"].post(f"/api/leads/{lid2}/sample-task",
+                                   json={"product_id": b["product"]["id"]})).status_code == 404

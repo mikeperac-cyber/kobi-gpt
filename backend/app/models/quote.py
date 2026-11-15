@@ -10,32 +10,32 @@ PAYMENT_TERMS = ("cash_advance", "advance_30_70", "lc", "cad")
 class QuoteIn(BaseModel):
     lead_id: str
     product_id: str
-    quantity: float  # > 0 is checked in the service so the code is `invalid_quantity`
-    unit_price: float
+    quantity: float = Field(allow_inf_nan=False)  # > 0 is checked in the service so the code is `invalid_quantity`
+    unit_price: float = Field(allow_inf_nan=False)
     currency: Literal["EUR", "USD"]
     incoterm: Literal["EXW", "FCA", "FOB", "CIF", "DAP"]
     payment_terms: Literal["cash_advance", "advance_30_70", "lc", "cad"]
     valid_until: date
-    unit_weight_kg: float | None = Field(default=None, gt=0)
+    unit_weight_kg: float | None = Field(default=None, gt=0, allow_inf_nan=False)
 
 
 class SampleTaskIn(BaseModel):
     product_id: str
-    sample_weight_kg: float = Field(default=2.0, gt=0, le=30)
+    sample_weight_kg: float = Field(default=2.0, gt=0, le=30, allow_inf_nan=False)
 
 
 class Band(BaseModel):
-    max_kg: float = Field(gt=0)
-    eur_per_kg: float = Field(gt=0)
+    max_kg: float = Field(gt=0, allow_inf_nan=False)
+    eur_per_kg: float = Field(gt=0, allow_inf_nan=False)
 
 
 class RatesIn(BaseModel):
-    packaging_pct: float = Field(ge=0, le=1)
+    packaging_pct: float = Field(ge=0, le=1, allow_inf_nan=False)
     ltl_bands: list[Band] = Field(min_length=1)
-    ftl_eur_per_truck: float = Field(gt=0)
-    ftl_truck_capacity_kg: float = Field(gt=0)
-    courier_eur_per_kg: float = Field(gt=0)
-    courier_min_eur: float = Field(gt=0)
+    ftl_eur_per_truck: float = Field(gt=0, allow_inf_nan=False)
+    ftl_truck_capacity_kg: float = Field(gt=0, allow_inf_nan=False)
+    courier_eur_per_kg: float = Field(gt=0, allow_inf_nan=False)
+    courier_min_eur: float = Field(gt=0, allow_inf_nan=False)
 
     @model_validator(mode="after")
     def _ascending(self):

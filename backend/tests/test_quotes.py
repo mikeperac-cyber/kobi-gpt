@@ -268,3 +268,33 @@ async def test_nan_sample_weight_stores_no_task(producer, db):
     r = await p["client"].post(f"/api/leads/{lid}/sample-task", content=raw,
                                headers={"content-type": "application/json"})
     assert r.status_code == 422 and await db.tasks.count_documents({}) == 0
+
+
+async def test_quote_reject_and_ownership(producer):
+    a, b = await producer("Ali"), await producer("Veli")
+    q = (await make(a)).json()
+    assert (await b["client"].post(f"/api/quotes/{q['id']}/reject", json={"reason": "x"})).status_code == 404
+    assert (await a["client"].post(f"/api/quotes/{q['id']}/reject", json={"reason": ""})).status_code == 422
+    r = await a["client"].post(f"/api/quotes/{q['id']}/reject", json={"reason": "wrong price"})
+    assert r.status_code == 200 and r.json()["status"] == "rejected"
+    assert (await a["client"].post(f"/api/quotes/{q['id']}/reject", json={"reason": "again"})).status_code == 409
+    assert (await a["client"].post(f"/api/quotes/{q['id']}/approve")).status_code == 409
+    assert (await a["client"].get("/api/approvals")).json()["quotes"] == []
+
+
+async def test_pipeline_stats_real_counts_own_company(producer, db):
+    a, b = await producer("Ali"), await producer("Veli")
+    assert (await a["client"].get("/api/pipeline/stats")).json() == {
+        "leads": 0, "messages_sent": 0, "replies": 0, "quotes_sent": 0, "won": 0}
+    lid = await lead(a)
+    await lead(b)
+    cid = (await db.leads.find_one({}))["company_id"]
+    await db.messages.insert_many([
+        {"lead_id": lid, "company_id": cid, "direction": "outbound", "status": "sent"},
+        {"lead_id": lid, "company_id": cid, "direction": "outbound", "status": "draft"},
+        {"lead_id": lid, "company_id": cid, "direction": "inbound", "status": "sent"}])
+    q = (await make(a, lid)).json()
+    await a["client"].post(f"/api/quotes/{q['id']}/approve")
+    await a["client"].patch(f"/api/leads/{lid}", json={"status": "won"})
+    assert (await a["client"].get("/api/pipeline/stats")).json() == {
+        "leads": 1, "messages_sent": 1, "replies": 1, "quotes_sent": 1, "won": 1}

@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(public.router, prefix="/api")
     app.include_router(compliance.router, prefix="/api")
     app.include_router(leads.router, prefix="/api")
+    app.include_router(leads.pipeline_router, prefix="/api")
     app.include_router(messages.router, prefix="/api")
     app.include_router(quotes.router, prefix="/api")
     app.include_router(logistics.router, prefix="/api")

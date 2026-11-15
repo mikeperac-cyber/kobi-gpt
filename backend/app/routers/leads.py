@@ -12,6 +12,7 @@ from app.models.lead import PATCHABLE, STATUSES, ImportIn, LeadIn, StatusIn
 from app.services.scoring import score_for_company
 
 router = APIRouter(prefix="/leads")
+pipeline_router = APIRouter()
 IMPORT_TTL = timedelta(hours=1)
 
 
@@ -134,3 +135,14 @@ async def patch_lead(lead_id: str, body: StatusIn, company: dict = Depends(curre
         raise _err(409, "lead_blocked")  # once opted out, stays
     await get_db().leads.update_one({"_id": lead["_id"]}, {"$set": {"status": body.status}})
     return to_json({**lead, "status": body.status})
+
+
+@pipeline_router.get("/pipeline/stats")
+async def pipeline_stats(company: dict = Depends(current_company)):
+    db, cid = get_db(), str(company["_id"])
+    own = {"company_id": cid}
+    return {"leads": await db.leads.count_documents(own),
+            "messages_sent": await db.messages.count_documents({**own, "direction": "outbound", "status": "sent"}),
+            "replies": await db.messages.count_documents({**own, "direction": "inbound"}),
+            "quotes_sent": await db.quotes.count_documents({**own, "status": "sent"}),
+            "won": await db.leads.count_documents({**own, "status": "won"})}

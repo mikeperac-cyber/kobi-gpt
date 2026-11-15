@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
 import Button from '../../components/ui/Button'
@@ -9,6 +9,7 @@ import DemoBadge from '../../components/DemoBadge'
 import { formatDate } from '../../i18n/format'
 import OutreachDraft from './OutreachDraft'
 import ReplyAssistant from './ReplyAssistant'
+import SampleTask from './SampleTask'
 import ScoreBreakdown from './ScoreBreakdown'
 import type { Lead, Message } from './types'
 
@@ -20,8 +21,11 @@ export default function LeadDetail() {
   const [draft, setDraft] = useState<Message | null>(null)
   const [confirm, setConfirm] = useState<'won' | 'lost' | 'do_not_contact' | null>(null)
   const [busy, setBusy] = useState(false)
+  const [sample, setSample] = useState(false)
+  const [params] = useSearchParams()
   const [err, setErr] = useState('')
   const draftRef = useRef<HTMLDivElement>(null)
+  const opened = useRef(false)
 
   const load = useCallback(async () => {
     try {
@@ -30,6 +34,11 @@ export default function LeadDetail() {
     } catch (x) { setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network')) }
   }, [id, t])
   useEffect(() => { void load() }, [load])
+  useEffect(() => { // ?draft=<id> comes from the approval queue's Edit button
+    const want = params.get('draft')
+    const m = want ? msgs.find((x) => x.id === want && x.status === 'draft') : undefined
+    if (m && !opened.current) { opened.current = true; setDraft(m) }
+  }, [msgs, params])
   useEffect(() => { if (draft) draftRef.current?.scrollIntoView({ block: 'nearest' }) }, [draft?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function prepare() {
@@ -76,6 +85,8 @@ export default function LeadDetail() {
         )}
         <div className="flex flex-wrap gap-2">
           <Button onClick={prepare} disabled={busy || blocked} aria-describedby={blocked ? 'dnc-note' : undefined}>{busy ? t('leads.detail.preparing') : t('leads.detail.prepare')}</Button>
+          {!blocked && <Link to={`/leads/${id}/quote`} className="min-h-11 inline-flex items-center px-4 rounded-md font-semibold border border-slate-300 bg-white">{t('leads.detail.prepareQuote')}</Link>}
+          {!blocked && <Button variant="secondary" onClick={() => setSample(true)}>{t('leads.detail.sample')}</Button>}
           {!closed && <Button variant="secondary" onClick={() => setConfirm('won')}>{t('leads.detail.markWon')}</Button>}
           {!closed && <Button variant="secondary" onClick={() => setConfirm('lost')}>{t('leads.detail.markLost')}</Button>}
           {!blocked && <Button variant="secondary" onClick={() => setConfirm('do_not_contact')}>{t('leads.detail.markDnc')}</Button>}
@@ -87,6 +98,8 @@ export default function LeadDetail() {
       <div ref={draftRef}>
         {draft && <OutreachDraft lead={id} message={draft} onChange={(m) => { setDraft(m); void load() }} onReplace={(m) => { setDraft(m); void load() }} onClose={(e) => { setDraft(null); void load().then(() => e && setErr(e)) }} />}
       </div>
+
+      {sample && <SampleTask lead={id} onClose={() => setSample(false)} />}
 
       <ReplyAssistant lead={id} blocked={blocked} onResult={load} onEditDraft={setDraft} />
 

@@ -25,3 +25,9 @@
 - Impressum `representative` and `register` are not collected yet: returned as null, checklist marks `present: false` (producer adds via Firmam later; out of scope now).
 - RFQ: honeypot `website_hp` non-empty returns 204 and stores nothing; 5/hour per client IP + slug (in-memory); lead `score` is 0 until Task 25 back-fills; every RFQ lead is `is_hot` and carries `source_note`.
 - Unpublished slugs 404 for both GET and RFQ POST (checked before honeypot/rate limit, so slug existence of drafts is not leaked).
+
+## Task 29b: approvals, quotes, pipeline
+- `mailto:` cannot attach files. Approving a quote hands a short cover note (German or English by buyer country, kept in `frontend/src/data/buyerStrings.ts`, not producer i18n) to the mail app and, at the same moment, downloads the buyer-language PDF; the toast adds "Attach the PDF to the email". mailto URLs over 1800 characters, or leads without an email, copy "Subject: ...\n\n..." to the clipboard instead ("Copied to clipboard").
+- Quote drafts have no edit route: the queue shows them read-only with Approve and Reject; `POST /api/quotes/{id}/reject {reason}` was added (same shape as messages).
+- `GET /api/pipeline/stats` counts real records for the caller's company only; the pipeline "sent" column is labelled "Handed off" / "Aktarıldı" (lead status `sent` no longer reads "Gönderildi").
+- `/api/approvals` lead summaries (messages and quotes) now include `email`, `contact_name`, `is_demo`.

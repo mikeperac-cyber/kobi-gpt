@@ -14,7 +14,10 @@ const StorefrontPage = lazy(() => import('./pages/storefront/Index'))
 const CompliancePage = lazy(() => import('./pages/compliance/Index'))
 const LeadsPage = lazy(() => import('./pages/leads/LeadsTable'))
 const LeadDetail = lazy(() => import('./pages/leads/LeadDetail'))
-const Placeholder = lazy(() => import('./components/Placeholder'))
+const ApprovalQueue = lazy(() => import('./pages/approvals/ApprovalQueue'))
+const QuoteBuilder = lazy(() => import('./pages/quotes/QuoteBuilder'))
+const Pipeline = lazy(() => import('./pages/pipeline/Pipeline'))
+const LogisticsRates = lazy(() => import('./pages/admin/LogisticsRates'))
 const KbList = lazy(() => import('./pages/admin/KbList'))
 const PrivacyNotice = lazy(() => import('./pages/privacy/PrivacyNotice'))
 
@@ -35,9 +38,12 @@ export default function App() {
           <Route path="/compliance" element={<CompliancePage />} />
           <Route path="/leads" element={<LeadsPage />} />
           <Route path="/leads/:id" element={<LeadDetail />} />
-          <Route path="/approvals" element={<Placeholder titleKey="approvals.title" />} />
+          <Route path="/leads/:id/quote" element={<QuoteBuilder />} />
+          <Route path="/approvals" element={<ApprovalQueue />} />
+          <Route path="/pipeline" element={<Pipeline />} />
           <Route element={<AdminRoute />}>
             <Route path="/admin/kb" element={<KbList />} />
+            <Route path="/admin/logistics-rates" element={<LogisticsRates />} />
           </Route>
         </Route>
       </Route>

@@ -46,7 +46,10 @@
     "storefront": "Vitrin",
     "compliance": "Mevzuat",
     "leads": "Alıcılar",
-    "admin": "Yönetim"
+    "admin": "Yönetim",
+    "approvals": "Onaylar",
+    "pipeline": "Süreç",
+    "rates": "Lojistik tarifeleri"
   },
   "privacy": {
     "title": "Aydınlatma Metni (KVKK)",
@@ -454,7 +457,7 @@
     "status": {
       "new": "Yeni",
       "draft_ready": "Taslak hazır",
-      "sent": "Gönderildi",
+      "sent": "Aktarıldı",
       "replied": "Yanıt geldi",
       "quoted": "Teklif verildi",
       "won": "Kazanıldı",
@@ -529,7 +532,9 @@
         "sent": "Mail uygulamasına aktarıldı",
         "rejected": "Reddedildi",
         "received": "Alındı"
-      }
+      },
+      "prepareQuote": "Teklif hazırla",
+      "sample": "Numune gönderimi"
     },
     "draft": {
       "title": "İlk temas taslağı",
@@ -587,13 +592,98 @@
     }
   },
   "approvals": {
-    "title": "Onaylar"
+    "title": "Onay Bekleyenler",
+    "intro": "Hiçbir mesaj veya teklif siz onaylamadan çıkmaz. Onayladığınızda e-posta uygulamanız açılır; göndermeyi orada siz yaparsınız.",
+    "empty": "Onay bekleyen bir şey yok.",
+    "kind": {
+      "cold": "İlk temas mesajı",
+      "rfq_answer": "Teklif talebi yanıtı",
+      "reply": "Yanıt mesajı",
+      "quote": "Teklif"
+    },
+    "approve": "Onayla ve Gönder",
+    "edit": "Düzenle",
+    "reject": "Reddet",
+    "rejectTitle": "Reddetme nedeni",
+    "rejectReason": "Neden reddediyorsunuz?",
+    "rejectConfirm": "Reddet",
+    "working": "İşleniyor…",
+    "handed": "Mail uygulamasına aktarıldı",
+    "copied": "Panoya kopyalandı",
+    "attachPdf": "PDF'i e-postaya ekleyin",
+    "noEmail": "Bu kişinin e-postası yok; metin panoya kopyalandı.",
+    "quoteSummary": "{{qty}} · {{incoterm}} · toplam {{total}}",
+    "createdAt": "Oluşturulma",
+    "lang": "Dil",
+    "loadError": "Liste yüklenemedi.",
+    "downloadFail": "PDF indirilemedi; teklif sayfasından tekrar deneyin.",
+    "quoteReadOnly": "Teklifi değiştirmek için reddedip yenisini hazırlayın."
   },
   "quotes": {
-    "title": "Teklifler"
+    "title": "Teklif hazırla",
+    "for": "Alıcı",
+    "product": "Ürün",
+    "quantity": "Miktar ({{unit}})",
+    "unitPrice": "Birim fiyat",
+    "currency": "Para birimi",
+    "incoterm": "Teslim şekli (Incoterm)",
+    "payment": "Ödeme koşulu",
+    "validUntil": "Geçerlilik tarihi",
+    "unitWeight": "Birim ağırlık (kg)",
+    "unitWeightHint": "Navlun tahmini için gerekli. Bir adetin (ya da kolinin) ağırlığı.",
+    "calculate": "Hesapla / Kaydet",
+    "saving": "Hesaplanıyor…",
+    "noProducts": "Önce bir ürün ekleyin.",
+    "belowFloor": "Bu fiyat taban fiyatınızın altında; ajan bunun altında teklif veremez.",
+    "pdfPreview": "PDF önizleme",
+    "goApprovals": "Onay Bekleyenler'e git",
+    "queueNote": "Teklif taslak olarak Onay Bekleyenler'e eklendi. Siz onaylamadan hiçbir yere gitmez.",
+    "saved": "Teklif taslağı kaydedildi.",
+    "total": "Toplam",
+    "freightIncluded": "Navlun teklife dahil",
+    "freightExcluded": "Navlun teklife dahil değil (alıcı öder)",
+    "sample": "Numune gönderimi",
+    "incoterms": {
+      "EXW": "Alıcı malı fabrikadan alır, tüm taşıma masrafını öder.",
+      "FCA": "Satıcı malı alıcının taşıyıcısına teslim eder; ihracat işlemleri satıcıdadır.",
+      "FOB": "Satıcı malı Türkiye'deki limanda gemiye yükler.",
+      "CIF": "Satıcı varış limanına kadar deniz navlununu ve sigortayı öder.",
+      "DAP": "Satıcı malı alıcının adresine teslim eder; ithalat vergilerini alıcı öder."
+    },
+    "payments": {
+      "cash_advance": "Peşin",
+      "advance_30_70": "%30 avans %70 yükleme öncesi",
+      "lc": "Akreditif (L/C)",
+      "cad": "Vesaik mukabili"
+    },
+    "errors": {
+      "needs_weight": "Navlun tahmini için birim ağırlığı (kg) girin.",
+      "floor_currency_mismatch": "Para birimi ürünün taban fiyat para biriminden farklı; döviz çevrimi yapılmaz. Ürününüzün para birimini seçin.",
+      "freight_currency_mismatch": "CIF/DAP navlun tahmini EUR cinsindendir. EUR seçin ya da EXW/FCA/FOB kullanın."
+    }
   },
   "pipeline": {
-    "title": "Süreç"
+    "title": "Süreç",
+    "stats": {
+      "leads": "Alıcı",
+      "messages_sent": "Aktarılan mesaj",
+      "replies": "Gelen yanıt",
+      "quotes_sent": "Giden teklif",
+      "won": "Kazanılan"
+    },
+    "statsNote": "Gerçek kayıtlardan sayılır.",
+    "col": {
+      "new": "Yeni",
+      "draft_ready": "Taslak hazır",
+      "sent": "Aktarıldı",
+      "replied": "Yanıt geldi",
+      "quoted": "Teklif verildi",
+      "won": "Kazanıldı",
+      "lost": "Kaybedildi",
+      "do_not_contact": "İletişim kurma"
+    },
+    "empty": "Boş",
+    "loadError": "Süreç yüklenemedi."
   },
   "admin": {
     "title": "Yönetim"
@@ -736,6 +826,51 @@
       "ltl": "Parsiyel navlun (tahmini)",
       "ftl": "Komple kamyon navlunu (tahmini)",
       "courier": "Kurye ücreti (tahmini)"
-    }
+    },
+    "panel": "Lojistik tahmini",
+    "estimatedTag": "tahmini",
+    "sampleNote": "ÖRNEK – gerçek forwarder teklifiyle değiştirin",
+    "formula": "Hesap",
+    "mode": {
+      "ltl": "Parsiyel",
+      "ftl": "Komple kamyon",
+      "courier": "Kurye"
+    },
+    "kg": "{{n}} kg"
+  },
+  "sample": {
+    "title": "Numune gönderimi",
+    "button": "Numune gönderimi",
+    "product": "Ürün",
+    "weight": "Numune ağırlığı (kg)",
+    "create": "Tahmini hesapla",
+    "courierEstimate": "Kurye maliyeti (tahmini)",
+    "checklistTitle": "Kontrol listesi",
+    "check": {
+      "proforma": "Numune proforması",
+      "labelling": "Etiketleme",
+      "courier_booking": "Kurye rezervasyonu"
+    },
+    "note": "Bu bir görev kaydıdır; numuneyi siz gönderirsiniz.",
+    "close": "Kapat"
+  },
+  "adminRates": {
+    "title": "Lojistik tarifeleri",
+    "note": "ÖRNEK – gerçek forwarder teklifiyle değiştirin",
+    "packaging": "Ambalaj payı (0–1, örn. 0,08 = %8)",
+    "bands": "Parsiyel kademeleri",
+    "maxKg": "En çok (kg)",
+    "eurPerKg": "EUR / kg",
+    "addBand": "Kademe ekle",
+    "removeBand": "Kademeyi sil",
+    "ftl": "Komple kamyon",
+    "ftlRate": "Kamyon başı (EUR)",
+    "ftlCap": "Kamyon kapasitesi (kg)",
+    "courier": "Kurye",
+    "courierKg": "EUR / kg",
+    "courierMin": "En az (EUR)",
+    "save": "Kaydet",
+    "saved": "Tarifeler kaydedildi.",
+    "invalid": "Değerleri kontrol edin: sayılar sıfırdan büyük, kademeler artan sırada olmalı."
   }
 }

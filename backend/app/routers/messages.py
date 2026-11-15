@@ -84,13 +84,13 @@ async def approvals(company: dict = Depends(current_company)):
     drafts = await db.messages.find({"company_id": cid, "status": "draft"}).to_list(500)
     drafts.sort(key=lambda m: m["created_at"].timestamp(), reverse=True)
     leads = {str(x["_id"]): x async for x in db.leads.find({"company_id": cid})}
+    summary = lambda lead: {"company_name": lead.get("company_name"), "email": lead.get("email"),  # noqa: E731
+                            "contact_name": lead.get("contact_name"), "country": lead.get("country"),
+                            "is_demo": bool(lead.get("is_demo"))}
     for m in drafts:
-        lead = leads.get(m["lead_id"], {})
-        m["lead"] = {"company_name": lead.get("company_name"), "email": lead.get("email"),
-                     "country": lead.get("country"), "is_demo": bool(lead.get("is_demo"))}
+        m["lead"] = summary(leads.get(m["lead_id"], {}))
     quotes = await db.quotes.find({"company_id": cid, "status": "draft"}).to_list(500)
     quotes.sort(key=lambda q: q["created_at"].timestamp(), reverse=True)
     for q in quotes:
-        lead = leads.get(q["lead_id"], {})
-        q["lead"] = {"company_name": lead.get("company_name"), "country": lead.get("country")}
+        q["lead"] = summary(leads.get(q["lead_id"], {}))
     return {"messages": to_json(drafts), "quotes": to_json(quotes)}

@@ -46,7 +46,10 @@
     "storefront": "Storefront",
     "compliance": "Compliance",
     "leads": "Buyers",
-    "admin": "Admin"
+    "admin": "Admin",
+    "approvals": "Approvals",
+    "pipeline": "Pipeline",
+    "rates": "Logistics rates"
   },
   "privacy": {
     "title": "Privacy Notice (KVKK)",
@@ -454,7 +457,7 @@
     "status": {
       "new": "New",
       "draft_ready": "Draft ready",
-      "sent": "Sent",
+      "sent": "Handed off",
       "replied": "Reply received",
       "quoted": "Quote sent",
       "won": "Won",
@@ -529,7 +532,9 @@
         "sent": "Handed to your mail app",
         "rejected": "Rejected",
         "received": "Received"
-      }
+      },
+      "prepareQuote": "Prepare quote",
+      "sample": "Sample shipment"
     },
     "draft": {
       "title": "First contact draft",
@@ -587,13 +592,98 @@
     }
   },
   "approvals": {
-    "title": "Approvals"
+    "title": "Awaiting approval",
+    "intro": "Nothing leaves without your approval. When you approve, your mail app opens and you send it from there.",
+    "empty": "Nothing is waiting for approval.",
+    "kind": {
+      "cold": "First-contact message",
+      "rfq_answer": "Answer to quote request",
+      "reply": "Reply message",
+      "quote": "Quote"
+    },
+    "approve": "Approve & send",
+    "edit": "Edit",
+    "reject": "Reject",
+    "rejectTitle": "Reason for rejecting",
+    "rejectReason": "Why are you rejecting this?",
+    "rejectConfirm": "Reject",
+    "working": "Working…",
+    "handed": "Handed to your mail app",
+    "copied": "Copied to clipboard",
+    "attachPdf": "Attach the PDF to the email",
+    "noEmail": "This contact has no email; the text was copied to the clipboard.",
+    "quoteSummary": "{{qty}} · {{incoterm}} · total {{total}}",
+    "createdAt": "Created",
+    "lang": "Language",
+    "loadError": "Could not load the list.",
+    "downloadFail": "Could not download the PDF; try again from the quote page.",
+    "quoteReadOnly": "To change a quote, reject it and prepare a new one."
   },
   "quotes": {
-    "title": "Quotes"
+    "title": "Prepare quote",
+    "for": "Buyer",
+    "product": "Product",
+    "quantity": "Quantity ({{unit}})",
+    "unitPrice": "Unit price",
+    "currency": "Currency",
+    "incoterm": "Delivery terms (Incoterm)",
+    "payment": "Payment terms",
+    "validUntil": "Valid until",
+    "unitWeight": "Unit weight (kg)",
+    "unitWeightHint": "Needed for the freight estimate. Weight of one unit (or carton).",
+    "calculate": "Calculate / Save",
+    "saving": "Calculating…",
+    "noProducts": "Add a product first.",
+    "belowFloor": "This price is below your floor price; the agent cannot quote below it.",
+    "pdfPreview": "PDF preview",
+    "goApprovals": "Go to Awaiting approval",
+    "queueNote": "The quote was added to the approval queue as a draft. Nothing goes out until you approve it.",
+    "saved": "Quote draft saved.",
+    "total": "Total",
+    "freightIncluded": "Freight included in the quote",
+    "freightExcluded": "Freight not included (buyer pays)",
+    "sample": "Sample shipment",
+    "incoterms": {
+      "EXW": "Buyer collects at the factory and pays all transport.",
+      "FCA": "Seller hands over to the buyer's carrier, export-cleared.",
+      "FOB": "Seller delivers onto the ship at the Turkish port.",
+      "CIF": "Seller pays sea freight and insurance to the destination port.",
+      "DAP": "Seller delivers to the buyer's address; buyer pays import duties."
+    },
+    "payments": {
+      "cash_advance": "Cash in advance",
+      "advance_30_70": "30% advance, 70% before loading",
+      "lc": "Letter of credit (L/C)",
+      "cad": "Documents against payment"
+    },
+    "errors": {
+      "needs_weight": "Enter the unit weight (kg) for the freight estimate.",
+      "floor_currency_mismatch": "Currency differs from the product's floor-price currency; no currency conversion is done. Pick the product's currency.",
+      "freight_currency_mismatch": "The CIF/DAP freight estimate is in EUR. Choose EUR or use EXW/FCA/FOB."
+    }
   },
   "pipeline": {
-    "title": "Pipeline"
+    "title": "Pipeline",
+    "stats": {
+      "leads": "Buyers",
+      "messages_sent": "Messages handed off",
+      "replies": "Replies received",
+      "quotes_sent": "Quotes sent",
+      "won": "Won"
+    },
+    "statsNote": "Counted from real records.",
+    "col": {
+      "new": "New",
+      "draft_ready": "Draft ready",
+      "sent": "Handed off",
+      "replied": "Reply received",
+      "quoted": "Quote sent",
+      "won": "Won",
+      "lost": "Lost",
+      "do_not_contact": "Do not contact"
+    },
+    "empty": "Empty",
+    "loadError": "Could not load the pipeline."
   },
   "admin": {
     "title": "Admin"
@@ -736,6 +826,51 @@
       "ltl": "Part-load freight (estimated)",
       "ftl": "Full-truck freight (estimated)",
       "courier": "Courier charge (estimated)"
-    }
+    },
+    "panel": "Logistics estimate",
+    "estimatedTag": "estimated",
+    "sampleNote": "SAMPLE – replace with a real forwarder quote",
+    "formula": "Calculation",
+    "mode": {
+      "ltl": "Part load (LTL)",
+      "ftl": "Full truck (FTL)",
+      "courier": "Courier"
+    },
+    "kg": "{{n}} kg"
+  },
+  "sample": {
+    "title": "Sample shipment",
+    "button": "Sample shipment",
+    "product": "Product",
+    "weight": "Sample weight (kg)",
+    "create": "Calculate estimate",
+    "courierEstimate": "Courier cost (estimated)",
+    "checklistTitle": "Checklist",
+    "check": {
+      "proforma": "Sample proforma invoice",
+      "labelling": "Labelling",
+      "courier_booking": "Courier booking"
+    },
+    "note": "This is a task record; you ship the sample yourself.",
+    "close": "Close"
+  },
+  "adminRates": {
+    "title": "Logistics rates",
+    "note": "SAMPLE – replace with a real forwarder quote",
+    "packaging": "Packaging share (0–1, e.g. 0.08 = 8%)",
+    "bands": "Part-load (LTL) bands",
+    "maxKg": "Up to (kg)",
+    "eurPerKg": "EUR / kg",
+    "addBand": "Add band",
+    "removeBand": "Remove band",
+    "ftl": "Full truck",
+    "ftlRate": "Per truck (EUR)",
+    "ftlCap": "Truck capacity (kg)",
+    "courier": "Courier",
+    "courierKg": "EUR / kg",
+    "courierMin": "Minimum (EUR)",
+    "save": "Save",
+    "saved": "Rates saved.",
+    "invalid": "Check the values: numbers must be above zero and bands in ascending order."
   }
 }

@@ -7,6 +7,7 @@ from fastapi.responses import Response
 from app.core.db import get_db
 from app.core.security import current_company, current_user, owned
 from app.core.serialize import public_product, to_json
+from app.models.message import RejectIn
 from app.models.quote import QuoteIn
 from app.services import logistics_service as lg
 from app.services import outreach_service as svc
@@ -81,6 +82,16 @@ async def get_quote(quote_id: str, company: dict = Depends(current_company)):
 async def approve(quote_id: str, company: dict = Depends(current_company), user: dict = Depends(current_user)):
     q = await owned("quotes", quote_id, str(company["_id"]))
     return to_json(await svc.approve_quote(get_db(), q["_id"], user))
+
+
+@router.post("/{quote_id}/reject")
+async def reject(quote_id: str, body: RejectIn, company: dict = Depends(current_company)):
+    q = await owned("quotes", quote_id, str(company["_id"]))
+    upd = {"status": "rejected", "reject_reason": body.reason.strip()}
+    res = await get_db().quotes.update_one({"_id": q["_id"], "status": "draft"}, {"$set": upd})
+    if not res.modified_count:
+        raise svc.err(409, "not_draft")
+    return to_json({**q, **upd})
 
 
 @router.get("/{quote_id}/pdf")

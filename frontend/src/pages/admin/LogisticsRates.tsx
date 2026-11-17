@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
 import Button from '../../components/ui/Button'
@@ -25,7 +26,7 @@ export default function LogisticsRates() {
   const [err, setErr] = useState('')
   useEffect(() => { api<Rates>('/api/admin/logistics-rates').then((r) => setF(toForm(r))).catch((x) => setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network'))) }, [t])
 
-  if (!f) return <p role={err ? 'alert' : 'status'}>{err || t('common.loading')}</p>
+  if (!f) return <PageSkeleton error={err} />
   const set = (p: Partial<Form>) => setF({ ...f, ...p })
   const setBand = (i: number, p: Partial<Form['bands'][0]>) => set({ bands: f.bands.map((b, j) => (j === i ? { ...b, ...p } : b)) })
 

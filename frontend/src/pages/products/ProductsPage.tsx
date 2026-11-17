@@ -66,7 +66,7 @@ export default function ProductsPage() {
       </div>
       {top && <p role="alert" className="text-brand font-semibold mb-3">{t(top)}</p>}
       {!items && !top && <div role="status" aria-label={t('common.loading')}><Skeleton className="h-28" /></div>}
-      {items?.length === 0 && <Card><p>{t('products.empty')}</p></Card>}
+      {items?.length === 0 && <Card className="space-y-3"><p>{t('products.empty')}</p><Button onClick={() => open()}>{t('products.add')}</Button></Card>}
       <ul className="space-y-3">
         {items?.map((p) => (
           <li key={p.id}>

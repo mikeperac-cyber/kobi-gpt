@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
 import Button from '../../components/ui/Button'
@@ -25,7 +26,7 @@ export default function StorefrontPage() {
   useEffect(() => { void load() }, [load])
 
   switch (view.kind) {
-    case 'loading': return <p>{t('common.loading')}</p>
+    case 'loading': return <PageSkeleton />
     case 'error': return (
       <div className="space-y-3"><p>{t(view.key)}</p><Button onClick={() => { setView({ kind: 'loading' }); void load() }}>{t('common.retry')}</Button></div>
     )

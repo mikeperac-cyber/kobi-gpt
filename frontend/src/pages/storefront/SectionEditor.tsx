@@ -75,7 +75,7 @@ export default function SectionEditor({ section, content, missing, readOnly, reg
           </Button>
         )}
       </div>
-      <p aria-live="polite" className="text-sm text-slate-500 empty:hidden">{note ? t('storefront.regenUnchanged') : ''}</p>
+      <p aria-live="polite" className="text-sm text-slate-600 empty:hidden">{note ? t('storefront.regenUnchanged') : ''}</p>
       {!readOnly && onRegen && (
         <input type="text" maxLength={200} value={instr ?? ''} onChange={(e) => setInstr(e.target.value)}
           aria-label={t('storefront.instruction')} placeholder={t('storefront.instructionPh')}

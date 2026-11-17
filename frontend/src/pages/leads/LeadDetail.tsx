@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
@@ -54,7 +55,7 @@ export default function LeadDetail() {
     catch (x) { setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network')) }
   }
 
-  if (!lead) return <p role={err ? 'alert' : 'status'} className={err ? 'text-brand font-semibold' : ''}>{err || t('common.loading')}</p>
+  if (!lead) return <PageSkeleton error={err} />
   const blocked = lead.status === 'do_not_contact'
   const closed = blocked || lead.status === 'won' || lead.status === 'lost'
 

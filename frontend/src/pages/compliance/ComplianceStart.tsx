@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Button from '../../components/ui/Button'
 import Field from '../../components/ui/Field'
@@ -11,7 +12,7 @@ export default function ComplianceStart({ products, productId, onProduct, params
   params: Params; onParams(p: Params): void; isFood: boolean; hasReport: boolean; busy: boolean; onStart(): void
 }) {
   const { t } = useTranslation()
-  if (products.length === 0) return <p>{t('compliance.noProducts')}</p>
+  if (products.length === 0) return <div className="space-y-3"><p>{t('compliance.noProducts')}</p><Link to="/products" className="min-h-11 inline-flex items-center px-4 rounded-md font-semibold bg-brand text-white">{t('products.add')}</Link></div>
   const set = (p: Partial<Params>) => onParams({ ...params, ...p })
   return (
     <form className="space-y-5 max-w-xl" onSubmit={(e) => { e.preventDefault(); onStart() }}>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
 import Card from '../../components/ui/Card'
@@ -13,7 +14,7 @@ export default function AdminStats() {
   const [s, setS] = useState<Stats | null>(null)
   const [err, setErr] = useState('')
   useEffect(() => { api<Stats>('/api/admin/stats').then(setS).catch((x) => setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network'))) }, [t])
-  if (!s) return <p role={err ? 'alert' : 'status'}>{err || t('common.loading')}</p>
+  if (!s) return <PageSkeleton error={err} />
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-semibold">{t('adminStats.title')}</h1>

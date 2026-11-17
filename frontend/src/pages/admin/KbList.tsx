@@ -53,7 +53,7 @@ export default function KbList() {
       </div>
       {err && <p role="alert" className="text-brand font-semibold">{err}</p>}
       {form && <KbForm key={form.rec?.id ?? 'new'} kind={kind} rec={form.rec} onDone={() => { setForm(null); load() }} onCancel={() => setForm(null)} />}
-      {rows?.length === 0 && <p>{t('adminKb.empty')}</p>}
+      {rows?.length === 0 && <div className="space-y-2"><p>{t('adminKb.empty')}</p><Button onClick={() => setForm({})}>{t('adminKb.new')}</Button></div>}
       <ul className="space-y-2">
         {rows?.map((r) => (
           <li key={r.id} className="bg-white border border-slate-200 rounded-md p-3 flex flex-wrap items-center gap-2">

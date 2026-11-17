@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
@@ -78,8 +79,8 @@ export default function QuoteBuilder() {
     setBusy(false)
   }
 
-  if (!lead || !products) return <p role={err ? 'alert' : 'status'} className={err ? 'text-brand font-semibold' : ''}>{err || t('common.loading')}</p>
-  if (products.length === 0) return <p role="status">{t('quotes.noProducts')}</p>
+  if (!lead || !products) return <PageSkeleton error={err} />
+  if (products.length === 0) return <div role="status" className="space-y-3"><p>{t('quotes.noProducts')}</p><Link to="/products" className="min-h-11 inline-flex items-center px-4 rounded-md font-semibold bg-brand text-white">{t('products.add')}</Link></div>
 
   return (
     <section className="space-y-4">

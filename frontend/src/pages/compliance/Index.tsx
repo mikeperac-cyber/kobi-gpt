@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
 import AgentSteps from '../../components/AgentSteps'
@@ -82,7 +83,7 @@ export default function CompliancePage() {
   }, [done, job?.status])
 
   let body
-  if (stage.k === 'loading') body = <p>{t('common.loading')}</p>
+  if (stage.k === 'loading') body = <PageSkeleton />
   else if (stage.k === 'job') {
     const keys = stage.kind === 'gtip' ? ['gtip'] : ['rules', 'incentives', 'next_steps']
     const failed = job?.status === 'error'

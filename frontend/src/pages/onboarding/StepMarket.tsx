@@ -14,7 +14,7 @@ export default function StepMarket() {
           const on = c === 'DE'
           return (
             <li key={c}>
-              <label className={`flex items-center gap-3 min-h-11 px-3 rounded-md border ${on ? 'border-navy bg-white' : 'border-slate-200 bg-slate-100 text-slate-500'}`}>
+              <label className={`flex items-center gap-3 min-h-11 px-3 rounded-md border ${on ? 'border-navy bg-white' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
                 <input type="radio" name="market" checked={on} disabled={!on} readOnly className="size-5 accent-brand" />
                 <span className="flex-1">{t(`onboarding.markets.${c}`)}</span>
                 {!on && <Badge>{t('onboarding.comingSoon')}</Badge>}

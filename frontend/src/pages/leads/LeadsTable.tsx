@@ -5,6 +5,7 @@ import { api } from '../../api/client'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import DemoBadge from '../../components/DemoBadge'
 import { formatDate } from '../../i18n/format'
 import CsvImport from './CsvImport'
@@ -52,7 +53,8 @@ export default function LeadsTable() {
       {panel === 'csv' && <CsvImport onDone={load} onCancel={() => setPanel('')} />}
       {panel === 'form' && <LeadForm onDone={() => { setPanel(''); void load() }} onCancel={() => setPanel('')} />}
       {failed && <p role="alert" className="text-brand font-semibold">{t('errors.network')}</p>}
-      {leads && leads.length === 0 && <p className="text-slate-700 py-6">{status ? t('leads.emptyFiltered') : t('leads.empty')}</p>}
+      {!leads && !failed && <PageSkeleton />}
+      {leads && leads.length === 0 && <div className="py-6 space-y-3"><p className="text-slate-700">{status ? t('leads.emptyFiltered') : t('leads.empty')}</p>{status ? <Button variant="secondary" onClick={() => setStatus('')}>{t('leads.filterAll')}</Button> : <Button onClick={() => setPanel('csv')}>{t('leads.importCsv')}</Button>}</div>}
       {leads && leads.length > 0 && (
         <div className="overflow-x-auto bg-white border border-slate-200 rounded-lg">
           <table className="w-full text-sm">

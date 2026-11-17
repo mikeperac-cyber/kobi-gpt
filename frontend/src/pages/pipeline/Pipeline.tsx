@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../api/client'
@@ -21,7 +22,7 @@ export default function Pipeline() {
   }, [])
 
   if (failed) return <p role="alert" className="text-brand font-semibold">{t('pipeline.loadError')}</p>
-  if (!leads || !stats) return <p role="status">{t('common.loading')}</p>
+  if (!leads || !stats) return <PageSkeleton />
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-semibold">{t('pipeline.title')}</h1>
@@ -34,6 +35,7 @@ export default function Pipeline() {
         ))}
       </dl>
       <p className="text-sm text-slate-600">{t('pipeline.statsNote')}</p>
+      {leads.length === 0 && <Link to="/leads" className="min-h-11 inline-flex items-center px-4 rounded-md font-semibold bg-brand text-white">{t('dashboard.leads.find')}</Link>}
       <div className="overflow-x-auto pb-2">
         <div className="flex gap-3 min-w-max">
           {COLS.map((c) => {

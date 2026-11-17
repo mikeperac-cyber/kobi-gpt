@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { PageSkeleton } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
@@ -141,8 +142,8 @@ ${text}`)
       )}
       {manual && <Textarea readOnly rows={8} value={manual} aria-label={t('approvals.copyFailed')} onFocus={(e) => e.currentTarget.select()} />}
       {err && <p role="alert" className="text-brand font-semibold">{err}</p>}
-      {items === null && !err && <p role="status">{t('common.loading')}</p>}
-      {items?.length === 0 && <p className="text-slate-700">{t('approvals.empty')}</p>}
+      {items === null && !err && <PageSkeleton />}
+      {items?.length === 0 && <div className="space-y-2"><p className="text-slate-700">{t('approvals.empty')}</p><Link to="/leads" className="min-h-11 inline-flex items-center px-4 rounded-md font-semibold bg-brand text-white">{t('dashboard.leads.find')}</Link></div>}
       <ul className="space-y-3">
         {items?.map((i) => {
           const lead = i.kind === 'message' ? i.m.lead : i.q.lead

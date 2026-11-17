@@ -81,7 +81,7 @@ function Panel({ onClose }: { onClose(): void }) {
             <button className={btn} onClick={() => setWatch({ acc: 0, start: null })}>{t('demo.guide.reset')}</button>
           </div>
           <div className="mt-3 border-t border-slate-200 pt-2">
-            <p className="text-xs text-slate-500">{t('demo.guide.stepOf', { n: idx + 1, total: SCRIPT.length })} · {fmt(cur.at)}</p>
+            <p className="text-xs text-slate-600">{t('demo.guide.stepOf', { n: idx + 1, total: SCRIPT.length })} · {fmt(cur.at)}</p>
             <p className="font-semibold">{t(`demo.guide.steps.${cur.key}`)}</p>
             <div className="flex gap-1 mt-2">
               <button className={btn} disabled={idx === 0} onClick={() => go(idx - 1)}>{t('demo.guide.prev')}</button>
@@ -90,7 +90,7 @@ function Panel({ onClose }: { onClose(): void }) {
           </div>
           {fb.length > 0 && (
             <div className="mt-3 border-t border-slate-200 pt-2">
-              <p className="text-xs text-slate-500">{t('demo.guide.fallbacks')}</p>
+              <p className="text-xs text-slate-600">{t('demo.guide.fallbacks')}</p>
               <ul>{fb.map((s) => <li key={s.key}>{t(`agent.steps.${s.key}.label`, { defaultValue: s.key })}: {t(`demo.guide.source.${s.source ?? 'template'}`)}</li>)}</ul>
             </div>
           )}

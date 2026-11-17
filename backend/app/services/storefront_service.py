@@ -226,7 +226,7 @@ async def generate_site_config(job_id: str, company: dict, products: list[dict],
     async def analysis_call(t):
         return await llm("sf_product_analysis", ProductAnalysis, t)
 
-    disc = (",".join(str(p["_id"]) for p in products), intake.model_dump_json())
+    disc = (",".join(str(p["_id"]) for p in products), intake.positioning)  # not the free-text intake
 
     def key(step):
         return agent_steps.cache_key(step, ui_language, *disc)
@@ -290,8 +290,9 @@ async def save_generated(db, company: dict, cfg: SiteConfig) -> dict:
 
 
 async def regenerate_section(company: dict, products: list[dict], cfg: SiteConfig, section: str, lang: str,
-                             instruction: str | None, ui_language: str) -> tuple[object, bool]:
-    """Returns (section as plain JSON, used_fallback); the unchanged section comes back on fallback."""
+                             instruction: str | None, ui_language: str) -> tuple[object, bool, str]:
+    """Returns (section as plain JSON, used_fallback, source); the unchanged section comes back on fallback.
+    A demo-cache hit counts as a success (fallback False, source "cache")."""
     adapter = TypeAdapter(_SECTION_TYPES[section])
     current = adapter.dump_python(getattr(getattr(cfg, lang), section), mode="json")
     floors = _floors(products)
@@ -314,12 +315,24 @@ async def regenerate_section(company: dict, products: list[dict], cfg: SiteConfi
 
     key = agent_steps.cache_key(section, ui_language, ",".join(str(p["_id"]) for p in products), lang,
                                 instruction or "")  # JSON-only value: no restore needed
-    new, fb = await agent_steps.run_ai_step(None, section, company, call, lambda: current, key)
+    templated = []
+
+    def tpl():
+        templated.append(1)
+        return current
+
+    new, fb = await agent_steps.run_ai_step(None, section, company, call, tpl, key)
+    source = "llm"
     if fb:
         try:
             new = check(new)
         except LLMInvalidOutput:
             new = current
+            templated.append(1)
+        if not templated:
+            source, fb = "cache", False
+        else:
+            source = "template"
     if section == "hero":
         new["cta"] = CTA[lang]
-    return new, fb
+    return new, fb, source

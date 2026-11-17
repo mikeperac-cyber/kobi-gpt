@@ -243,3 +243,17 @@ async def test_latest_report_shows_live_kb_verification(producer, kb, fake_llm, 
     latest = (await c.get(f"/api/compliance/reports/latest?product_id={p['product']['id']}")).json()
     r1 = next(i for i in latest["checklist"] if i["rule_id"] == "R1")
     assert r1["verified"] is True and r1["last_verified"] and r1["done"] is True
+
+
+async def test_next_steps_endpoint_cache_is_per_product(producer, kb, fake_llm, db):
+    from bson import ObjectId
+
+    fake_llm.responses = fails
+    p = await producer("Ali")
+    rep = await check(p)
+    await db.companies.update_one({"_id": ObjectId(p["company"]["id"])}, {"$set": {"is_demo_company": True}})
+    first = rep["checklist"][0]["rule_id"]
+    fake_llm.responses = lambda pr: json.dumps({"steps": [{"rule_id": first, "text": "x"}]})
+    await p["client"].post(f"/api/compliance/reports/{rep['id']}/next-steps")
+    keys = [d["key"] async for d in db.demo_cache.find({"key": {"$regex": "^next_steps"}})]
+    assert keys and all(k.startswith(f"next_steps:tr:{rep['product_id']}:") for k in keys)

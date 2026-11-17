@@ -145,3 +145,20 @@ async def test_translation_with_amount_is_dropped(db, producer, fake_llm):
     fake_llm.responses = _llm(tr="Fiyat 5 Euro")
     m = (await p["client"].post(f"/api/leads/{await _lead(db, p)}/draft", json={})).json()
     assert m["body_tr"] is None and m["translation_fallback"] is True
+
+
+async def test_demo_draft_cache_survives_rfq_lead_recreation(db, producer, fake_llm):
+    from bson import ObjectId
+
+    p = await producer("Ali")
+    await db.companies.update_one({"_id": ObjectId(p["company"]["id"])}, {"$set": {"is_demo_company": True}})
+    fake_llm.responses = _llm()
+    lid = await _lead(db, p, source="rfq", email="Buyer@Nuss.de")
+    live = (await p["client"].post(f"/api/leads/{lid}/draft", json={})).json()
+    assert not live["fallback"]
+    await db.leads.delete_many({})  # demo reset: the RFQ lead is recreated with a new _id
+    lid2 = await _lead(db, p, source="rfq", email="buyer@nuss.de")
+    fake_llm.responses = [LLMError("no key")] * 8
+    m = (await p["client"].post(f"/api/leads/{lid2}/draft", json={})).json()
+    assert lid2 != lid and m["fallback"] is True  # fell back from the live call, but to the cache entry
+    assert m["body"] == live["body"] and m["subject"] == live["subject"] and m["body_tr"] == "Merhaba"

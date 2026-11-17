@@ -68,7 +68,7 @@ async def regenerate(body: RegenIn, user: dict = Depends(current_user), company:
     db, doc = get_db(), await _mine(company)
     cfg = SiteConfig.model_validate(doc["site_config"])
     products = await db.products.find({"company_id": str(company["_id"])}).to_list(50)
-    section, fallback = await sf.regenerate_section(company, products, cfg, body.section, body.lang,
+    section, fallback, source = await sf.regenerate_section(company, products, cfg, body.section, body.lang,
                                                     body.instruction, user.get("ui_language", "tr"))
     if not fallback:
         data = cfg.model_dump()
@@ -76,7 +76,7 @@ async def regenerate(body: RegenIn, user: dict = Depends(current_user), company:
         cfg = SiteConfig.model_validate(data)
         cfg.missing = sf.compute_missing(cfg)
         await db.storefronts.update_one({"_id": doc["_id"]}, {"$set": {"site_config": cfg.model_dump()}})
-    return {"section": section, "fallback": fallback, "missing": cfg.missing}
+    return {"section": section, "fallback": fallback, "source": source, "missing": cfg.missing}
 
 
 async def _set_status(company: dict, status: str, stamp: str) -> dict:

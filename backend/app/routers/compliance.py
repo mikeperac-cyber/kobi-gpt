@@ -115,7 +115,8 @@ async def refresh_next_steps(report_id: str, user: dict = Depends(current_user),
     db = get_db()
     rep = await owned("readiness_reports", report_id, str(company["_id"]))
     kb = {r["id"]: r for r in await db.kb_rules.find({}).to_list(500)}
-    steps = await regai.next_steps(rep["checklist"], kb, company, user.get("ui_language", "tr"), None)
+    steps = await regai.next_steps(rep["checklist"], kb, company, user.get("ui_language", "tr"), None,
+                                 rep["product_id"])
     await db.readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"next_steps": steps}})
     return {"next_steps": steps}
 

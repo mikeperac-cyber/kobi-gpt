@@ -175,7 +175,7 @@ async def next_steps(checklist: list[dict], rules_by_id: dict[str, dict], compan
         return []
     value, _ = await agent_steps.run_ai_step(job_id, "next_steps", company, call,
                                              lambda: fallback_next_steps(checklist, ui, rules_by_id),
-                                             agent_steps.cache_key("next_steps", ui, scope))
+                                             agent_steps.cache_key("next_steps", ui, scope, ",".join(sorted(allowed))))  # open items: ticks change them
     return [s for s in value if s["rule_id"] in allowed]
 
 

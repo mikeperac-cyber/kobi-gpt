@@ -123,6 +123,11 @@ def floors_of(products: list[dict]) -> list[float]:
     return [p["price_floor"] for p in products if p.get("price_floor")]
 
 
+def lead_ref(lead: dict) -> str:
+    """Demo-cache identity of a lead: its content, not its _id (demo reset recreates the RFQ lead)."""
+    return (lead.get("email") or lead.get("company_name") or str(lead["_id"])).lower()
+
+
 async def translate(text: str, ui_language: str, company: dict, lang: str) -> tuple[str | None, bool]:
     """Returns (translation, fell_back). Never fakes a translation: failure -> (None, True)."""
     if lang == ui_language:
@@ -167,7 +172,7 @@ async def draft_first_contact(lead: dict, company: dict, products: list[dict], s
         return {"subject": out.subject.strip(), "body": body}
 
     draft, used_fb = await agent_steps.run_ai_step(None, "draft", company, call, fb,
-                                                agent_steps.cache_key("draft", ui_language, lead["_id"], kind,
+                                                agent_steps.cache_key("draft", ui_language, lead_ref(lead), kind,
                                                                       ",".join(tone)))
     if used_fb and "_rejected" not in draft and draft != fb():  # a cache hit: re-run the output checks
         body = enforce_outreach_rules(draft["body"], floors, lang)
@@ -303,7 +308,7 @@ async def analyze_reply(lead: dict, company: dict, products: list[dict], text: s
                                    company_id=cid, timeout=t)
 
     out, fell_back = await agent_steps.run_ai_step(
-        None, "analyze", company, call, lambda: None, agent_steps.cache_key("analyze", ui_language, lead["_id"], text),
+        None, "analyze", company, call, lambda: None, agent_steps.cache_key("analyze", ui_language, lead_ref(lead), text),
         ReplyAnalysisOut.model_validate)
     heur = detect_red_flags(text, lead)
     if out:

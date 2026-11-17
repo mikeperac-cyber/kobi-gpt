@@ -133,7 +133,7 @@ async def test_regenerate_section_fallback_unchanged(producer, fake_llm):
     before = (await p["client"].get("/api/storefronts/mine")).json()["site_config"]["en"]["seo"]
     fake_llm.responses = [LLMProviderError("x")] * 3
     r = await p["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "seo", "lang": "en"})
-    assert r.json() == {"section": before, "fallback": True, "missing": r.json()["missing"]}
+    assert r.json() == {"section": before, "fallback": True, "source": "template", "missing": r.json()["missing"]}
     bad = await p["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "nope", "lang": "en"})
     assert bad.status_code == 422
 
@@ -195,3 +195,20 @@ async def test_put_junk_slug_and_cross_company_404(producer, fake_llm):
     assert (await b["client"].put("/api/storefronts/mine", json=body)).status_code == 404  # b has none
     r = await b["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "seo", "lang": "de"})
     assert r.status_code == 404
+
+
+async def test_regenerate_section_cache_hit_is_persisted(producer, fake_llm, db):
+    from bson import ObjectId
+
+    p = await producer("Ali")
+    await db.companies.update_one({"_id": ObjectId(p["company"]["id"])}, {"$set": {"is_demo_company": True}})
+    fake_llm.responses = _llm(p)
+    await _generate(p)
+    body = {"section": "hero", "lang": "de"}
+    await p["client"].post("/api/storefronts/mine/regenerate-section", json=body)  # live success fills the cache
+    await db.storefronts.update_many({}, {"$set": {"site_config.de.hero.headline": "Alt"}})
+    fake_llm.responses = [LLMProviderError("x")] * 3
+    r = (await p["client"].post("/api/storefronts/mine/regenerate-section", json=body)).json()
+    assert r["fallback"] is False and r["source"] == "cache" and r["section"]["headline"] == "Neu"
+    sf = (await p["client"].get("/api/storefronts/mine")).json()
+    assert sf["site_config"]["de"]["hero"]["headline"] == "Neu"

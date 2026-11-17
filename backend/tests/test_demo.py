@@ -214,3 +214,13 @@ async def test_demo_storefront_slug_is_fixed_and_survives_reset(db, seeded):
 async def test_normal_company_slug_is_slugified_name(db):
     c = {"_id": ObjectId(), "name": "Şahin Çelik", "sector": "diger"}
     assert await _gen_slug(db, c) == "sahin-celik"
+
+
+async def test_storefront_cache_ignores_free_text_intake(producer, fake_llm, db, kb):
+    p = await producer("Ali")
+    await _make_demo(db, p)
+    fake_llm.responses = _llm(p)
+    await _generate(p)
+    fake_llm.responses = _failing
+    job = await _generate(p, {**INTAKE, "text": "baska bir aciklama", "incoterms": ["EXW"]})
+    assert [s["source"] for s in job["steps"]][:3] == ["cache"] * 3

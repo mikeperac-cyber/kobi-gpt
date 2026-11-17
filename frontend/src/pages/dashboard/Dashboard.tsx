@@ -6,6 +6,7 @@ import Flag from '../../components/Flag'
 import Card from '../../components/ui/Card'
 import Skeleton from '../../components/ui/Skeleton'
 import ModuleCard from './ModuleCard'
+import ImpactPanel from './ImpactPanel'
 import Notifications, { type Notif } from './Notifications'
 import Roadmap, { type RoadmapState } from './Roadmap'
 
@@ -63,6 +64,7 @@ export default function Dashboard() {
         <ModuleCard title={t('dashboard.leads.title')} badge={t('dashboard.leads.summary', { count: l.count, pending: l.pending_approvals })}
           to="/leads" cta={t('dashboard.leads.find')} />
       </div>
+      <ImpactPanel />
       <Notifications items={data.notifications} onRead={markRead} />
     </section>
   )

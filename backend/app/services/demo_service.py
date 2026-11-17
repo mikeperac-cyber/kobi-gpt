@@ -57,7 +57,8 @@ async def reset_demo_company(db, key: str) -> dict | None:
     for coll in ACTIVITY:
         await db[coll].delete_many({"company_id": cid})
     await db.leads.delete_many({"company_id": cid, "is_demo": {"$ne": True}})
-    await db.companies.update_one({"_id": company["_id"]}, {"$set": CompanyIn(**spec["company"]).model_dump()})
+    await db.companies.update_one({"_id": company["_id"]}, {"$set": {**CompanyIn(**spec["company"]).model_dump(),
+                                                                       "demo_reset_at": datetime.now(timezone.utc)}})
     await backfill_seed_keys(db, cid, spec)
     keys = [f"{spec['key']}:{i}" for i in range(len(spec["products"]))]
     await db.products.delete_many({"company_id": cid, "seed_key": {"$nin": keys}})  # products the producer added

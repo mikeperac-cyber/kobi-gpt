@@ -67,7 +67,7 @@ async def test_reset_twice_idempotent(db, seeded):
     await reset_demo_company(db, "denizli")
 
     async def snap():
-        return [await db[c].find({}, {"created_at": 0}).sort("_id").to_list(100)
+        return [await db[c].find({}, {"created_at": 0, "demo_reset_at": 0}).sort("_id").to_list(100)
                 for c in ("companies", "products", "leads")]
 
     first = await snap()

@@ -81,8 +81,12 @@ async def regenerate(body: RegenIn, user: dict = Depends(current_user), company:
 
 async def _set_status(company: dict, status: str, stamp: str) -> dict:
     doc = await _mine(company)
-    patch = {"status": status, stamp: datetime.now(timezone.utc)}
+    now = datetime.now(timezone.utc)
+    patch = {"status": status, stamp: now}
     await get_db().storefronts.update_one({"_id": doc["_id"]}, {"$set": patch})
+    if status == "published" and not doc.get("first_published_at"):  # set once, survives republish
+        await get_db().storefronts.update_one({"_id": doc["_id"]}, {"$set": {"first_published_at": now}})
+        patch["first_published_at"] = now
     return to_json({**doc, **patch})
 
 

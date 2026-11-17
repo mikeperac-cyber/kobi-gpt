@@ -49,7 +49,8 @@
     "admin": "Yönetim",
     "approvals": "Onay Bekleyenler",
     "pipeline": "Süreç",
-    "rates": "Lojistik tarifeleri"
+    "rates": "Lojistik tarifeleri",
+    "stats": "İstatistik"
   },
   "privacy": {
     "title": "Aydınlatma Metni (KVKK)",
@@ -912,5 +913,30 @@
     "save": "Kaydet",
     "saved": "Tarifeler kaydedildi.",
     "invalid": "Değerleri kontrol edin: sayılar sıfırdan büyük, kademeler artan sırada olmalı."
+  },
+  "impact": {
+    "title": "Etki",
+    "sinceSignup": "Kayıttan bu yana",
+    "sinceReset": "Sıfırlamadan bu yana",
+    "to_storefront": "Yayınlanan vitrine kadar",
+    "to_report": "İlk uygunluk raporuna kadar",
+    "to_outreach": "İlk onaylanan alıcı mesajına kadar",
+    "notYet": "Henüz değil",
+    "note": "Gerçek zaman damgalarından hesaplanır",
+    "d": "{{d}} gün",
+    "hm": "{{h}} sa {{m}} dk",
+    "ms": "{{m}} dk {{s}} sn",
+    "s": "{{s}} sn"
+  },
+  "adminStats": {
+    "title": "Platform sayıları",
+    "all": "Tümü",
+    "excludingDemo": "Demo hariç",
+    "companies": "Firmalar",
+    "storefronts_published": "Yayınlanan vitrinler",
+    "reports": "Uygunluk raporları",
+    "approved_messages": "Onaylanan mesajlar",
+    "rfqs": "Teklif talepleri",
+    "note": "Yalnızca gerçek sayımlar; firma adı veya kimliği içermez."
   }
 }

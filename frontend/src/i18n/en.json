@@ -49,7 +49,8 @@
     "admin": "Admin",
     "approvals": "Pending approvals",
     "pipeline": "Pipeline",
-    "rates": "Logistics rates"
+    "rates": "Logistics rates",
+    "stats": "Stats"
   },
   "privacy": {
     "title": "Privacy Notice (KVKK)",
@@ -912,5 +913,30 @@
     "save": "Save",
     "saved": "Rates saved.",
     "invalid": "Check the values: numbers must be above zero and bands in ascending order."
+  },
+  "impact": {
+    "title": "Impact",
+    "sinceSignup": "Since signup",
+    "sinceReset": "Since reset",
+    "to_storefront": "Time to published storefront",
+    "to_report": "Time to first readiness report",
+    "to_outreach": "Time to first approved outreach",
+    "notYet": "Not yet",
+    "note": "Calculated from real timestamps",
+    "d": "{{d}} days",
+    "hm": "{{h}} h {{m}} min",
+    "ms": "{{m}} min {{s}} s",
+    "s": "{{s}} s"
+  },
+  "adminStats": {
+    "title": "Platform counts",
+    "all": "All",
+    "excludingDemo": "Excluding demo",
+    "companies": "Companies",
+    "storefronts_published": "Published storefronts",
+    "reports": "Readiness reports",
+    "approved_messages": "Approved messages",
+    "rfqs": "Quote requests (RFQ)",
+    "note": "Real counts only; no company names or ids."
   }
 }

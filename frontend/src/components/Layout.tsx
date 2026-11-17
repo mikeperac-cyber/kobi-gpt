@@ -19,6 +19,7 @@ export default function Layout() {
           <div className="flex items-center gap-1">
             <LanguageSwitch />
             {user?.is_admin && <NavLink to="/admin/kb" className="min-h-11 px-3 inline-flex items-center text-sm font-semibold">{t('nav.admin')}</NavLink>}
+            {user?.is_admin && <NavLink to="/admin/stats" className="min-h-11 px-3 inline-flex items-center text-sm font-semibold">{t('nav.stats')}</NavLink>}
             {user?.is_admin && <NavLink to="/admin/logistics-rates" className="min-h-11 px-3 inline-flex items-center text-sm font-semibold">{t('nav.rates')}</NavLink>}
             {user && (
               <Button variant="ghost" onClick={async () => { try { await logout() } catch { /* still leave */ } nav('/login') }}>{t('auth.logout')}</Button>

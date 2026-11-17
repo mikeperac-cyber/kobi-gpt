@@ -3,6 +3,29 @@
 One section per phase; later phases append their own `## Phase N` section below.
 Rule: PASS only for what was actually run. Anything not run, or that misbehaved, is FAIL.
 
+## Summary
+
+Date of last runs: 2026-11-17. All verification ran on an in-memory database (`mongomock://`) with no LLM key; every AI path was exercised on its fallback, and live-LLM code paths only through a fake LLM in pytest.
+
+| Phase | Rows | Result | Partial / not verified rows |
+|-------|------|--------|-----------------------------|
+| 1 Foundations | 8 | 8 PASS, 0 FAIL | row 4 (TR onboarding steps not walked, EN walked); caveats on rows 2 and 3 |
+| 2 Storefront | 8 | 8 PASS, 0 FAIL | rows 1, 2, 3, 4, 6 partial (fallback only, DOM metrics, lead list UI came in Phase 4) |
+| 3 Compliance | 7 | 7 PASS, 0 FAIL | rows 2a, 2b, 2c (fallback), 5 (PDF text layer only) |
+| 4 Outreach and quotes | 8 | 8 rows, 0 FAIL | rows 1b, 5, 7 partial (translations and reply analysis not live; PDF visual not seen) |
+| 5 Demo and polish | 5 | 3 PASS, 1 PARTIAL, 1 NOT VERIFIED, 0 FAIL | row 1 partial (product time only), row 2 not verified (no key), row 5 gap noted |
+
+### Never verified (across all phases)
+- Any live LLM call: storefront text, photo analysis, GTİP reasoning ("2008.19 rather than 0802.51"), personalised compliance and incentive text, draft and reply translations, intent and term extraction, tone rewrites, a demo cache filled by a real run, the demo with the key removed.
+- Real MongoDB: persistence across restarts, indexes on a real server, Atlas.
+- Visual rendering of the readiness and quote PDFs (text layer and fonts checked, glyphs not seen).
+- Real microphone dictation, QR scan and layout on a real phone, a real mail client receiving the `mailto:` hand-off, the clipboard fallback on a real device, a screen reader, native file dialogs.
+- A human-paced, stopwatch-timed demo through the UI (only product wall-clock was timed); Lighthouse repeat runs and non-performance categories.
+
+### Final test and build lines
+- `backend\.venv\Scripts\python.exe -m pytest -q -W error`: **331 passed in 140.40s**.
+- `npm run build` (frontend, `tsc -b && vite build`): succeeded, `built in 246ms`, main chunk `index-DUunbzpi.js` 228.10 kB (gzip 72.52 kB).
+
 ## Phase 1
 
 **Run conditions.** Backend: `MONGO_URI=mongomock://` (in-memory dev DB, seeded on startup), uvicorn on :8000. Frontend: `npm run dev` on :5173.
@@ -120,3 +143,28 @@ Date: 2026-11-14.
 ### Not verified
 - Any real LLM call: draft translation (`body_tr`), reply translation, summary, intent, term extraction, model red-flag analysis, tone-control rewrites.
 - Visual rendering of both quote PDFs; the reply assistant screen in the browser (API only); CSV import, manual-add, "Numune gönderimi", reject-with-reason and the 20/day limit in the browser (tests only: `test_daily_limit_20`, `test_sample_task_created`, `test_reject`); a real mail client hand-off (the mailto URL was captured, not opened); the clipboard fallback; persistence across a server restart.
+
+## Phase 5
+
+**Run conditions.** Backend `MONGO_URI=mongomock://` on :8000 (started with `uvicorn app.main:app --port 8000`); frontend **production build** (`npm run build`) served by `npx vite preview --port 4173`, which proxies `/api` to :8000 (preview reuses `server.proxy`, confirmed: `GET :4173/api/health` returned 200). **No real MongoDB and no LLM key** (`key_set:false`), so every AI step took its fallback. Date: 2026-11-17. Tools: `npx lighthouse` 13.6.0 (headless Chrome) and a Python/httpx script that performs the demo script through the same HTTP API the UI calls.
+
+| # | Criterion | Result | Evidence |
+|---|-----------|--------|----------|
+| 1 | Full five-step demo script ≤ 3.5 min, twice in a row after a `/demo` reset | PARTIAL (product time PASS on fallback; presenter pacing and live LLM NOT MEASURED) | Per run: admin login, `POST /api/demo/reset/gaziantep` (0.03 s and 0.02 s, spec < 3 s), producer login, then the script. Run 1 / Run 2, product wall-clock of steps 1-5 only (script start to dashboard re-read): **0.81 s / 0.78 s**. Steps: (1) dashboard, roadmap only profile done (1/4), 0.02 s; (2) generate storefront job 0.03 s, publish 0.03 s, public page 0.20 s, QR 0.02 s, slug `bozkurt-pistazien` in both runs; (3) GTİP job 0.02 s (candidates 2008.19, 0802.51, 0802.52, all "orta"), confirm 2008.19, compliance check 0.02 s (4 checklist items, 8 incentives, score 0 until ticks, honest), PDF 0.06 s (200, 36.7 kB); (4) RFQ as German buyer 0.19 / 0.36 s, lead appeared hot (score 90), first-contact draft in German 0.06 s, DAP quote for 1000 kg 0.02 s, approve message (status `sent`) and approve quote; (5) dashboard roadmap profile, storefront, compliance, first_quote all true (4/4), 7 leads, 0 pending approvals. **How measured:** `time.monotonic()` around each HTTP call and job poll (200 ms poll), so server plus network time, not tool think-time. **Not measured:** UI clicking and reading time, microphone dictation (the intake sentence was sent as typed text), real LLM latency (fallbacks answer instantly; with a key the 25 s demo timeout per step applies), browser rendering. A human-paced run through the UI was not timed, so the 3.5 min budget is not proven end to end; the product's own contribution is under 1 s on fallbacks. |
+| 2 | After one successful run filled the cache, the demo completes with the LLM key removed | NOT VERIFIED | Cannot be proven without a key to fill the cache first. Covered by tests: `tests/test_demo.py` `test_cache_used_when_llm_fails` (FakeLLM fills the cache, then the call fails and the cached output is used), `test_cache_key_includes_language`, `test_non_demo_company_never_touches_cache`, `test_unusable_cache_entry_falls_back_to_template`, `test_cache_hit_rechecks_floor_and_known_ids`. Separately, runs 1 and 2 above completed with no key at all, on the built-in fallbacks (not the demo cache). |
+| 3 | Ownership tests pass; the floor price never leaks | PASS | `pytest -q -W error tests/test_ownership.py tests/test_account.py tests/test_demo.py`: 34 passed. `test_ownership.py` derives every id-param route from `app.openapi()` and fails on any unlisted route; `test_floor_absent_from_non_owner_responses`, `test_public_product_drops_floor_and_helper_detects_leaks`. Floor in prompts, PDF and text: `test_prompts_exclude_floor` (outreach), `test_reply_prompt_has_no_floor`, `test_generation_prompts_exclude_floor`, `test_prompts_carry_ui_language_and_no_floor`, `test_quote_pdf_german_no_floor`; below-floor quote refused without the number: `test_quote_below_floor_refused_without_number`. Live check on the running app: Bozkurt floor 11.5 (owner sees it); `/api/public/storefronts/bozkurt-pistazien` contains neither `price_floor` nor `11.5`; the Pamukkale producer's `GET /api/products/<Bozkurt product id>` returned 404. |
+| 4 | Storefront Lighthouse mobile ≥ 90, or docs say not measured | PASS | `npx lighthouse http://localhost:4173/s/bozkurt-pistazien --only-categories=performance --chrome-flags="--headless=new"` (default mobile form factor, simulated throttling, Lighthouse 13.6.0, no run warnings), production build. **Performance 97.** FCP 0.8 s, LCP 2.7 s, TBT 0 ms, CLS 0, Speed Index 1.1 s. Caveats: one run, localhost, seed placeholder photos, `vite preview` serves without compression (a real host with gzip or brotli should do no worse); performance category only. |
+| 5 | Switching to English leaves no Turkish UI text on producer screens (user input excepted) | PASS (with a listed gap) | Evidence is Task 35a (`task-35a-report.md`, EN walk, two passes): dashboard, company, products (+ modal), storefront intake/job/editor/publish success, compliance start, GTİP candidates, check job, report (checklist, readiness "estimated", incentives, next steps, PDF button), leads (table, CSV panel, manual form, detail, first-contact draft, reply assistant), quote, approvals, pipeline, account, privacy, demo, and admin KB/stats/logistics, at 1280x720 and 375x812. Only non-English text found: user data and proper names (Bozkurt Antep Fıstığı, provinces, "Ticaret Bakanlığı", "Türk Eximbank", "Kolay İhracat") and German buyer-language drafts and storefront preview, which are by design. Turkish leftovers found and fixed: admin KB rule rows "(zorunlu · TR)" and "(koşullu · DEST)". Key parity of `tr.json` and `en.json` is a passing pytest. **Gap:** a compliance report is stored in the language it was generated in, so switching UI language afterwards shows old-language KB explanations under new-language labels until "Run again" (by design: language is part of the cache key). Not re-walked in this task. |
+
+### Tally
+5 rows: 3 PASS (rows 3, 4, 5), 1 PARTIAL (row 1), 1 NOT VERIFIED (row 2), 0 FAIL. Partial rows named: row 1 (product wall-clock 0.8 s on fallbacks, twice; presenter-paced UI time, mic dictation and live LLM latency not timed) and row 5 (stored compliance report language). Row 4 is a single localhost run. In-memory DB; no live LLM.
+
+### Defects / follow-ups (none block acceptance)
+1. On the fallback path the first-contact draft for the RFQ lead has no Turkish translation (`body_tr` empty), while demo script step 4 says "German text and its translation". Expected without a key (translation is an LLM step, Phase 4 row 1b); for the jury the translation needs a live key or a primed cache.
+2. After the demo flow the compliance score is 0 until the producer ticks items, so the "readiness score" beat shows 0 unless ticks are made live. Honest by design; plan a few ticks in the presentation.
+3. Generating the Bozkurt storefront after `/demo` reset gives slug `bozkurt-pistazien` (fixed in ff43de3, confirmed in both runs); other demo companies get slugified names.
+
+### Not verified
+- Live LLM anywhere (generation, GTİP reasoning, translations, cache filling from a real run, the demo with the key removed).
+- A human-paced timed run through the UI, microphone dictation, QR scan on a real phone, phone-frame look on a real device.
+- Real MongoDB persistence across restarts; a real mail client for the `mailto:` hand-off; visual rendering of the PDFs (text layer only); a screen reader; Lighthouse categories other than performance and repeat runs.

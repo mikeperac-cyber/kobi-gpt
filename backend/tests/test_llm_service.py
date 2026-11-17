@@ -162,3 +162,39 @@ async def test_log_failure_does_not_mask_result(db, fake_llm, monkeypatch):
     fake_llm.responses = [LLMTimeout("slow")]
     with pytest.raises(LLMTimeout):
         await generate_text("admin_ping", {}, run_type="t", company_id=None)
+
+
+@pytest.mark.parametrize("prov,ok,cut", [
+    (svc.AnthropicProvider("k", "m"), {"content": [{"type": "text", "text": "a"}], "stop_reason": "end_turn"},
+     {"content": [{"type": "text", "text": "{\"a\""}], "stop_reason": "max_tokens"}),
+    (svc.OpenAIProvider("k", "m"), {"choices": [{"message": {"content": "a"}, "finish_reason": "stop"}]},
+     {"choices": [{"message": {"content": "{\"a\""}, "finish_reason": "length"}]}),
+    (svc.GeminiProvider("k", "m"), {"candidates": [{"finishReason": "STOP", "content": {"parts": [{"text": "a"}]}}]},
+     {"candidates": [{"finishReason": "MAX_TOKENS", "content": {"parts": [{"text": "{\"a\""}]}}]}),
+], ids=["anthropic", "openai", "gemini"])
+async def test_stop_reason_logged_and_truncation_is_invalid_output(db, monkeypatch, prov, ok, cut):
+    cur = {"r": ok}
+    _mock(monkeypatch, lambda req: httpx.Response(200, json=cur["r"]))
+    svc.set_provider(prov)
+    try:
+        await generate_text("admin_ping", {}, run_type="ok", company_id=None)
+        assert (await db.agent_runs.find_one({"type": "ok"}))["stop_reason"] in {"end_turn", "stop", "STOP"}
+        cur["r"] = cut
+        with pytest.raises(LLMInvalidOutput):
+            await generate_text("admin_ping", {}, run_type="cut", company_id=None)
+        run = await db.agent_runs.find_one({"type": "cut"})
+        assert run["status"] == "error" and run["stop_reason"] in {"max_tokens", "length", "MAX_TOKENS"}
+    finally:
+        svc.set_provider(None)
+
+
+async def test_anthropic_max_tokens_is_16000(monkeypatch):
+    seen = {}
+
+    def h(req):
+        seen.update(_json.loads(req.content))
+        return httpx.Response(200, json={"content": [{"type": "text", "text": "a"}]})
+
+    _mock(monkeypatch, h)
+    await svc.AnthropicProvider("k", "m").complete("p", [], 1, True)
+    assert seen["max_tokens"] == 16000

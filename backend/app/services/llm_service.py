@@ -1,5 +1,6 @@
 """Single entry point for every LLM call: raw-httpx providers, JSON validation, run logging."""
 import base64
+import contextvars
 import json
 import logging
 import re
@@ -29,6 +30,18 @@ class LLMInvalidOutput(LLMError):
         self.raw = raw
 
 class LLMProviderError(LLMError): ...
+
+
+_stop_reason: contextvars.ContextVar[str | None] = contextvars.ContextVar("llm_stop_reason", default=None)
+_TRUNCATED = {"max_tokens", "length", "MAX_TOKENS"}
+
+
+def _finish(reason: str | None, text: str) -> str:
+    """Record the provider's stop reason for agent_runs; a cut-off reply is never usable JSON."""
+    _stop_reason.set(reason)
+    if reason in _TRUNCATED:
+        raise LLMInvalidOutput(f"output truncated ({reason})", text)
+    return text
 
 
 class Provider(Protocol):
@@ -78,10 +91,11 @@ class AnthropicProvider:
         data = await _post(
             "https://api.anthropic.com/v1/messages",
             {"x-api-key": self.key, "anthropic-version": "2023-06-01"},
-            {"model": self.model, "max_tokens": 4096, "messages": [{"role": "user", "content": content}]},
+            {"model": self.model, "max_tokens": 16000, "messages": [{"role": "user", "content": content}]},
             timeout,
         )
-        return _extract(lambda d: "".join(b.get("text", "") for b in d["content"]), data)
+        text = _extract(lambda d: "".join(b.get("text", "") for b in d["content"]), data)
+        return _finish(data.get("stop_reason"), text)
 
 
 class OpenAIProvider:
@@ -98,7 +112,8 @@ class OpenAIProvider:
         data = await _post(
             "https://api.openai.com/v1/chat/completions", {"Authorization": f"Bearer {self.key}"}, body, timeout
         )
-        return _extract(lambda d: d["choices"][0]["message"]["content"] or "", data)
+        text = _extract(lambda d: d["choices"][0]["message"]["content"] or "", data)
+        return _finish(data["choices"][0].get("finish_reason"), text)
 
 
 class GeminiProvider:
@@ -116,7 +131,8 @@ class GeminiProvider:
             body,
             timeout,
         )
-        return _extract(lambda d: "".join(p.get("text", "") for p in d["candidates"][0]["content"]["parts"]), data)
+        text = _extract(lambda d: "".join(p.get("text", "") for p in d["candidates"][0]["content"]["parts"]), data)
+        return _finish(data["candidates"][0].get("finishReason"), text)
 
 
 _PROVIDERS = {"anthropic": AnthropicProvider, "openai": OpenAIProvider, "gemini": GeminiProvider}
@@ -156,6 +172,7 @@ def render_prompt(name: str, context: dict) -> str:
 async def _logged(name, prompt, run_type, company_id, work):
     start = time.perf_counter()
     output, error = "", None
+    _stop_reason.set(None)
     try:
         result = await work()
         output = result if isinstance(result, str) else result.model_dump_json()
@@ -174,6 +191,7 @@ async def _logged(name, prompt, run_type, company_id, work):
                 "status": "error" if error else "ok",
                 "duration_ms": int((time.perf_counter() - start) * 1000),
                 "error": error,
+                "stop_reason": _stop_reason.get(),
                 "created_at": datetime.now(timezone.utc),
             }
         )

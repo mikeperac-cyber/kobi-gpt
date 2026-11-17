@@ -10,7 +10,6 @@ from app.routers.auth import clear_cookie
 from app.core.security import current_user, verify_password
 from app.core.serialize import to_json
 from app.services.storage_service import get_storage
-from app.services.upload_registry import owned_urls
 
 router = APIRouter(prefix="/account")
 # Exported = the user's own data. Internal collections (jobs, agent_runs, demo_cache, lead_imports) are not.
@@ -65,18 +64,16 @@ async def delete_account(body: DeleteIn, response: Response, user: dict = Depend
     company = await _company(user)
     if user.get("is_admin") or (company and company.get("is_demo_company")):
         raise _err(409, "cannot_delete_demo")
-    uid, urls = str(user["_id"]), set()
+    uid = str(user["_id"])
     if company:
         cid = str(company["_id"])
         products = await db.products.find({"company_id": cid}).to_list(None)
-        urls = {u for p in products for u in p.get("photos") or []} | {company.get("logo_url")}
-        for coll in ("readiness_reports", "quotes"):
-            urls |= {d.get("pdf_url") async for d in db[coll].find({"company_id": cid})}
         for coll in DELETE:
             await db[coll].delete_many({"company_id": cid})
         await db.readiness_reports.delete_many({"product_id": {"$in": [str(p["_id"]) for p in products]}})
         await db.companies.delete_one({"_id": company["_id"]})
-    mine = await owned_urls(db, urls, uid)  # only files this user uploaded; a doc's URL string proves nothing
+    # every file recorded for this user (incl. old PDFs, replaced photos); a doc's URL string proves nothing
+    mine = {r["url"] async for r in db.uploads.find({"user_id": uid})}
     await db.users.delete_one({"_id": user["_id"]})
     storage = get_storage()
     for url in mine:

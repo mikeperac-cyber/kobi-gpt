@@ -166,3 +166,21 @@ async def test_confirm_word_variants(producer, word):
     a = await producer("Aaa")
     r = await a["client"].request("DELETE", "/api/account", json={"confirm": word, "password": "password123"})
     assert r.status_code == 204, word
+
+
+async def test_delete_removes_superseded_and_abandoned_uploads(producer, db, tmp_path):
+    from app.services.upload_registry import record_upload
+
+    a, b = await producer("Aaa"), await producer("Bbb")
+    await _seed(db, a, tmp_path)
+    theirs = await _seed(db, b, tmp_path)
+    st = storage_service.get_storage()
+    extra = [await st.save_file(b"%PDF", f"reports/{a['company']['id']}", ".pdf"),  # an older report download
+             await st.save(b"x", "products")]  # a replaced / abandoned photo
+    for u in extra:
+        await record_upload(db, u, a["user"]["id"])
+    r = await a["client"].request("DELETE", "/api/account", json={"confirm": "DELETE", "password": "password123"})
+    assert r.status_code == 204
+    assert not any(_file(tmp_path, u).exists() for u in extra)
+    assert all(_file(tmp_path, u).exists() for u in theirs)
+    assert await db.uploads.count_documents({"user_id": a["user"]["id"]}) == 0

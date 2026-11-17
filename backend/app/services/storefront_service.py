@@ -253,6 +253,8 @@ async def generate_site_config(job_id: str, company: dict, products: list[dict],
 
     out, _ = await agent_steps.run_ai_step(job_id, "content", company, content_call, content_fallback,
                                          key("content"), ContentOut.model_validate)
+    if contains_floor(out.model_dump(), floors):  # also guards a cache hit
+        out = content_fallback()
     # the theme step is deterministic: recorded as "template", never as an LLM result
     await agent_steps._set_step(job_id, "theme", status="done", source="template", elapsed_ms=0)
 
@@ -294,13 +296,7 @@ async def regenerate_section(company: dict, products: list[dict], cfg: SiteConfi
     current = adapter.dump_python(getattr(getattr(cfg, lang), section), mode="json")
     floors = _floors(products)
 
-    async def call(t):
-        out = await generate_json(
-            "sf_regen_section",
-            _ctx(company, products, ui_language, section=section, lang=lang, current=current,
-                 instruction=instruction or ""),
-            RegenOut, run_type="storefront", company_id=str(company["_id"]), timeout=t)
-        new = adapter.dump_python(adapter.validate_python(out.content), mode="json")
+    def check(new):  # also runs on a cache hit
         if section == "products":  # ids and photos come from the DB, never from the model
             photos = {str(p["_id"]): p.get("photos") or [] for p in products}
             new = [{**b, "photos": list(photos[b["product_id"]])} for b in new if b["product_id"] in photos]
@@ -308,9 +304,22 @@ async def regenerate_section(company: dict, products: list[dict], cfg: SiteConfi
             raise LLMInvalidOutput("floor price in generated text")
         return new
 
+    async def call(t):
+        out = await generate_json(
+            "sf_regen_section",
+            _ctx(company, products, ui_language, section=section, lang=lang, current=current,
+                 instruction=instruction or ""),
+            RegenOut, run_type="storefront", company_id=str(company["_id"]), timeout=t)
+        return check(adapter.dump_python(adapter.validate_python(out.content), mode="json"))
+
     key = agent_steps.cache_key(section, ui_language, ",".join(str(p["_id"]) for p in products), lang,
                                 instruction or "")  # JSON-only value: no restore needed
     new, fb = await agent_steps.run_ai_step(None, section, company, call, lambda: current, key)
-    if section == "hero" and not fb:
+    if fb:
+        try:
+            new = check(new)
+        except LLMInvalidOutput:
+            new = current
+    if section == "hero":
         new["cta"] = CTA[lang]
     return new, fb

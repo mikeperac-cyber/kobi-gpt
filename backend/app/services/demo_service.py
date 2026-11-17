@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import datetime, timezone
 
@@ -5,11 +6,14 @@ from bson import ObjectId
 
 from app.models.company import CompanyIn
 from app.models.product import ProductIn
-from app.seed import DEMO_LEAD_NOTE, _load
+from app.seed import DEMO_LEAD_NOTE, _load, backfill_seed_keys
+from app.seed.images import make_placeholder
+from app.services.storage_service import get_storage
 from app.services.agent_steps import spawn
 from app.services.llm_service import generate_text
 from app.services.scoring import score_for_company
 
+log = logging.getLogger(__name__)
 # demo key -> seed company key; looked up by the seeded company name, never by ObjectId
 DEMO_KEYS = {"gaziantep": "bozkurt", "denizli": "pamukkale", "bursa": "uludag"}
 ACTIVITY = ("storefronts", "classifications", "readiness_reports", "messages", "quotes", "tasks", "notifications",
@@ -35,6 +39,13 @@ async def list_demo_companies(db) -> list[dict]:
     return out
 
 
+async def _warmup(cid: str) -> None:
+    try:
+        await generate_text("admin_ping", {}, run_type="warmup", company_id=cid)
+    except Exception as e:  # no key / provider down: the demo still works from the cache
+        log.warning("demo warm-up skipped: %s", e)
+
+
 async def reset_demo_company(db, key: str) -> dict | None:
     """Back to the clean seed state, same ids (so demo_cache keys stay valid). None if the company is not seeded."""
     t0 = time.monotonic()
@@ -47,16 +58,20 @@ async def reset_demo_company(db, key: str) -> dict | None:
         await db[coll].delete_many({"company_id": cid})
     await db.leads.delete_many({"company_id": cid, "is_demo": {"$ne": True}})
     await db.companies.update_one({"_id": company["_id"]}, {"$set": CompanyIn(**spec["company"]).model_dump()})
-    names = [p["name_tr"] for p in spec["products"]]
-    await db.products.delete_many({"company_id": cid, "name_tr": {"$nin": names}})
-    for p in spec["products"]:
-        old = await db.products.find_one({"company_id": cid, "name_tr": p["name_tr"]}) or {}
-        photos = old.get("seed_photos") or old.get("photos") or []
-        body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos).model_dump()
-        await db.products.update_one({"company_id": cid, "name_tr": p["name_tr"]},
-                                     {"$set": {**body, "hs_code_confirmed": None, "seed_photos": photos}})
-    company = await db.companies.find_one({"_id": company["_id"]})
+    await backfill_seed_keys(db, cid, spec)
+    keys = [f"{spec['key']}:{i}" for i in range(len(spec["products"]))]
+    await db.products.delete_many({"company_id": cid, "seed_key": {"$nin": keys}})  # products the producer added
     now = datetime.now(timezone.utc)
+    for key_, p in zip(keys, spec["products"]):
+        old = await db.products.find_one({"company_id": cid, "seed_key": key_}) or {}
+        photos = old.get("seed_photos") or old.get("photos") or [
+            await get_storage().save(make_placeholder(label, spec["color"]), "products")
+            for label in p["photo_labels"]]  # the product was deleted: regenerate its placeholders
+        body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos).model_dump()
+        await db.products.update_one({"company_id": cid, "seed_key": key_},
+                                     {"$set": {**body, "hs_code_confirmed": None, "seed_photos": photos},
+                                      "$setOnInsert": {"created_at": now}}, upsert=True)
+    company = await db.companies.find_one({"_id": company["_id"]})
     for lead in _load("demo_leads")[spec["key"]]:
         doc = {**lead, "company_id": cid, "source": "demo", "country": "DE", "is_demo": True,
                "source_note": DEMO_LEAD_NOTE, "status": "new", "created_at": now}
@@ -64,5 +79,5 @@ async def reset_demo_company(db, key: str) -> dict | None:
         await db.leads.replace_one({"company_id": cid, "email": lead["email"]},
                                    {**doc, "score": sc["total"], "score_breakdown": sc["breakdown"]}, upsert=True)
     # warm the LLM connection for the demo; not awaited, failures are logged by spawn
-    spawn(generate_text("admin_ping", {}, run_type="warmup", company_id=cid))
+    spawn(_warmup(cid))
     return {"elapsed_ms": int((time.monotonic() - t0) * 1000)}

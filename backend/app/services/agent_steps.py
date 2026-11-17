@@ -60,7 +60,7 @@ async def run_ai_step(job_id: str | None, step: str, company: dict, call: Callab
         try:
             # wait_for bounds the TOTAL step time (generate_json may retry, each with its own timeout)
             value, used_fallback = await asyncio.wait_for(call(timeout), timeout), False
-            if cached:
+            if cached and not (isinstance(value, dict) and value.get("_rejected")):  # never cache a template
                 await get_db().demo_cache.update_one(
                     {"company_id": str(company["_id"]), "key": cache_key},
                     {"$set": {"output": to_jsonable_python(value), "created_at": _now()}}, upsert=True)

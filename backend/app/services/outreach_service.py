@@ -169,6 +169,10 @@ async def draft_first_contact(lead: dict, company: dict, products: list[dict], s
     draft, used_fb = await agent_steps.run_ai_step(None, "draft", company, call, fb,
                                                 agent_steps.cache_key("draft", ui_language, lead["_id"], kind,
                                                                       ",".join(tone)))
+    if used_fb and "_rejected" not in draft and draft != fb():  # a cache hit: re-run the output checks
+        body = enforce_outreach_rules(draft["body"], floors, lang)
+        if body is None or has_amount(draft["subject"]) or contains_floor(draft["subject"], floors):
+            draft = {**fb(), "_rejected": True}
     used_fb = bool(draft.pop("_rejected", False)) or used_fb
     body_tr, tr_fb = await translate(draft["body"], ui_language, company, lang)
     msg = {"lead_id": str(lead["_id"]), "company_id": cid, "direction": "outbound", "kind": kind, "language": lang,

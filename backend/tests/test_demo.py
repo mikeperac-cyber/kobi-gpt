@@ -155,3 +155,39 @@ async def test_unusable_cache_entry_falls_back_to_template(db):
     def restore(v): raise ValueError("schema drift")
 
     assert await run_ai_step(None, "s", co, bad, lambda: "tpl", "k", restore) == ("tpl", True)
+
+
+async def test_reset_restores_renamed_and_deleted_products(db, seeded):
+    await seed(db)
+    cid = str((await _bozkurt(db))["_id"])
+    a, b = await db.products.find({"company_id": cid}).sort("_id", 1).to_list(10)
+    await db.products.update_one({"_id": a["_id"]}, {"$set": {"name_tr": "Başka ad"}})
+    await db.products.delete_one({"_id": b["_id"]})
+    await db.products.insert_one({"company_id": cid, "name_tr": "Ekstra", "photos": []})
+    await reset_demo_company(db, "gaziantep")
+    got = await db.products.find({"company_id": cid}).sort("_id", 1).to_list(10)
+    assert [p["name_tr"] for p in got] == [a["name_tr"], b["name_tr"]]
+    assert got[0]["_id"] == a["_id"] and got[1]["photos"] and len({p["seed_key"] for p in got}) == 2
+
+
+async def test_legacy_products_without_seed_key_are_backfilled(db, seeded):
+    await seed(db)
+    cid = str((await _bozkurt(db))["_id"])
+    a = await db.products.find_one({"company_id": cid, "seed_key": "bozkurt:0"})
+    await db.products.update_many({"company_id": cid}, {"$unset": {"seed_key": "", "seed_photos": ""}})
+    await db.products.update_one({"_id": a["_id"]}, {"$set": {"name_tr": "Eski ad"}})
+    await reset_demo_company(db, "gaziantep")
+    p = await db.products.find_one({"_id": a["_id"]})
+    assert p["name_tr"] == a["name_tr"] and p["seed_key"] == "bozkurt:0" and p["seed_photos"]
+    assert await db.products.count_documents({"company_id": cid}) == 2
+
+
+async def test_cache_hit_rechecks_floor_and_known_ids(db):
+    from app.services.regai_service import next_steps
+    co = {"_id": ObjectId(), "is_demo_company": True}
+    await db.demo_cache.insert_one({"company_id": str(co["_id"]), "key": "next_steps:tr:s", "output": [
+        {"rule_id": "GONE", "text": "x"}]})
+    checklist = [{"rule_id": "R1", "applies": True, "done": False, "level": "zorunlu", "title_tr": "t"}]
+    rules = {"R1": {"summary_tr": "s", "title_tr": "t", "what_to_do_tr": "w"}}
+    out = await next_steps(checklist, rules, co, "tr", None, "s")  # LLM not configured -> cache hit
+    assert out == []

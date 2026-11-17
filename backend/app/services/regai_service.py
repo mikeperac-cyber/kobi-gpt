@@ -176,7 +176,7 @@ async def next_steps(checklist: list[dict], rules_by_id: dict[str, dict], compan
     value, _ = await agent_steps.run_ai_step(job_id, "next_steps", company, call,
                                              lambda: fallback_next_steps(checklist, ui, rules_by_id),
                                              agent_steps.cache_key("next_steps", ui, scope))
-    return value
+    return [s for s in value if s["rule_id"] in allowed]
 
 
 async def build_report(product: dict, company: dict, *, country: str, channel: str, structural_use: bool,
@@ -214,6 +214,7 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
     else:
         picked, _ = await agent_steps.run_ai_step(job_id, "rules", company, explain_rules, dict,
                                                  agent_steps.cache_key("rules", ui, scope))
+    picked = {k: v for k, v in picked.items() if k in rules_by_id}  # a cache hit may predate a KB change
     checklist = build_checklist(rules, picked, ui)
 
     async def explain_incentives(t):
@@ -236,6 +237,7 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
     else:
         await agent_steps._set_step(job_id, "incentives", status="done", source="template", elapsed_ms=0)
         chosen = []
+    chosen = [(iid, why) for iid, why in chosen if iid in incs_by_id]
     incentives = [{"incentive_id": iid, "name_tr": incs_by_id[iid]["name_tr"], "name_en": incs_by_id[iid]["name_en"],
                    "provider": incs_by_id[iid]["provider"], "source_url": incs_by_id[iid]["source_url"],
                    "summary": incs_by_id[iid][f"summary_{ui}"],

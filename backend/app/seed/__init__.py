@@ -37,21 +37,47 @@ async def _ensure_user(db, email: str, name: str, password: str, is_admin: bool,
     return str((await db.users.insert_one(doc)).inserted_id)
 
 
+async def backfill_seed_keys(db, cid: str, spec: dict) -> None:
+    """Give every seeded product a stable seed_key (and seed_photos). Legacy docs match by original name,
+    leftovers by creation order, so a product renamed before the key existed is still recognised."""
+    keys = [f"{spec['key']}:{i}" for i in range(len(spec["products"]))]
+    docs = await db.products.find({"company_id": cid}).sort("_id", 1).to_list(500)
+    have = {d["seed_key"] for d in docs if d.get("seed_key") in keys}
+    free = [k for k in keys if k not in have]
+    for d in docs:
+        if d.get("seed_key") in keys:
+            continue
+        i = next((i for i, p in enumerate(spec["products"]) if p["name_tr"] == d["name_tr"]
+                  and keys[i] in free), None)
+        if i is not None:
+            free.remove(keys[i])
+            await db.products.update_one({"_id": d["_id"]}, {"$set": {"seed_key": keys[i]}})
+            d["seed_key"] = keys[i]
+    for d in docs:
+        if d.get("seed_key") not in keys and free:
+            d["seed_key"] = free.pop(0)
+            await db.products.update_one({"_id": d["_id"]}, {"$set": {"seed_key": d["seed_key"]}})
+    for d in docs:
+        if d.get("seed_key") in keys and not d.get("seed_photos"):
+            await db.products.update_one({"_id": d["_id"]}, {"$set": {"seed_photos": d.get("photos") or []}})
+
+
 async def _seed_company(db, spec: dict, password: str, now) -> str:
     owner = await _ensure_user(db, spec["user"]["email"], spec["user"]["name"], password, False, now)
     fields = CompanyIn(**spec["company"]).model_dump()  # same model the API validates with
     await db.companies.update_one({"owner_id": owner}, {"$set": {**fields, "is_demo_company": True},
                                   "$setOnInsert": {"created_at": now}}, upsert=True)
     cid = str((await db.companies.find_one({"owner_id": owner}))["_id"])
-    for p in spec["products"]:
-        existing = await db.products.find_one({"company_id": cid, "name_tr": p["name_tr"]})
+    await backfill_seed_keys(db, cid, spec)
+    for i, p in enumerate(spec["products"]):
+        existing = await db.products.find_one({"company_id": cid, "seed_key": f"{spec['key']}:{i}"})
         if existing:
             continue  # keeps photos and any edits; no new files on re-run
         photos = [await get_storage().save(make_placeholder(label, spec["color"]), "products")
                   for label in p["photo_labels"]]
         body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos)
         await db.products.insert_one({**body.model_dump(), "company_id": cid, "hs_code_confirmed": None,
-                                      "seed_photos": photos, "created_at": now})  # seed_photos: for demo reset
+                                      "seed_photos": photos, "seed_key": f"{spec['key']}:{i}", "created_at": now})
     await db.markets.update_one({"company_id": cid}, {"$setOnInsert": {"country_code": "DE", "languages": ["de", "en"],
                                 "status": "active"}}, upsert=True)
     return cid

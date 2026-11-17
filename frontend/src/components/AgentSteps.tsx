@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDemoGuide } from './DemoGuide'
 
-export type StepView = { key: string; status: 'waiting' | 'running' | 'done' | 'fallback'; elapsed_ms: number | null }
+export type StepView = { key: string; status: 'waiting' | 'running' | 'done' | 'fallback'; elapsed_ms: number | null; source?: string | null }
 
 /** Live agent progress. `failed` stops running spinners (job errored): calm grey, never red. */
 export default function AgentSteps({ steps, labels, explain, failed = false }: {
@@ -11,6 +12,9 @@ export default function AgentSteps({ steps, labels, explain, failed = false }: {
   failed?: boolean
 }) {
   const { t } = useTranslation()
+  const guide = useDemoGuide()
+  const { report } = guide
+  useEffect(() => report(steps), [steps, report])
   const [now, setNow] = useState(() => Date.now())
   const began = useRef<Record<string, number>>({})
   const running = steps.some((s) => s.status === 'running') && !failed
@@ -41,6 +45,9 @@ export default function AgentSteps({ steps, labels, explain, failed = false }: {
               <p className="text-xs text-slate-500">
                 {t(`agent.state.${live ? 'running' : state}`)}
                 {(live || state === 'done' || state === 'fallback') && ` · ${secs.toFixed(1)} s`}
+                {guide.open && state === 'fallback' && s.source !== 'llm' && (
+                  <span role="img" aria-label={t(`demo.guide.source.${s.source ?? 'template'}`)} className={`ml-2 inline-block w-2 h-2 rounded-full ${s.source === 'cache' ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                )}
               </p>
             </div>
           </li>

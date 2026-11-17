@@ -690,7 +690,41 @@
   },
   "demo": {
     "title": "Demo",
-    "badge": "DEMO – fictional company"
+    "badge": "DEMO – fictional company",
+    "page": {
+      "title": "Demo admin",
+      "intro": "Reset a demo company before the presentation, then log in as that company.",
+      "reset": "Reset",
+      "resetting": "Resetting…",
+      "done": "Reset done ({{ms}} ms)",
+      "loginAs": "Log in as this company"
+    },
+    "guide": {
+      "title": "Demo guide",
+      "close": "Close",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "stopwatch": "Stopwatch",
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Reset",
+      "prev": "Previous",
+      "next": "Next",
+      "stepOf": "Step {{n}}/{{total}}",
+      "fallbacks": "Steps that used a fallback (latest job)",
+      "source": {
+        "cache": "from cache",
+        "template": "template",
+        "llm": "live"
+      },
+      "steps": {
+        "dashboard": "Show the Bozkurt dashboard; roadmap at 1/4.",
+        "storefront": "Digital Storefront: dictate one sentence, generate, publish; show /s/bozkurt-pistazien in German with the QR code.",
+        "compliance": "Compliance Guard: 2008.19 suggestion, checklist, incentives, readiness score and PDF.",
+        "rfq": "In a second tab submit an RFQ as the German buyer; hot lead, first-contact text, DAP quote, Approve and Send.",
+        "finish": "Back to the dashboard: roadmap at 4/4, counters updated."
+      }
+    }
   },
   "account": {
     "title": "My account"

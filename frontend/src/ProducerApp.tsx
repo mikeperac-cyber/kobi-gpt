@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './i18n'
 import App from './App'
 import { AuthProvider } from './auth/AuthContext'
+import { DemoGuideProvider } from './components/DemoGuide'
 import ErrorBoundary from './components/ErrorBoundary'
 
 export default function ProducerApp() {
@@ -9,7 +10,7 @@ export default function ProducerApp() {
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <DemoGuideProvider><App /></DemoGuideProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

@@ -690,7 +690,41 @@
   },
   "demo": {
     "title": "Demo",
-    "badge": "DEMO – kurgusal firma"
+    "badge": "DEMO – kurgusal firma",
+    "page": {
+      "title": "Demo yönetimi",
+      "intro": "Sunumdan önce demo firmasını sıfırlayın, sonra o firmayla giriş yapın.",
+      "reset": "Sıfırla",
+      "resetting": "Sıfırlanıyor…",
+      "done": "Sıfırlandı ({{ms}} ms)",
+      "loginAs": "Bu firmayla giriş yap"
+    },
+    "guide": {
+      "title": "Demo rehberi",
+      "close": "Kapat",
+      "collapse": "Küçült",
+      "expand": "Aç",
+      "stopwatch": "Kronometre",
+      "start": "Başlat",
+      "pause": "Duraklat",
+      "reset": "Sıfırla",
+      "prev": "Önceki",
+      "next": "Sonraki",
+      "stepOf": "Adım {{n}}/{{total}}",
+      "fallbacks": "Yedek kullanılan adımlar (son iş)",
+      "source": {
+        "cache": "önbellekten",
+        "template": "şablon",
+        "llm": "canlı"
+      },
+      "steps": {
+        "dashboard": "Bozkurt panosunu gösterin; yol haritası 1/4.",
+        "storefront": "Dijital Vitrin: mikrofonla bir cümle söyleyin, üretin, yayınlayın; /s/bozkurt-pistazien sayfasını Almanca ve QR ile gösterin.",
+        "compliance": "Mevzuat Bekçisi: 2008.19 önerisi, kontrol listesi, teşvikler, hazırlık puanı ve PDF.",
+        "rfq": "İkinci sekmede Alman alıcı olarak teklif isteği gönderin; sıcak müşteri, ilk temas metni, DAP teklifi, Onayla ve Gönder.",
+        "finish": "Panoya dönün: yol haritası 4/4, sayaçlar güncel."
+      }
+    }
   },
   "account": {
     "title": "Hesabım"

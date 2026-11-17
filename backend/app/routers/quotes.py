@@ -1,9 +1,10 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
+from app.core.clock import tr_today
 from app.core.db import get_db
 from app.services.upload_registry import record_upload
 from app.core.security import current_company, current_user, owned
@@ -46,7 +47,7 @@ async def create(body: QuoteIn, company: dict = Depends(current_company)):
         raise svc.err(422, "floor_currency_mismatch")
     if body.unit_price < product["price_floor"]:
         raise svc.err(422, "below_floor")  # code only: the floor value never leaves the server
-    if body.valid_until < date.today():
+    if body.valid_until < tr_today():
         raise svc.err(422, "invalid_valid_until")
     weight = body.unit_weight_kg or product.get("unit_weight_kg")
     try:

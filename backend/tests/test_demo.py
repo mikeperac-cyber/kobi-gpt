@@ -187,7 +187,7 @@ async def test_legacy_products_without_seed_key_are_backfilled(db, seeded):
 async def test_cache_hit_rechecks_floor_and_known_ids(db):
     from app.services.regai_service import next_steps
     co = {"_id": ObjectId(), "is_demo_company": True}
-    await db.demo_cache.insert_one({"company_id": str(co["_id"]), "key": "next_steps:tr:s", "output": [
+    await db.demo_cache.insert_one({"company_id": str(co["_id"]), "key": cache_key("next_steps", "tr", "s", "R1"), "output": [
         {"rule_id": "GONE", "text": "x"}]})
     checklist = [{"rule_id": "R1", "applies": True, "done": False, "level": "zorunlu", "title_tr": "t"}]
     rules = {"R1": {"summary_tr": "s", "title_tr": "t", "what_to_do_tr": "w"}}

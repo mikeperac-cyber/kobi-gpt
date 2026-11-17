@@ -1,12 +1,14 @@
 import json
 import re
 from datetime import datetime, timezone
+
 from pathlib import Path
 from typing import Protocol
 
 from bson import ObjectId
 from fastapi import HTTPException
 
+from app.core.clock import tr_day_start_utc
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.serialize import public_product
@@ -261,7 +263,7 @@ async def approve_and_send(db, message_id, user: dict) -> dict:
         await db.messages.update_one({"_id": msg["_id"]}, {"$set": {"status": "draft", "approved_at": None}})
 
     if msg["kind"] == "cold":
-        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        midnight = tr_day_start_utc(now)  # Turkish midnight, not UTC
         n = await db.messages.count_documents({"company_id": msg["company_id"], "kind": "cold",
                                                "status": {"$in": ["sending", "sent"]},
                                                "approved_at": {"$gte": midnight}})

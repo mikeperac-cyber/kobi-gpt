@@ -7,6 +7,7 @@ import type { Lang } from './types'
 export default function RfqForm({ slug, lang, productNames }: { slug: string; lang: Lang; productNames: string[] }) {
   const s = STR[lang].rfq
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'invalid' | 'limit' | 'error'>('idle')
+  const [code, setCode] = useState('')
   const [picked, setPicked] = useState<string[]>([])
 
   if (state === 'done') {
@@ -30,6 +31,7 @@ export default function RfqForm({ slug, lang, productNames }: { slug: string; la
       setState('done')
     } catch (err) {
       const st = err instanceof ApiError ? err.status : 0
+      setCode(err instanceof ApiError ? err.code : '')
       setState(st === 422 ? 'invalid' : st === 429 ? 'limit' : 'error')
     }
   }
@@ -72,7 +74,7 @@ export default function RfqForm({ slug, lang, productNames }: { slug: string; la
         <span>{s.consent} <Link to={`/s/${slug}/datenschutz?lang=${lang}`} className="underline" target="_blank">{s.consentLink}</Link> *</span>
       </label>
       {state !== 'idle' && state !== 'sending' && (
-        <p role="alert" className="sm:col-span-2 text-red-700 font-semibold">{state === 'invalid' ? s.invalid : state === 'limit' ? s.tooMany : s.error}</p>
+        <p role="alert" className="sm:col-span-2 text-red-700 font-semibold">{state === 'invalid' ? (s.invalidCodes[code as keyof typeof s.invalidCodes] ?? s.invalid) : state === 'limit' ? s.tooMany : s.error}</p>
       )}
       <div className="sm:col-span-2">
         <button type="submit" disabled={state === 'sending'} className="rounded-md px-6 py-3 min-h-11 font-semibold bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-60">

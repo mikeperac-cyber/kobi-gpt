@@ -13,7 +13,7 @@ from app.core.config import get_settings
 from app.core.db import ensure_indexes, get_db
 from app.routers import account, admin, admin_kb, auth, company, compliance, dashboard, demo, health, jobs, leads, logistics, messages, products, public, quotes, storefronts, uploads
 
-KNOWN_CODES = {"password_too_long", "invalid_city", "invalid_certification", "photo_required"}
+KNOWN_CODES = {"password_too_long", "invalid_city", "invalid_certification", "photo_required", "gdpr_required", "invalid_email", "product_too_long"}
 
 
 async def validation_handler(_req: Request, exc: RequestValidationError):

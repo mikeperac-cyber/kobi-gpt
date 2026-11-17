@@ -22,7 +22,7 @@ type S = {
   rfq: {
     company: string; contact: string; email: string; country: string; products: string; quantity: string
     message: string; consent: string; consentLink: string; submit: string; sending: string
-    thanksTitle: string; thanks: string; invalid: string; tooMany: string; error: string; select: string
+    thanksTitle: string; thanks: string; invalid: string; invalidCodes: Record<'gdpr_required' | 'invalid_email' | 'product_too_long', string>; tooMany: string; error: string; select: string
   }
   legal: Record<'provider' | 'address' | 'phone' | 'email' | 'web' | 'rep' | 'register', string>
   privacyBody: (c: { name: string; contact: string }) => { h: string; p: string }[]
@@ -42,6 +42,11 @@ export const STR: Record<Lang, S> = {
       consentLink: 'Datenschutzerklärung', submit: 'Anfrage senden', sending: 'Wird gesendet…',
       thanksTitle: 'Vielen Dank!', thanks: 'Ihre Anfrage wurde übermittelt. Wir melden uns in Kürze bei Ihnen.',
       invalid: 'Bitte prüfen Sie Ihre Angaben (E-Mail, Pflichtfelder, Einwilligung).',
+      invalidCodes: {
+        gdpr_required: 'Bitte stimmen Sie der Verarbeitung Ihrer Angaben zu.',
+        invalid_email: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+        product_too_long: 'Eine Produktangabe ist zu lang.',
+      },
       tooMany: 'Zu viele Anfragen. Bitte versuchen Sie es später erneut.',
       error: 'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.',
     },
@@ -70,6 +75,11 @@ export const STR: Record<Lang, S> = {
       consentLink: 'Privacy policy', submit: 'Send request', sending: 'Sending…',
       thanksTitle: 'Thank you!', thanks: 'Your request has been sent. We will get back to you shortly.',
       invalid: 'Please check your entries (email, required fields, consent).',
+      invalidCodes: {
+        gdpr_required: 'Please consent to the processing of your details.',
+        invalid_email: 'Please enter a valid email address.',
+        product_too_long: 'A product entry is too long.',
+      },
       tooMany: 'Too many requests. Please try again later.',
       error: 'Your request could not be sent. Please try again later.',
     },

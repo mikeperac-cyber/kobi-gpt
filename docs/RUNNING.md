@@ -36,7 +36,7 @@ Copy-Item .env.example .env
 |----------|---------|
 | `MONGO_URI` | MongoDB connection string. `mongomock://` = in-memory dev DB (seeded on startup, lost on restart). |
 | `MONGO_DB` | Database name (default `kobigpt`). |
-| `JWT_SECRET` | Signs the login cookie. Set a long random value outside local dev. |
+| `JWT_SECRET` | Signs the login cookie. Empty = built-in dev default, accepted only when `FRONTEND_ORIGIN` is localhost / 127.0.0.1. For any other origin the app refuses to start unless it is 32+ random characters. Generate one: `[Convert]::ToBase64String((1..48 \| % {Get-Random -Max 256}))` |
 | `LLM_PROVIDER` | `anthropic` (default), `openai` or `gemini`. Selects which key below is used. |
 | `LLM_MODEL` | Model name for that provider (default `claude-sonnet-5-5`). |
 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY` | Key for the chosen provider. Leave all empty to run on fallbacks and the demo cache only. Never commit it. |
@@ -44,7 +44,7 @@ Copy-Item .env.example .env
 | `DEMO_LLM_TIMEOUT_SECONDS` | Timeout for demo companies before the cached output is used (default 25). |
 | `FRONTEND_ORIGIN` | The only origin allowed by CORS, also used in links inside drafts (default `http://localhost:5173`). |
 | `EMAIL_PROVIDER` | Leave empty. No email is ever sent by the server; "Onayla ve Gönder" opens a `mailto:` draft. |
-| `SEED_PASSWORD` | Password for the seeded demo accounts. Required by `python -m app.seed`. In `mongomock://` mode it defaults to `demo12345` when empty. |
+| `SEED_PASSWORD` | Password for the seeded demo accounts. Leave empty in `.env.example`; with real MongoDB you must set it before `python -m app.seed` (that value is the password). With `MONGO_URI=mongomock://` and `SEED_PASSWORD` empty the password is `demo12345`; if you set it, your value applies. |
 | `ADMIN_EMAIL` | Email of the seeded admin account (default `admin@kobi-gpt.local`). |
 
 ## 4. Seed the database (real MongoDB)
@@ -74,7 +74,9 @@ $env:MONGO_URI="mongomock://"
 .venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
 ```
 
-Check it: `curl http://localhost:8000/api/health` returns `{"status":"ok","llm":{"provider":...,"key_set":...}}`.
+`$env:MONGO_URI` stays set for the whole PowerShell session (later runs stay in-memory until you `Remove-Item Env:MONGO_URI`).
+
+Check it: `curl.exe http://localhost:8000/api/health` (in PowerShell plain `curl` is an alias of `Invoke-WebRequest`; or use `Invoke-RestMethod http://localhost:8000/api/health`) returns `{"status":"ok","llm":{"provider":...,"key_set":...}}`.
 
 **Behind a reverse proxy:** the rate limiter keys on the client IP. Start uvicorn with `--proxy-headers --forwarded-allow-ips="<proxy ip>"`,
 otherwise every visitor shares the proxy's IP and limits trigger early. The in-memory limiter is per process, so use one worker.
@@ -109,7 +111,7 @@ Uses `mongomock-motor` and a fake LLM; needs no MongoDB, no key and no network. 
 
 ## 8. Demo logins
 
-Password = `SEED_PASSWORD` (`demo12345` in `mongomock://` mode when unset).
+Password: real MongoDB = the `SEED_PASSWORD` you seeded with. `mongomock://` = `demo12345` if `SEED_PASSWORD` is empty, otherwise your `SEED_PASSWORD`.
 
 | Role | Email | Company |
 |------|-------|---------|
@@ -133,3 +135,10 @@ Password = `SEED_PASSWORD` (`demo12345` in `mongomock://` mode when unset).
 - Uploaded files go to local `uploads\` (behind `storage_service`, swappable for S3).
 - PDFs were checked for text and fonts, not looked at visually; microphone dictation, a real phone and a screen reader were not tested.
 - GTİP codes, compliance rules and incentives come only from the curated seed data and need expert confirmation (gümrük müşaviri, İhracatçı Birliği).
+
+## 10. Before the jury
+
+- Do one full run with a live LLM key so `demo_cache` is filled (the cache only holds outputs from successful live calls).
+- Web-check the firm names of the demo leads: they must not point at a real company that could be bothered.
+- Tick a few checklist items live in the readiness report (the score starts at 0).
+- On a 1280x720 screen, collapse the demo guide before presenting.

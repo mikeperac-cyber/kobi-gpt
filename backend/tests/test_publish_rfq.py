@@ -1,3 +1,4 @@
+import pytest
 import io
 
 from tests.conftest import onboarding_payload  # noqa: F401
@@ -117,3 +118,12 @@ async def test_qr_png(producer, db):
     r = await c.get("/api/storefronts/mine/qr.png")
     assert r.status_code == 200 and r.headers["content-type"] == "image/png"
     assert r.content[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+@pytest.mark.parametrize("over,code", [({"gdpr_consent": False}, "gdpr_required"), ({"email": "nope"}, "invalid_email"),
+                                       ({"products": ["x" * 121]}, "product_too_long")])
+async def test_rfq_validation_codes_are_specific(producer, db, client, over, code):
+    p, c = await _published(producer, db)
+    await c.post("/api/storefronts/mine/publish")
+    r = await client.post("/api/public/storefronts/bozkurt-test/rfq", json=rfq(**over))
+    assert r.status_code == 422 and r.json()["detail"]["code"] == code

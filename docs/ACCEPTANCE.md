@@ -112,10 +112,10 @@ Date: 2026-11-14.
 8 rows, 0 FAIL. Rows 1a, 2, 3, 4, 6, 8 PASS. Partial rows: 1b (German text PASS on the template fallback; the translation is NOT VERIFIED without a key), 5 (draft reply PASS on fallback; translation, intent and terms NOT VERIFIED live), 7 (text layer and fonts only; visual rendering not seen). In-memory DB; no live LLM.
 
 ### Defects / follow-ups (none block acceptance)
-1. Quote PDF (both languages): the "≤" in the freight line ("0.35 EUR/kg (≤ 3000 kg)") extracts as blank ("(  3000 kg)"). Either pypdf drops the glyph or the font lacks it (Helvetica is embedded next to NotoSans); needs a look at the rendered PDF. Likely the quote template in `backend/app/services/pdf_service.py`.
-2. Quote PDF freight heading doubles its label: "Frachtschätzung (unverbindlich) (geschätzt)" and "Navlun tahmini (bağlayıcı değil) (tahmini)". Cosmetic.
-3. The formula lines use a dot decimal ("0.08", "0.35 EUR/kg") in the Turkish UI and in the DE/TR PDFs while amounts use locale format. Cosmetic.
-4. Pasting a reply twice creates two identical reply drafts in the approval queue (this happened through a repeated call during the walk); there is no duplicate guard. Noted only.
+1. Quote PDF (both languages): the "≤" in the freight line ("0.35 EUR/kg (≤ 3000 kg)") extracts as blank ("(  3000 kg)"). Either pypdf drops the glyph or the font lacks it (Helvetica is embedded next to NotoSans); needs a look at the rendered PDF. Likely the quote template in `backend/app/services/pdf_service.py`. **Fixed in 421b974 (PDF text checked with pypdf; not viewed visually).**
+2. Quote PDF freight heading doubles its label: "Frachtschätzung (unverbindlich) (geschätzt)" and "Navlun tahmini (bağlayıcı değil) (tahmini)". Cosmetic. **Fixed in 421b974 (PDF text checked with pypdf; not viewed visually).**
+3. The formula lines use a dot decimal ("0.08", "0.35 EUR/kg") in the Turkish UI and in the DE/TR PDFs while amounts use locale format. Cosmetic. **Fixed in 421b974 (PDF text checked with pypdf; not viewed visually).**
+4. Pasting a reply twice creates two identical reply drafts in the approval queue (this happened through a repeated call during the walk); there is no duplicate guard. Noted only. **Accepted — user action; no data harm.**
 
 ### Not verified
 - Any real LLM call: draft translation (`body_tr`), reply translation, summary, intent, term extraction, model red-flag analysis, tone-control rewrites.

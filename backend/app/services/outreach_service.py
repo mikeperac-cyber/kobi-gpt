@@ -135,7 +135,8 @@ async def translate(text: str, ui_language: str, company: dict, lang: str) -> tu
                                   company_id=cid, timeout=t)
         return out.text
 
-    tr, fb = await agent_steps.run_ai_step(None, "translate", company, call, lambda: None)
+    tr, fb = await agent_steps.run_ai_step(None, "translate", company, call, lambda: None,
+                                           agent_steps.cache_key("translate", ui_language, lang, text))
     return (None, True) if tr and has_amount(tr) else (tr, fb)
 
 
@@ -165,7 +166,9 @@ async def draft_first_contact(lead: dict, company: dict, products: list[dict], s
             return {**fb(), "_rejected": True}
         return {"subject": out.subject.strip(), "body": body}
 
-    draft, used_fb = await agent_steps.run_ai_step(None, "draft", company, call, fb)
+    draft, used_fb = await agent_steps.run_ai_step(None, "draft", company, call, fb,
+                                                agent_steps.cache_key("draft", ui_language, lead["_id"], kind,
+                                                                      ",".join(tone)))
     used_fb = bool(draft.pop("_rejected", False)) or used_fb
     body_tr, tr_fb = await translate(draft["body"], ui_language, company, lang)
     msg = {"lead_id": str(lead["_id"]), "company_id": cid, "direction": "outbound", "kind": kind, "language": lang,
@@ -295,7 +298,9 @@ async def analyze_reply(lead: dict, company: dict, products: list[dict], text: s
         return await generate_json("reply_analyze", ctx, ReplyAnalysisOut, run_type="reply_analyze",
                                    company_id=cid, timeout=t)
 
-    out, fell_back = await agent_steps.run_ai_step(None, "analyze", company, call, lambda: None)
+    out, fell_back = await agent_steps.run_ai_step(
+        None, "analyze", company, call, lambda: None, agent_steps.cache_key("analyze", ui_language, lead["_id"], text),
+        ReplyAnalysisOut.model_validate)
     heur = detect_red_flags(text, lead)
     if out:
         flags = sorted(set(heur) | (set(out.red_flags) & set(RED_FLAGS)), key=RED_FLAGS.index)

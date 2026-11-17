@@ -81,7 +81,9 @@ async def suggest_gtip(product: dict, company: dict, processing: str | None, ui_
             raise LLMInvalidOutput(str(e)) from e
 
     value, _ = await agent_steps.run_ai_step(
-        job_id, "gtip", company, guarded, lambda: _fallback(kb, company.get("sector", ""), processing, ui_language))
+        job_id, "gtip", company, guarded, lambda: _fallback(kb, company.get("sector", ""), processing, ui_language),
+        agent_steps.cache_key("gtip", ui_language, product["_id"], processing or ""),
+        lambda v: [GtipCandidate(**c) for c in v])
     return value
 
 
@@ -149,7 +151,7 @@ def fallback_next_steps(checklist: list[dict], ui: str, kb: dict[str, dict]) -> 
 
 
 async def next_steps(checklist: list[dict], rules_by_id: dict[str, dict], company: dict, ui: str,
-                     job_id: str | None) -> list[dict]:
+                     job_id: str | None, scope: str = "") -> list[dict]:
     open_ = [i for i in checklist if i["applies"] and not i["done"] and i["rule_id"] in rules_by_id]
     allowed = {i["rule_id"] for i in open_}
     ctx = {"ui_language": ui, "open_items": [
@@ -172,7 +174,8 @@ async def next_steps(checklist: list[dict], rules_by_id: dict[str, dict], compan
         await agent_steps._set_step(job_id, "next_steps", status="done", source="template", elapsed_ms=0)
         return []
     value, _ = await agent_steps.run_ai_step(job_id, "next_steps", company, call,
-                                             lambda: fallback_next_steps(checklist, ui, rules_by_id))
+                                             lambda: fallback_next_steps(checklist, ui, rules_by_id),
+                                             agent_steps.cache_key("next_steps", ui, scope))
     return value
 
 
@@ -187,6 +190,7 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
     incs_by_id = {i["id"]: i for i in incs}
     no_match = not any(r["side"] == "DEST" for r in rules)
     pub = public_product(product)
+    scope = f"{product['_id']}:{country}:{channel}:{structural_use}"
     base = {"ui_language": ui,
             "company": {"sector": company.get("sector"), "city": company.get("city"),
                         "description_tr": company.get("description_tr"),
@@ -208,7 +212,8 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
         await agent_steps._set_step(job_id, "rules", status="done", source="template", elapsed_ms=0)
         picked = {}
     else:
-        picked, _ = await agent_steps.run_ai_step(job_id, "rules", company, explain_rules, dict)
+        picked, _ = await agent_steps.run_ai_step(job_id, "rules", company, explain_rules, dict,
+                                                 agent_steps.cache_key("rules", ui, scope))
     checklist = build_checklist(rules, picked, ui)
 
     async def explain_incentives(t):
@@ -226,7 +231,8 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
 
     if incs:
         chosen, _ = await agent_steps.run_ai_step(job_id, "incentives", company, explain_incentives,
-                                                  lambda: [(i["id"], i[f"summary_{ui}"]) for i in incs])
+                                                  lambda: [(i["id"], i[f"summary_{ui}"]) for i in incs],
+                                                  agent_steps.cache_key("incentives", ui, scope))
     else:
         await agent_steps._set_step(job_id, "incentives", status="done", source="template", elapsed_ms=0)
         chosen = []
@@ -235,7 +241,7 @@ async def build_report(product: dict, company: dict, *, country: str, channel: s
                    "summary": incs_by_id[iid][f"summary_{ui}"],
                    "why": why or incs_by_id[iid][f"summary_{ui}"]} for iid, why in chosen]
 
-    steps = await next_steps(checklist, rules_by_id, company, ui, job_id)
+    steps = await next_steps(checklist, rules_by_id, company, ui, job_id, scope)
     classification = await get_db().classifications.find_one({"product_id": str(product["_id"])}) or {}
     return {"product_id": str(product["_id"]), "company_id": cid, "country": country, "channel": channel,
             "structural_use": structural_use, "hs6": hs6, "candidates": classification.get("candidates", []),

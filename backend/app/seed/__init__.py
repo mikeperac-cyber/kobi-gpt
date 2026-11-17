@@ -51,7 +51,7 @@ async def _seed_company(db, spec: dict, password: str, now) -> str:
                   for label in p["photo_labels"]]
         body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos)
         await db.products.insert_one({**body.model_dump(), "company_id": cid, "hs_code_confirmed": None,
-                                      "created_at": now})
+                                      "seed_photos": photos, "created_at": now})  # seed_photos: for demo reset
     await db.markets.update_one({"company_id": cid}, {"$setOnInsert": {"country_code": "DE", "languages": ["de", "en"],
                                 "status": "active"}}, upsert=True)
     return cid

@@ -226,12 +226,19 @@ async def generate_site_config(job_id: str, company: dict, products: list[dict],
     async def analysis_call(t):
         return await llm("sf_product_analysis", ProductAnalysis, t)
 
-    analysis, _ = await agent_steps.run_ai_step(job_id, "analysis", company, analysis_call, ProductAnalysis)
+    disc = (",".join(str(p["_id"]) for p in products), intake.model_dump_json())
+
+    def key(step):
+        return agent_steps.cache_key(step, ui_language, *disc)
+
+    analysis, _ = await agent_steps.run_ai_step(job_id, "analysis", company, analysis_call, ProductAnalysis,
+                                                key("analysis"), ProductAnalysis.model_validate)
 
     async def adaptation_call(t):
         return await llm("sf_market_adaptation", MarketAdaptation, t, analysis=analysis.model_dump())
 
-    adaptation, _ = await agent_steps.run_ai_step(job_id, "adaptation", company, adaptation_call, MarketAdaptation)
+    adaptation, _ = await agent_steps.run_ai_step(job_id, "adaptation", company, adaptation_call, MarketAdaptation,
+                                                  key("adaptation"), MarketAdaptation.model_validate)
 
     async def content_call(t):
         out = await llm("sf_content", ContentOut, t, analysis=analysis.model_dump(),
@@ -244,7 +251,8 @@ async def generate_site_config(job_id: str, company: dict, products: list[dict],
         f = fallback_site_config(company, pub, intake.positioning, ui_language, intake)
         return ContentOut.model_validate({**f.model_dump(include={"de", "en", "review", "slug_suggestion"})})
 
-    out, _ = await agent_steps.run_ai_step(job_id, "content", company, content_call, content_fallback)
+    out, _ = await agent_steps.run_ai_step(job_id, "content", company, content_call, content_fallback,
+                                         key("content"), ContentOut.model_validate)
     # the theme step is deterministic: recorded as "template", never as an LLM result
     await agent_steps._set_step(job_id, "theme", status="done", source="template", elapsed_ms=0)
 
@@ -300,7 +308,9 @@ async def regenerate_section(company: dict, products: list[dict], cfg: SiteConfi
             raise LLMInvalidOutput("floor price in generated text")
         return new
 
-    new, fb = await agent_steps.run_ai_step(None, section, company, call, lambda: current)
+    key = agent_steps.cache_key(section, ui_language, ",".join(str(p["_id"]) for p in products), lang,
+                                instruction or "")  # JSON-only value: no restore needed
+    new, fb = await agent_steps.run_ai_step(None, section, company, call, lambda: current, key)
     if section == "hero" and not fb:
         new["cta"] = CTA[lang]
     return new, fb

@@ -1,0 +1,68 @@
+import time
+from datetime import datetime, timezone
+
+from bson import ObjectId
+
+from app.models.company import CompanyIn
+from app.models.product import ProductIn
+from app.seed import DEMO_LEAD_NOTE, _load
+from app.services.agent_steps import spawn
+from app.services.llm_service import generate_text
+from app.services.scoring import score_for_company
+
+# demo key -> seed company key; looked up by the seeded company name, never by ObjectId
+DEMO_KEYS = {"gaziantep": "bozkurt", "denizli": "pamukkale", "bursa": "uludag"}
+ACTIVITY = ("storefronts", "classifications", "readiness_reports", "messages", "quotes", "tasks", "notifications",
+            "jobs", "lead_imports")
+
+
+def _spec(key: str) -> dict:
+    return next(s for s in _load("companies") if s["key"] == DEMO_KEYS[key])
+
+
+async def _find(db, key: str) -> tuple[dict, dict] | None:
+    spec = _spec(key)
+    company = await db.companies.find_one({"name": spec["company"]["name"], "is_demo_company": True})
+    return (spec, company) if company else None
+
+
+async def list_demo_companies(db) -> list[dict]:
+    out = []
+    for key in DEMO_KEYS:
+        spec = _spec(key)
+        if await db.companies.find_one({"name": spec["company"]["name"], "is_demo_company": True}):
+            out.append({"key": key, "name": spec["company"]["name"], "email": spec["user"]["email"]})
+    return out
+
+
+async def reset_demo_company(db, key: str) -> dict | None:
+    """Back to the clean seed state, same ids (so demo_cache keys stay valid). None if the company is not seeded."""
+    t0 = time.monotonic()
+    found = await _find(db, key)
+    if not found:
+        return None
+    spec, company = found
+    cid = str(company["_id"])
+    for coll in ACTIVITY:
+        await db[coll].delete_many({"company_id": cid})
+    await db.leads.delete_many({"company_id": cid, "is_demo": {"$ne": True}})
+    await db.companies.update_one({"_id": company["_id"]}, {"$set": CompanyIn(**spec["company"]).model_dump()})
+    names = [p["name_tr"] for p in spec["products"]]
+    await db.products.delete_many({"company_id": cid, "name_tr": {"$nin": names}})
+    for p in spec["products"]:
+        old = await db.products.find_one({"company_id": cid, "name_tr": p["name_tr"]}) or {}
+        photos = old.get("seed_photos") or old.get("photos") or []
+        body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos).model_dump()
+        await db.products.update_one({"company_id": cid, "name_tr": p["name_tr"]},
+                                     {"$set": {**body, "hs_code_confirmed": None, "seed_photos": photos}})
+    company = await db.companies.find_one({"_id": company["_id"]})
+    now = datetime.now(timezone.utc)
+    for lead in _load("demo_leads")[spec["key"]]:
+        doc = {**lead, "company_id": cid, "source": "demo", "country": "DE", "is_demo": True,
+               "source_note": DEMO_LEAD_NOTE, "status": "new", "created_at": now}
+        sc = await score_for_company(db, company, doc)
+        await db.leads.replace_one({"company_id": cid, "email": lead["email"]},
+                                   {**doc, "score": sc["total"], "score_breakdown": sc["breakdown"]}, upsert=True)
+    # warm the LLM connection for the demo; not awaited, failures are logged by spawn
+    spawn(generate_text("admin_ping", {}, run_type="warmup", company_id=cid))
+    return {"elapsed_ms": int((time.monotonic() - t0) * 1000)}

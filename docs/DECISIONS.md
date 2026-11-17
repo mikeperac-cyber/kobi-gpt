@@ -1,5 +1,7 @@
 # Decisions
 
+One numbered list, in the order they were taken. Each states the decision and, where it matters, the cost or limit.
+
 1. **No local MongoDB found** (`mongod` not on PATH, `MONGO_URI` unset on the build machine). Tests use `mongomock-motor`; the running app needs `MONGO_URI` (local `mongod` or Atlas).
 2. **Git repo** was initialised before Task 1 (branch `build/mvp`); every task ends in a commit.
 3. **Live step progress = polling.** Long AI flows create a `jobs` document; the frontend polls `GET /api/jobs/{id}` every 700 ms. No SSE/websockets.
@@ -19,23 +21,34 @@
 17. **Floor-number detection is defence in depth.** Generated de/en/review text or a regenerated section containing the floor as a number triggers the fallback. Limitation: exact decimal forms only (9.5 / 9,5 / 9.50), not rounded or thousand-formatted variants; the floor never enters any prompt, so the model cannot know it.
 18. **`regenerate-section` returns `{section, fallback, missing}`** and persists the section only when not a fallback. `PUT /storefronts/mine` re-slugs through `slugify_tr` (junk becomes `shop`) and recomputes `missing` server-side.
 19. **`LocalStorage.read` is root-confined** (only `/uploads/...` files under the storage root; else None). Analysis sends at most 3 product photos.
-
-## Task 14: publish, public API, RFQ
-- Public storefront payload is an explicit allow-list (`site_config.{de,en,template}`, company name/city/logo/contact/founded_year, legal, slug); `review`, `missing`, ids and floors are never read into the response.
-- Impressum `representative` and `register` are not collected yet: returned as null, checklist marks `present: false` (producer adds via Firmam later; out of scope now).
-- RFQ: honeypot `website_hp` non-empty returns 204 and stores nothing; 5/hour per client IP + slug (in-memory); lead `score` is 0 until Task 25 back-fills; every RFQ lead is `is_hot` and carries `source_note`.
-- Unpublished slugs 404 for both GET and RFQ POST (checked before honeypot/rate limit, so slug existence of drafts is not leaked).
-
-## Task 29b: approvals, quotes, pipeline
-- `mailto:` cannot attach files. Approving a quote hands a short cover note (German or English by buyer country, kept in `frontend/src/data/buyerStrings.ts`, not producer i18n) to the mail app and, at the same moment, downloads the buyer-language PDF; the toast adds "Attach the PDF to the email". mailto URLs over 1800 characters, or leads without an email, copy "Subject: ...\n\n..." to the clipboard instead ("Copied to clipboard").
-- Quote drafts have no edit route: the queue shows them read-only with Approve and Reject; `POST /api/quotes/{id}/reject {reason}` was added (same shape as messages).
-- `GET /api/pipeline/stats` counts real records for the caller's company only; lead status `sent` and the pipeline "sent" column keep the spec labels "Gönderildi" / "Sent". The "never Gönderildi" rule applies only to the approve toast ("Mail uygulamasına aktarıldı" / "Handed to your mail app"). If neither mailto nor clipboard works, the text is shown in a read-only textarea with "Kopyalanamadı".
-- `/api/approvals` lead summaries (messages and quotes) now include `email`, `contact_name`, `is_demo`.
-
-## KVKK export / delete (Task 34)
-- `GET /api/account/export` returns the user's own data only: user (no password hash), company, products (with the owner's own `price_floor`), markets, storefronts, classifications, readiness reports, leads, messages, quotes, tasks, notifications. Internal collections (jobs, agent_runs, demo_cache, lead_imports) are not exported; they are deleted with the account.
-- `DELETE /api/account` needs the confirmation word (SİL / DELETE) and the password; admin and demo accounts get 409 `cannot_delete_demo`. Files referenced by photos, logo and PDFs are removed through `Storage.delete`; missing files are ignored.
-- Ownership sweep (`tests/test_ownership.py`) derives id-param routes from `app.openapi()` and fails on any unlisted route.
-
-## Fixed demo storefront slug (Task 35a fix)
-- The Bozkurt seed entry carries `storefront_slug: "bozkurt-pistazien"`, stored on the company by seed and restored by `reset_demo_company`. `save_generated` uses `company.storefront_slug` (through `unique_slug`) before the LLM/name slug, so the demo URL `/s/bozkurt-pistazien` exists after every reset. Other companies still get the slugified name.
+20. [Task 14: publish, public API, RFQ] Public storefront payload is an explicit allow-list (`site_config.{de,en,template}`, company name/city/logo/contact/founded_year, legal, slug); `review`, `missing`, ids and floors are never read into the response.
+21. [Task 14: publish, public API, RFQ] Impressum `representative` and `register` are not collected yet: returned as null, checklist marks `present: false` (producer adds via Firmam later; out of scope now).
+22. [Task 14: publish, public API, RFQ] RFQ: honeypot `website_hp` non-empty returns 204 and stores nothing; 5/hour per client IP + slug (in-memory); lead `score` is 0 until Task 25 back-fills; every RFQ lead is `is_hot` and carries `source_note`.
+23. [Task 14: publish, public API, RFQ] Unpublished slugs 404 for both GET and RFQ POST (checked before honeypot/rate limit, so slug existence of drafts is not leaked).
+24. [Task 29b: approvals, quotes, pipeline] `mailto:` cannot attach files. Approving a quote hands a short cover note (German or English by buyer country, kept in `frontend/src/data/buyerStrings.ts`, not producer i18n) to the mail app and, at the same moment, downloads the buyer-language PDF; the toast adds "Attach the PDF to the email". mailto URLs over 1800 characters, or leads without an email, copy "Subject: ...\n\n..." to the clipboard instead ("Copied to clipboard").
+25. [Task 29b: approvals, quotes, pipeline] Quote drafts have no edit route: the queue shows them read-only with Approve and Reject; `POST /api/quotes/{id}/reject {reason}` was added (same shape as messages).
+26. [Task 29b: approvals, quotes, pipeline] `GET /api/pipeline/stats` counts real records for the caller's company only; lead status `sent` and the pipeline "sent" column keep the spec labels "Gönderildi" / "Sent". The "never Gönderildi" rule applies only to the approve toast ("Mail uygulamasına aktarıldı" / "Handed to your mail app"). If neither mailto nor clipboard works, the text is shown in a read-only textarea with "Kopyalanamadı".
+27. [Task 29b: approvals, quotes, pipeline] `/api/approvals` lead summaries (messages and quotes) now include `email`, `contact_name`, `is_demo`.
+28. [KVKK export / delete] `GET /api/account/export` returns the user's own data only: user (no password hash), company, products (with the owner's own `price_floor`), markets, storefronts, classifications, readiness reports, leads, messages, quotes, tasks, notifications. Internal collections (jobs, agent_runs, demo_cache, lead_imports) are not exported; they are deleted with the account.
+29. [KVKK export / delete] `DELETE /api/account` needs the confirmation word (SİL / DELETE) and the password; admin and demo accounts get 409 `cannot_delete_demo`. Files referenced by photos, logo and PDFs are removed through `Storage.delete`; missing files are ignored.
+30. [KVKK export / delete] Ownership sweep (`tests/test_ownership.py`) derives id-param routes from `app.openapi()` and fails on any unlisted route.
+31. [Fixed demo storefront slug] The Bozkurt seed entry carries `storefront_slug: "bozkurt-pistazien"`, stored on the company by seed and restored by `reset_demo_company`. `save_generated` uses `company.storefront_slug` (through `unique_slug`) before the LLM/name slug, so the demo URL `/s/bozkurt-pistazien` exists after every reset. Other companies still get the slugified name.
+32. [Process] Work happens on branch `build/mvp` in the main checkout, no worktree (fresh repo, single worker).
+33. [Seed] All six demo leads have country DE (spec says six German importers); the country score component is covered by unit tests, not by seed data.
+34. [Compliance] Rule R1 has no country constraint (Turkish-side rule applies to any destination); `no_match` is computed on destination rules only.
+35. [API] Pydantic 422 bodies are mapped by a global handler to `{detail:{code, message_key, fields}}`, the same shape as every other error.
+36. [Frontend] React major is whatever the current Vite react-ts template installs (spec only says React).
+37. [Storefront] `why_us` has no schema minimum; the fallback adds only fact lines and lists `why_us` in `missing` when there are fewer than 3 (no-invention beats the "3 to 4 points" wording).
+38. [Quotes] The floor is stored per unit in EUR by default (`price_floor_currency` EUR or USD); a quote in the other currency is refused with `floor_currency_mismatch`. No FX rates are invented.
+39. [GTİP] Re-running the suggestion clears `hs_code_confirmed` (a re-run is a re-classification and must be re-confirmed). `normalize_hs6` accepts 6, 8, 10 or 12 digits only. Without `processing` the API ranks raw first; the UI requires the answer for food products.
+40. [Compliance] All LLM free text passes a deterministic number-grounding guard (digits not present in the KB text fall back to the KB text); official KB text and AI text are both stored and the UI labels the AI text. If the incentives LLM returns no known ids, all filtered incentives are used. The UI hides the AI block when it equals the KB text.
+41. [Compliance] The score formula is a click-to-open toggle, not a hover tooltip (keyboard and touch accessible). Reports refresh `verified`/`last_verified` from the live KB on read, so an admin verification shows without wiping producer ticks; a report is not a frozen audit snapshot of verification.
+42. [Leads] An unmapped or empty CSV country defaults to the company's target market. Duplicate reply drafts on a double paste are accepted (user action, no data harm).
+43. [Approval gate] Approve or reject on a non-draft returns 409 `not_draft`; approve is blocked with 409 `do_not_contact` if the lead opted out after drafting. The final `sent` write is the last write in the approval path; lead status moves first and is reverted on failure. Regenerating a cold/RFQ draft rejects the superseded draft first.
+44. [Outreach] The price filter rejects number-with-currency, percent-with-discount-word and "Preis/price/fiyat + number" in drafts but allows "100% Baumwolle"; word-form numbers are a documented shortcut.
+45. [Replies] The explicit opt-out regex runs on every reply and is OR-ed with the LLM result; broad "not interested" phrases only count when the LLM failed (GDPR opt-out must be honoured; a rare false block is visible through `opt_out_source`).
+46. [Leads UI] Task 29 was split into 29a (leads, detail, CSV, manual add, drafts, reply assistant) and 29b (approvals, quotes, pipeline, logistics rates).
+47. [Uploads] Upload ownership is tracked in the `uploads` collection; photo and logo URLs must be owned by the writer (422 `bad_photo`); deletion removes only owned files. Legacy photos not in `uploads` fail validation on edit (no real-Mongo data exists yet).
+48. [Process] Task 35 was split: 35a (empty states, skeletons, a11y, layouts, EN walk) and 35b (Lighthouse, timed demo runs, Phase 5 acceptance, docs).
+49. [Verification] Lighthouse is run with `npx lighthouse` against `vite preview` (which reuses the dev proxy for `/api`); no compression is applied by vite preview, so a real host with gzip/brotli should score at least as well.
+50. [Verification] Demo timings are product wall-clock measured by a script against the real HTTP API on the fallback path; presenter pacing and live LLM latency are not measured because no key was available.

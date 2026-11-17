@@ -277,7 +277,7 @@ async def save_generated(db, company: dict, cfg: SiteConfig) -> dict:
     if existing:
         await db.storefronts.update_one({"_id": existing["_id"]}, {"$set": data})
         return await db.storefronts.find_one({"_id": existing["_id"]})
-    base = cfg.slug_suggestion or slugify_tr(company.get("name", ""))
+    base = company.get("storefront_slug") or cfg.slug_suggestion or slugify_tr(company.get("name", ""))
     for _ in range(2):  # the unique index closes the check-then-insert race; retry once
         doc = {**data, "company_id": cid, "country": "DE", "status": "draft", "published_at": None,
                "slug": await unique_slug(db, base), "created_at": now}

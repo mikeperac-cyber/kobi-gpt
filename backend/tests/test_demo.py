@@ -9,6 +9,8 @@ from app.services import storage_service
 from app.services.agent_steps import cache_key, create_job, run_ai_step
 from app.services.demo_service import reset_demo_company
 from app.services.llm_service import LLMProviderError
+from app.core.serialize import public_product
+from app.services.storefront_service import fallback_site_config, save_generated
 from tests.helpers import assert_no_floor
 from tests.test_gtip import _run as run_gtip, cand, kb  # noqa: F401
 from tests.test_storefront_generation import INTAKE, _generate, _llm
@@ -191,3 +193,24 @@ async def test_cache_hit_rechecks_floor_and_known_ids(db):
     rules = {"R1": {"summary_tr": "s", "title_tr": "t", "what_to_do_tr": "w"}}
     out = await next_steps(checklist, rules, co, "tr", None, "s")  # LLM not configured -> cache hit
     assert out == []
+
+
+async def _gen_slug(db, company):
+    prods = [public_product(p) async for p in db.products.find({"company_id": str(company["_id"])})]
+    return (await save_generated(db, company, fallback_site_config(company, prods, "b2b", "tr")))["slug"]
+
+
+async def test_demo_storefront_slug_is_fixed_and_survives_reset(db, seeded):
+    await seed(db)
+    c = await _bozkurt(db)
+    assert await _gen_slug(db, c) == "bozkurt-pistazien"
+    await reset_demo_company(db, "gaziantep")
+    c = await _bozkurt(db)
+    assert c["storefront_slug"] == "bozkurt-pistazien"
+    assert await db.storefronts.count_documents({"company_id": str(c["_id"])}) == 0
+    assert await _gen_slug(db, c) == "bozkurt-pistazien"
+
+
+async def test_normal_company_slug_is_slugified_name(db):
+    c = {"_id": ObjectId(), "name": "Şahin Çelik", "sector": "diger"}
+    assert await _gen_slug(db, c) == "sahin-celik"

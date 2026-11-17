@@ -2,7 +2,7 @@
   {
     "key": "bozkurt", "user": {"email": "bozkurt@demo.local", "name": "Bozkurt Demo"}, "color": "#3E7B4F",
     "company": {
-      "name": "Bozkurt Antep Fıstığı", "city": "Gaziantep", "sector": "gida",
+      "storefront_slug": "bozkurt-pistazien", "name": "Bozkurt Antep Fıstığı", "city": "Gaziantep", "sector": "gida",
       "description_tr": "Gaziantep'te üç kuşaktır Antep fıstığı işliyoruz. Kendi bahçelerimizden ve sözleşmeli üreticilerden aldığımız fıstığı ayıklıyor, kavuruyor ve 1 kg ile 10 kg'lık paketlerde sunuyoruz. Üretimimiz ISO 22000 ve Helal belgelidir.",
       "founded_year": 1998, "employee_count": 32, "certifications": ["ISO 22000", "Helal"],
       "contact": {"phone": "+90 342 555 01 01", "email": "ihracat@bozkurt-demo.example.com", "website": null},

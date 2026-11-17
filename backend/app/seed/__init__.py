@@ -66,7 +66,8 @@ async def backfill_seed_keys(db, cid: str, spec: dict) -> None:
 async def _seed_company(db, spec: dict, password: str, now) -> str:
     owner = await _ensure_user(db, spec["user"]["email"], spec["user"]["name"], password, False, now)
     fields = CompanyIn(**spec["company"]).model_dump()  # same model the API validates with
-    await db.companies.update_one({"owner_id": owner}, {"$set": {**fields, "is_demo_company": True},
+    await db.companies.update_one({"owner_id": owner}, {"$set": {**fields, "is_demo_company": True,
+                                                  "storefront_slug": spec["company"].get("storefront_slug")},
                                   "$setOnInsert": {"created_at": now}}, upsert=True)
     cid = str((await db.companies.find_one({"owner_id": owner}))["_id"])
     await backfill_seed_keys(db, cid, spec)

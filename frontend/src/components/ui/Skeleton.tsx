@@ -7,7 +7,8 @@ export function PageSkeleton({ error }: { error?: string }) {
   const { t } = useTranslation()
   if (error) return <p role="alert" className="text-brand font-semibold">{error}</p>
   return (
-    <div role="status" aria-label={t('common.loading')} className="space-y-3">
+    <div role="status" className="space-y-3">
+      <span className="sr-only">{t("common.loading")}</span>
       <Skeleton className="h-8 w-64" /><Skeleton className="h-24" /><Skeleton className="h-24" />
     </div>
   )

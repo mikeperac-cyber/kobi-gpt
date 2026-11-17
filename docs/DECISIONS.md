@@ -36,3 +36,6 @@
 - `GET /api/account/export` returns the user's own data only: user (no password hash), company, products (with the owner's own `price_floor`), markets, storefronts, classifications, readiness reports, leads, messages, quotes, tasks, notifications. Internal collections (jobs, agent_runs, demo_cache, lead_imports) are not exported; they are deleted with the account.
 - `DELETE /api/account` needs the confirmation word (SİL / DELETE) and the password; admin and demo accounts get 409 `cannot_delete_demo`. Files referenced by photos, logo and PDFs are removed through `Storage.delete`; missing files are ignored.
 - Ownership sweep (`tests/test_ownership.py`) derives id-param routes from `app.openapi()` and fails on any unlisted route.
+
+## Fixed demo storefront slug (Task 35a fix)
+- The Bozkurt seed entry carries `storefront_slug: "bozkurt-pistazien"`, stored on the company by seed and restored by `reset_demo_company`. `save_generated` uses `company.storefront_slug` (through `unique_slug`) before the LLM/name slug, so the demo URL `/s/bozkurt-pistazien` exists after every reset. Other companies still get the slugified name.

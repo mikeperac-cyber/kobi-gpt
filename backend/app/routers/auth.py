@@ -15,11 +15,16 @@ router = APIRouter(prefix="/auth")
 _limiter = RateLimiter(10, 60)
 
 
+def _cookie_attrs() -> dict:
+    return {"httponly": True, "samesite": "lax", "secure": get_settings().frontend_origin.startswith("https")}
+
+
+def clear_cookie(resp: Response) -> None:  # same attributes as _set_cookie so browsers match and drop it
+    resp.delete_cookie(COOKIE_NAME, **_cookie_attrs())
+
+
 def _set_cookie(resp: Response, user_id: str) -> None:
-    resp.set_cookie(
-        COOKIE_NAME, create_token(user_id), max_age=TOKEN_DAYS * 86400, httponly=True,
-        samesite="lax", secure=get_settings().frontend_origin.startswith("https"),
-    )
+    resp.set_cookie(COOKIE_NAME, create_token(user_id), max_age=TOKEN_DAYS * 86400, **_cookie_attrs())
 
 
 async def _me(user: dict) -> dict:
@@ -62,7 +67,7 @@ async def login(body: LoginIn, request: Request, response: Response):
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie(COOKIE_NAME)
+    clear_cookie(response)
     return {"ok": True}
 
 

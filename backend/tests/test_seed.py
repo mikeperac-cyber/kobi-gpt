@@ -131,3 +131,13 @@ async def test_reseed_updates_kb_text_but_keeps_verification(db, seeded_env):
     await seed(db)
     r = await db.kb_rules.find_one({"id": "R7"})
     assert r["summary_tr"] != "ESKİ" and r["verified"] is True and r["last_verified"] == when
+
+
+async def test_seed_records_photo_owners_and_backfills(db, seeded_env):
+    await seed(db)
+    await db.uploads.delete_many({})  # simulate a database seeded before the registry existed
+    await seed(db)
+    for c in await db.companies.find({}).to_list(10):
+        for p in await db.products.find({"company_id": str(c["_id"])}).to_list(10):
+            for url in p["photos"]:
+                assert await db.uploads.find_one({"url": url, "user_id": c["owner_id"]}), url

@@ -6,6 +6,7 @@ from pymongo.errors import DuplicateKeyError
 from app.core.db import get_db
 from app.core.security import current_company, current_user
 from app.core.serialize import owner_product, to_json
+from app.services.upload_registry import require_owned
 from app.models.company import CompanyIn
 from app.models.product import OnboardingIn
 
@@ -15,6 +16,7 @@ router = APIRouter()
 @router.post("/onboarding", status_code=201)
 async def onboarding(body: OnboardingIn, user: dict = Depends(current_user)):
     db, owner, now = get_db(), str(user["_id"]), datetime.now(timezone.utc)
+    await require_owned(db, [*body.product.photos, body.company.logo_url], owner)
     company = {**body.company.model_dump(), "owner_id": owner, "created_at": now}
     try:  # unique owner_id index makes this race-safe
         company["_id"] = (await db.companies.insert_one(company)).inserted_id
@@ -36,5 +38,6 @@ async def get_company(company: dict = Depends(current_company)):
 
 @router.put("/company")
 async def put_company(body: CompanyIn, company: dict = Depends(current_company)):
+    await require_owned(get_db(), [body.logo_url], company["owner_id"])
     await get_db().companies.update_one({"_id": company["_id"]}, {"$set": body.model_dump()})
     return to_json({**company, **body.model_dump()})

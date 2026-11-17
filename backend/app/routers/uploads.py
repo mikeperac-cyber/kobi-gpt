@@ -2,7 +2,9 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
+from app.core.db import get_db
 from app.core.security import current_user
+from app.services.upload_registry import record_upload
 from app.services.storage_service import MAX_BYTES, get_storage, validate_and_process_image
 
 router = APIRouter(prefix="/uploads")
@@ -16,11 +18,13 @@ def _err(code: str) -> HTTPException:
 async def upload_image(
     file: Annotated[UploadFile, File()],
     prefix: Annotated[Literal["products", "logos"], Form()] = "products",
-    _user: dict = Depends(current_user),
+    user: dict = Depends(current_user),
 ):
     data = await file.read(MAX_BYTES + 1)  # bounded read, size checked before decoding
     try:
         processed = validate_and_process_image(data)
     except ValueError as e:
         raise _err(str(e)) from None
-    return {"url": await get_storage().save(processed, prefix)}
+    url = await get_storage().save(processed, prefix)
+    await record_upload(get_db(), url, str(user["_id"]))
+    return {"url": url}

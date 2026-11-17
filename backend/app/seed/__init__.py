@@ -12,6 +12,7 @@ from app.models.product import ProductIn
 from app.services.scoring import score_for_company
 from app.seed.images import make_placeholder
 from app.services.storage_service import get_storage
+from app.services.upload_registry import record_upload
 
 DATA = Path(__file__).parent / "data"
 DEMO_LEAD_NOTE = "DEMO – kurgusal firma"
@@ -78,6 +79,11 @@ async def _seed_company(db, spec: dict, password: str, now) -> str:
         body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos)
         await db.products.insert_one({**body.model_dump(), "company_id": cid, "hs_code_confirmed": None,
                                       "seed_photos": photos, "seed_key": f"{spec['key']}:{i}", "created_at": now})
+    for p in await db.products.find({"company_id": cid}).to_list(500):  # also backfills pre-registry seeds
+        for url in p.get("photos") or []:
+            await record_upload(db, url, owner)
+    if fields.get("logo_url"):
+        await record_upload(db, fields["logo_url"], owner)
     await db.markets.update_one({"company_id": cid}, {"$setOnInsert": {"country_code": "DE", "languages": ["de", "en"],
                                 "status": "active"}}, upsert=True)
     return cid

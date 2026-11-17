@@ -4,6 +4,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.core.db import get_db
+from app.services.upload_registry import record_upload
 from app.core.security import current_company, current_user, owned
 from app.core.serialize import to_json
 from app.models.compliance import CheckIn, GtipConfirmIn, GtipIn, TickIn
@@ -129,6 +130,7 @@ async def report_pdf(report_id: str, user: dict = Depends(current_user), company
               "contact": {k: contact.get(k) for k in ("email", "phone", "website")}}  # allow-list, never a product doc
     data = readiness_pdf({**to_json(await regai.refresh_verification(db, rep)), "product_name": product.get("name_tr", "")}, public, lang)
     url = await get_storage().save_file(data, f"reports/{company['_id']}", ".pdf")
+    await record_upload(db, url, company["owner_id"])
     await db.readiness_reports.update_one({"_id": rep["_id"]}, {"$set": {"pdf_url": url}})
     return Response(data, media_type="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="{STRINGS[lang]["file"]}"'})

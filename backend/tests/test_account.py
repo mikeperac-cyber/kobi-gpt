@@ -6,6 +6,7 @@ import pytest
 from bson import ObjectId
 
 from app.services import storage_service
+from conftest import onboarding_payload
 
 
 async def _seed(db, who, tmp_path):
@@ -24,6 +25,8 @@ async def _seed(db, who, tmp_path):
                         ("agent_runs", {}), ("demo_cache", {}), ("lead_imports", {})):
         await db[coll].insert_one({"company_id": cid, **{k: v.format(cid) if k == "slug" else v for k, v in extra.items()}})
     await db.readiness_reports.insert_one({"company_id": cid, "product_id": pid, "pdf_url": rpdf})
+    for u in (photo, logo, rpdf, qpdf):
+        await db.uploads.insert_one({"url": u, "user_id": who["user"]["id"]})
     return [photo, logo, rpdf, qpdf]
 
 
@@ -115,3 +118,51 @@ def test_frontend_dist_has_no_secrets():
             for needle in ("API_KEY", "ANTHROPIC", "OPENAI", "GEMINI"):
                 assert needle not in text, f"{needle} in {p.name}"
             assert not re.search(r"sk-[A-Za-z0-9_-]{20,}", text), f"key-like string in {p.name}"  # bare "sk-" hits "task-"
+
+
+async def test_upload_endpoint_records_owner_and_photo_must_be_owned(producer, db, tmp_path):
+    import io
+
+    from PIL import Image
+
+    storage_service.set_root(tmp_path)
+    a, b = await producer("Aaa"), await producer("Bbb")
+    buf = io.BytesIO()
+    Image.new("RGB", (8, 8), "red").save(buf, "PNG")
+    r = await b["client"].post("/api/uploads/image", files={"file": ("x.png", buf.getvalue(), "image/png")})
+    theirs = r.json()["url"]
+    assert await db.uploads.find_one({"url": theirs, "user_id": b["user"]["id"]})
+    body = {**onboarding_payload()["product"], "photos": [theirs]}
+    for method, path in (("POST", "/api/products"), ("PUT", f"/api/products/{a['product']['id']}")):
+        r = await a["client"].request(method, path, json=body)
+        assert r.status_code == 422 and r.json()["detail"]["code"] == "bad_photo", (method, r.text)
+    r = await a["client"].put("/api/company", json={**onboarding_payload()["company"], "logo_url": theirs})
+    assert r.status_code == 422 and r.json()["detail"]["code"] == "bad_photo"
+    r = await b["client"].post("/api/products", json=body)  # the uploader may use it
+    assert r.status_code == 201
+
+
+async def test_onboarding_rejects_foreign_photo(client, db):
+    await client.post("/api/auth/register", json={"name": "Ali", "email": "ali@firma.com", "password": "password123",
+                                                  "kvkk_consent": True})
+    await db.uploads.insert_one({"url": "/uploads/products/a.webp", "user_id": "someone-else"})
+    r = await client.post("/api/onboarding", json=onboarding_payload())
+    assert r.status_code == 422 and r.json()["detail"]["code"] == "bad_photo"
+
+
+async def test_delete_never_removes_foreign_file_even_if_doc_references_it(producer, db, tmp_path):
+    a, b = await producer("Aaa"), await producer("Bbb")
+    theirs = await _seed(db, b, tmp_path)
+    await db.products.update_one({"_id": ObjectId(a["product"]["id"])}, {"$set": {"photos": [theirs[0]]}})  # legacy doc
+    await db.companies.update_one({"_id": ObjectId(a["company"]["id"])}, {"$set": {"logo_url": theirs[1]}})
+    r = await a["client"].request("DELETE", "/api/account", json={"confirm": "SİL", "password": "password123"})
+    assert r.status_code == 204
+    assert all(_file(tmp_path, u).exists() for u in theirs)
+    assert await db.uploads.count_documents({"user_id": b["user"]["id"]}) >= 4  # B's records kept
+
+
+@pytest.mark.parametrize("word", ["SİL", "SIL", "sil", "Sil", " DELETE ", "delete"])
+async def test_confirm_word_variants(producer, word):
+    a = await producer("Aaa")
+    r = await a["client"].request("DELETE", "/api/account", json={"confirm": word, "password": "password123"})
+    assert r.status_code == 204, word

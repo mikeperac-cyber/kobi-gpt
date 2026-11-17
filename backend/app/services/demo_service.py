@@ -13,6 +13,8 @@ from app.services.agent_steps import spawn
 from app.services.llm_service import generate_text
 from app.services.scoring import score_for_company
 
+from app.services.upload_registry import record_upload  # noqa: E402
+
 log = logging.getLogger(__name__)
 # demo key -> seed company key; looked up by the seeded company name, never by ObjectId
 DEMO_KEYS = {"gaziantep": "bozkurt", "denizli": "pamukkale", "bursa": "uludag"}
@@ -69,6 +71,8 @@ async def reset_demo_company(db, key: str) -> dict | None:
             await get_storage().save(make_placeholder(label, spec["color"]), "products")
             for label in p["photo_labels"]]  # the product was deleted: regenerate its placeholders
         body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos).model_dump()
+        for url in photos:
+            await record_upload(db, url, company["owner_id"])
         await db.products.update_one({"company_id": cid, "seed_key": key_},
                                      {"$set": {**body, "hs_code_confirmed": None, "seed_photos": photos},
                                       "$setOnInsert": {"created_at": now}}, upsert=True)

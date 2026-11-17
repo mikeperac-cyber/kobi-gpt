@@ -94,8 +94,15 @@ def test_sweep_covers_every_id_route():
     assert found == set(SWEEP), {"unlisted": found - set(SWEEP), "stale": set(SWEEP) - found}
 
 
-async def test_ownership_all_routes(producer, db):
+async def test_ownership_all_routes(producer, db, fake_llm, tmp_path):
+    import asyncio
     from datetime import datetime, timezone
+
+    from app.services import agent_steps, storage_service
+    from helpers import load_kb_json
+
+    storage_service.set_root(tmp_path)  # PDFs the positive control generates stay out of /uploads
+    await db.logistics_rates.insert_many(load_kb_json("logistics_rates"))
 
     a, b = await producer("Aaa"), await producer("Bbb")
     cid, pid = a["company"]["id"], a["product"]["id"]
@@ -105,26 +112,41 @@ async def test_ownership_all_routes(producer, db):
                                                      "country": "DE", "created_at": now})).inserted_id)
     for key, coll, doc in (
             ("message_id", "messages", {"lead_id": ids["lead_id"], "status": "draft", "direction": "outbound"}),
-            ("quote_id", "quotes", {"lead_id": ids["lead_id"], "product_id": pid, "status": "draft"}),
             ("job_id", "jobs", {"kind": "x", "status": "done"}),
             ("notification_id", "notifications", {"read": False})):
         ids[key] = str((await db[coll].insert_one({"company_id": cid, "created_at": now, **doc})).inserted_id)
     ids["report_id"] = str((await db.readiness_reports.insert_one(
-        {"company_id": cid, "product_id": pid, "checklist": [{"rule_id": "r1", "done": False}],
+        {"company_id": cid, "product_id": pid, "checklist": [{"rule_id": "r1", "done": False, "side": "TR", "level": "zorunlu", "title_tr": "t", "title_en": "t",
+                        "source_url": "https://example.org", "summary": "s", "what_to_do": "w", "applies": True}],
          "created_at": now})).inserted_id)
     ids["rule_id"] = "r1"
+    await db.classifications.insert_one({"company_id": cid, "product_id": pid, "candidates": [], "confirmed_code": None})
     bodies = {"product": onboarding_payload()["product"], "sample": {"product_id": pid, "sample_weight_kg": 1},
               "quote_in": {"lead_id": ids["lead_id"], "product_id": pid, "quantity": 1, "unit_price": 99,
                            "currency": "EUR", "incoterm": "EXW", "payment_terms": "lc", "valid_until": "2999-01-01"}}
+
+    q = await a["client"].post("/api/quotes", json=bodies["quote_in"])  # a real quote, so the owner's PDF/GET succeed
+    assert q.status_code == 201, q.text
+    ids["quote_id"] = q.json()["id"]
 
     def sub(x):
         return x.format(**ids) if isinstance(x, str) else {k: sub(v) for k, v in x.items()} if isinstance(x, dict) else x
 
     calls = [(m, p, body) for (m, p), body in SWEEP.items()] + SWEEP_OTHER
+    calls = [(m, p, bodies.get(b, b) if isinstance(b, str) else b) for m, p, b in calls]
+    # Positive control: the owner must succeed on every GET and on the query/body-id routes with these exact ids,
+    # otherwise a wrong fixture id would make B's 404 pass vacuously. (A's reads never mutate; the two POSTs create.)
     for method, path, body in calls:
-        body = bodies.get(body, body) if isinstance(body, str) and body in bodies else sub(body)
+        if method == "GET" or (method, path) in {("POST", "/api/compliance/gtip"), ("POST", "/api/quotes")}:
+            r = await a["client"].request(method, sub(path), json=sub(body))
+            assert r.status_code == (201 if path == "/api/quotes" else 200), ("owner", method, path, r.status_code, r.text[:200])
+    await asyncio.gather(*agent_steps._tasks)  # let the gtip job (fake LLM, fails fast) finish before teardown
+    storage_service.set_root(None)
+    for method, path, body in calls:
+        body = sub(body)
         r = await b["client"].request(method, sub(path), json=body)
         assert r.status_code == 404, (method, path, r.status_code, r.text[:200])  # never 403, never a success
         assert_no_floor(r.json())
     assert await db.products.count_documents({"company_id": cid}) == 1  # A's data untouched
+    assert await db.quotes.count_documents({"company_id": cid}) == 2  # fixture quote + the positive-control one
     assert (await db.leads.find_one({"company_id": cid}))["status"] == "new"

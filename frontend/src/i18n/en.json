@@ -71,6 +71,7 @@
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "confirm_mismatch": "Wrong confirmation word. Type DELETE.",
+    "bad_photo": "This photo does not belong to you. Please upload it again.",
     "bad_password": "Wrong password.",
     "cannot_delete_demo": "Demo and admin accounts cannot be deleted.",
     "network": "Could not reach the server. Check your connection.",

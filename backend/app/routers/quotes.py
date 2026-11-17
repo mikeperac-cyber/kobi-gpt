@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from app.core.db import get_db
+from app.services.upload_registry import record_upload
 from app.core.security import current_company, current_user, owned
 from app.core.serialize import public_product, to_json
 from app.models.message import RejectIn
@@ -110,6 +111,7 @@ async def pdf(quote_id: str, preview: int = 0, company: dict = Depends(current_c
     data = quote_pdf(to_json(qpub), cpub, {"name_tr": public_product(product).get("name_tr")}, lang)
     if not preview:
         url = await get_storage().save_file(data, f"quotes/{company['_id']}", ".pdf")
+        await record_upload(db, url, company["owner_id"])
         await db.quotes.update_one({"_id": q["_id"]}, {"$set": {"pdf_url": url}})
     return Response(data, media_type="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="{STRINGS["quote"][lang]["file"]}"'})

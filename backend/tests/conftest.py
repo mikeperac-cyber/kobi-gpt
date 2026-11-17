@@ -106,6 +106,7 @@ async def producer(db):
                                                       "password": "password123", "kvkk_consent": True})
         assert r.status_code == 201, r.text
         user = r.json()
+        await db.uploads.insert_one({"url": "/uploads/products/a.webp", "user_id": user["id"]})  # as /uploads/image would
         r = await c.post("/api/onboarding", json=onboarding_payload())
         assert r.status_code == 201, r.text
         return {"user": user, "company": r.json()["company"], "product": r.json()["product"], "client": c}

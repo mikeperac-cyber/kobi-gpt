@@ -71,6 +71,7 @@
   "errors": {
     "generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
     "confirm_mismatch": "Onay kelimesi yanlış. SİL yazın.",
+    "bad_photo": "Bu fotoğraf size ait değil. Lütfen fotoğrafı yeniden yükleyin.",
     "bad_password": "Şifre hatalı.",
     "cannot_delete_demo": "Demo ve yönetici hesapları silinemez.",
     "network": "Sunucuya ulaşılamadı. Bağlantınızı kontrol edin.",

@@ -4,7 +4,10 @@ REG = {"name": "Ali", "email": "ali@firma.com", "password": "password123", "kvkk
 
 
 async def _logged_in(client):
-    await client.post("/api/auth/register", json=REG)
+    uid = (await client.post("/api/auth/register", json=REG)).json()["id"]
+    from app.core.db import get_db
+
+    await get_db().uploads.insert_one({"url": "/uploads/products/a.webp", "user_id": uid})  # as /uploads/image would
 
 
 async def test_onboarding_creates_company_product_market(client, db):

@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.core.db import ensure_indexes, get_db
-from app.routers import admin, admin_kb, auth, company, compliance, dashboard, demo, health, jobs, leads, logistics, messages, products, public, quotes, storefronts, uploads
+from app.routers import account, admin, admin_kb, auth, company, compliance, dashboard, demo, health, jobs, leads, logistics, messages, products, public, quotes, storefronts, uploads
 
 KNOWN_CODES = {"password_too_long", "invalid_city", "invalid_certification", "photo_required"}
 
@@ -59,6 +59,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
+    app.include_router(account.router, prefix="/api")
     app.include_router(admin.router, prefix="/api")
     app.include_router(admin_kb.router, prefix="/api")
     app.include_router(demo.router, prefix="/api")

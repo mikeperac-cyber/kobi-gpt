@@ -21,6 +21,7 @@ const LogisticsRates = lazy(() => import('./pages/admin/LogisticsRates'))
 const AdminStats = lazy(() => import('./pages/admin/AdminStats'))
 const KbList = lazy(() => import('./pages/admin/KbList'))
 const DemoPage = lazy(() => import('./pages/demo/DemoPage'))
+const AccountPage = lazy(() => import('./pages/account/AccountPage'))
 const PrivacyNotice = lazy(() => import('./pages/privacy/PrivacyNotice'))
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/leads/:id" element={<LeadDetail />} />
           <Route path="/leads/:id/quote" element={<QuoteBuilder />} />
           <Route path="/approvals" element={<ApprovalQueue />} />
+          <Route path="/account" element={<AccountPage />} />
           <Route path="/pipeline" element={<Pipeline />} />
           <Route element={<AdminRoute />}>
             <Route path="/demo" element={<DemoPage />} />

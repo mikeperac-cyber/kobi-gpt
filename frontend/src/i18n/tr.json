@@ -13,6 +13,7 @@
     "home": "Ana sayfa"
   },
   "auth": {
+    "deletedNotice": "Hesabınız ve verileriniz silindi.",
     "loginTitle": "Giriş yap",
     "registerTitle": "Hesap oluştur",
     "loginIntro": "Hesabınıza giriş yapın.",
@@ -69,6 +70,9 @@
   },
   "errors": {
     "generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "confirm_mismatch": "Onay kelimesi yanlış. SİL yazın.",
+    "bad_password": "Şifre hatalı.",
+    "cannot_delete_demo": "Demo ve yönetici hesapları silinemez.",
     "network": "Sunucuya ulaşılamadı. Bağlantınızı kontrol edin.",
     "boundary_title": "Bir şeyler ters gitti",
     "boundary_body": "Sayfa beklenmedik bir hata verdi. Tekrar deneyebilirsiniz.",
@@ -728,7 +732,21 @@
     }
   },
   "account": {
-    "title": "Hesabım"
+    "title": "Hesabım",
+    "exportTitle": "Verilerimi indir",
+    "exportBody": "Hesabınıza ait tüm verileri (firma, ürünler, alıcılar, mesajlar, teklifler…) tek bir JSON dosyası olarak indirin. Şifreniz dosyaya dahil edilmez.",
+    "exportButton": "Verilerimi indir",
+    "deleteTitle": "Hesabımı sil",
+    "deleteWarning": "Bu işlem geri alınamaz. Silinecekler:",
+    "deleteList": {
+      "i0": "Hesabınız ve giriş bilgileriniz",
+      "i1": "Firma profiliniz, ürünleriniz ve yüklediğiniz fotoğraflar",
+      "i2": "Vitrin, mevzuat raporları ve PDF dosyaları",
+      "i3": "Alıcılar, mesajlar, teklifler, görevler ve bildirimler"
+    },
+    "confirmLabel": "Onay kelimesi",
+    "confirmHint": "Onaylamak için SİL yazın.",
+    "deleteButton": "Hesabımı kalıcı olarak sil"
   },
   "agent": {
     "title": "Asistan",

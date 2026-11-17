@@ -35,6 +35,7 @@ export default function Login() {
   return (
     <Card className="max-w-md mx-auto">
       <h1 className="text-2xl font-semibold">{t('auth.loginTitle')}</h1>
+      {params.get('deleted') && <p role="status" className="mb-3 text-green-800 font-semibold">{t('auth.deletedNotice')}</p>}
       <p className="mb-4 text-slate-600">{t('auth.loginIntro')}</p>
       <form onSubmit={submit} className="space-y-4">
         <Field label={t('auth.email')}><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>

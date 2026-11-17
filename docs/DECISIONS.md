@@ -31,3 +31,8 @@
 - Quote drafts have no edit route: the queue shows them read-only with Approve and Reject; `POST /api/quotes/{id}/reject {reason}` was added (same shape as messages).
 - `GET /api/pipeline/stats` counts real records for the caller's company only; lead status `sent` and the pipeline "sent" column keep the spec labels "Gönderildi" / "Sent". The "never Gönderildi" rule applies only to the approve toast ("Mail uygulamasına aktarıldı" / "Handed to your mail app"). If neither mailto nor clipboard works, the text is shown in a read-only textarea with "Kopyalanamadı".
 - `/api/approvals` lead summaries (messages and quotes) now include `email`, `contact_name`, `is_demo`.
+
+## KVKK export / delete (Task 34)
+- `GET /api/account/export` returns the user's own data only: user (no password hash), company, products (with the owner's own `price_floor`), markets, storefronts, classifications, readiness reports, leads, messages, quotes, tasks, notifications. Internal collections (jobs, agent_runs, demo_cache, lead_imports) are not exported; they are deleted with the account.
+- `DELETE /api/account` needs the confirmation word (SİL / DELETE) and the password; admin and demo accounts get 409 `cannot_delete_demo`. Files referenced by photos, logo and PDFs are removed through `Storage.delete`; missing files are ignored.
+- Ownership sweep (`tests/test_ownership.py`) derives id-param routes from `app.openapi()` and fails on any unlisted route.

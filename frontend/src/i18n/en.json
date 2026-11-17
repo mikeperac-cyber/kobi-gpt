@@ -13,6 +13,7 @@
     "home": "Home"
   },
   "auth": {
+    "deletedNotice": "Your account and data have been deleted.",
     "loginTitle": "Log in",
     "registerTitle": "Create account",
     "loginIntro": "Log in to your account.",
@@ -69,6 +70,9 @@
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
+    "confirm_mismatch": "Wrong confirmation word. Type DELETE.",
+    "bad_password": "Wrong password.",
+    "cannot_delete_demo": "Demo and admin accounts cannot be deleted.",
     "network": "Could not reach the server. Check your connection.",
     "boundary_title": "Something went wrong",
     "boundary_body": "The page hit an unexpected error. You can try again.",
@@ -728,7 +732,21 @@
     }
   },
   "account": {
-    "title": "My account"
+    "title": "My account",
+    "exportTitle": "Download my data",
+    "exportBody": "Download all data tied to your account (company, products, leads, messages, quotes…) as one JSON file. Your password is not included.",
+    "exportButton": "Download my data",
+    "deleteTitle": "Delete my account",
+    "deleteWarning": "This cannot be undone. The following will be deleted:",
+    "deleteList": {
+      "i0": "Your account and login details",
+      "i1": "Your company profile, products and uploaded photos",
+      "i2": "Storefront, compliance reports and PDF files",
+      "i3": "Leads, messages, quotes, tasks and notifications"
+    },
+    "confirmLabel": "Confirmation word",
+    "confirmHint": "Type DELETE to confirm.",
+    "deleteButton": "Permanently delete my account"
   },
   "agent": {
     "title": "Assistant",

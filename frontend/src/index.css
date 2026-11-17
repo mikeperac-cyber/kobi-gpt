@@ -8,7 +8,7 @@
 
 body { @apply bg-slate-50 text-navy font-sans; }
 
-a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:not([tabindex="-1"]):focus-visible {
   outline: 2px solid var(--color-navy);
   outline-offset: 2px;
 }

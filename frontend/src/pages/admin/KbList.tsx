@@ -29,7 +29,7 @@ export default function KbList() {
   useEffect(() => { load() }, [load])
 
   const title = (r: Rec) => String(r[kind === 'rules' ? `title_${lang}` : kind === 'incentives' ? `name_${lang}` : `description_${lang}`] ?? '')
-  const meta = (r: Rec) => kind === 'rules' ? `${r.level} · ${r.side}` : kind === 'incentives' ? String(r.provider) : String(r.sector)
+  const meta = (r: Rec) => kind === 'rules' ? `${t(`compliance.level.${r.level}`)} · ${t(`compliance.side${r.side}`)}` : kind === 'incentives' ? String(r.provider) : String(r.sector)
 
   async function verify(r: Rec) {
     try { await api(`/api/admin/kb/${kind}/${encodeURIComponent(r.id)}/verify`, { method: 'POST' }); load() }

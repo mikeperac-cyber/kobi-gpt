@@ -1,3 +1,4 @@
+import pytest
 REG = {"name": "Ali", "email": "ali@firma.com", "password": "password123", "kvkk_consent": True}
 
 
@@ -97,3 +98,24 @@ async def test_insecure_secret_guard(monkeypatch):
     get_settings.cache_clear()
     with pytest.raises(RuntimeError):
         create_app()
+
+
+@pytest.mark.parametrize("origin,secret,bad", [
+    ("https://kobi.example.com", "change-me", True),
+    ("https://kobi.example.com", "", True),
+    ("https://kobi.example.com", "short-but-not-weak", True),
+    ("http://localhost.evil.com", "x" * 40, False),
+    ("http://localhost.evil.com", "change-me", True),
+    ("https://kobi.example.com", "x" * 40, False),
+    ("http://localhost:5173", "dev-secret-change-me", False),
+])
+def test_jwt_secret_guard(origin, secret, bad):
+    from types import SimpleNamespace
+    from app.main import check_jwt_secret
+
+    s = SimpleNamespace(frontend_origin=origin, jwt_secret=secret)
+    if bad:
+        with pytest.raises(RuntimeError):
+            check_jwt_secret(s)
+    else:
+        check_jwt_secret(s)

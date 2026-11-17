@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -44,11 +45,19 @@ async def lifespan(_app):
     yield
 
 
+WEAK_SECRETS = {"", "dev-secret-change-me", "change-me"}
+
+
+def check_jwt_secret(s) -> None:
+    """Public (non-localhost) deployments must not run with a guessable JWT secret."""
+    if urlparse(s.frontend_origin).hostname not in {"localhost", "127.0.0.1"} and (
+            s.jwt_secret in WEAK_SECRETS or len(s.jwt_secret) < 32):
+        raise RuntimeError("Refusing to start: set JWT_SECRET to a private random value of 32+ characters")
+
+
 def create_app() -> FastAPI:
     s = get_settings()
-    local = s.frontend_origin.startswith(("http://localhost", "http://127.0.0.1"))
-    if s.jwt_secret == "dev-secret-change-me" and not local:
-        raise RuntimeError("Refusing to start: set JWT_SECRET to a private value")
+    check_jwt_secret(s)
     app = FastAPI(title="KOBI-GPT", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,

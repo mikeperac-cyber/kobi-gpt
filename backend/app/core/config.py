@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ENV_FILE = Path(__file__).resolve().parents[3] / ".env"  # repo root
@@ -23,6 +24,11 @@ class Settings(BaseSettings):
     email_provider: str = ""
     seed_password: str = ""
     admin_email: str = ""
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def _empty_secret(cls, v: str) -> str:  # .env.example leaves it empty: local dev falls back to the dev default
+        return v or "dev-secret-change-me"
 
     @property
     def llm_key(self) -> str | None:

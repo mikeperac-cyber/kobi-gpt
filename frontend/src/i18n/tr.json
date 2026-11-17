@@ -836,7 +836,13 @@
       "ftl": "Komple kamyon",
       "courier": "Kurye"
     },
-    "kg": "{{n}} kg"
+    "kg": "{{n}} kg",
+    "f": {
+      "gross": "{{unit}} kg × {{qty}} × (1 + {{pct}}) = {{gross}} kg",
+      "ltl": "{{gross}} kg × {{rate}} EUR/kg ({{max}} kg'a kadar) = {{freight}} EUR",
+      "ftl": "yukarı yuvarla({{gross}} / {{cap}}) = {{trucks}} × {{rate}} EUR = {{freight}} EUR",
+      "courier": "max({{min}}, {{gross}} kg × {{rate}} EUR/kg) = {{freight}} EUR"
+    }
   },
   "sample": {
     "title": "Numune gönderimi",

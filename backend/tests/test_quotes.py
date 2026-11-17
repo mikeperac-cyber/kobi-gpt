@@ -298,3 +298,17 @@ async def test_pipeline_stats_real_counts_own_company(producer, db):
     await a["client"].patch(f"/api/leads/{lid}", json={"status": "won"})
     assert (await a["client"].get("/api/pipeline/stats")).json() == {
         "leads": 1, "messages_sent": 1, "replies": 1, "quotes_sent": 1, "won": 1}
+
+
+async def test_quote_pdf_freight_text_locale(producer):
+    p = await producer("Ali")
+    q = (await make(p)).json()
+    de = text((await p["client"].get(f"/api/quotes/{q['id']}/pdf")).content)
+    assert de.count("geschätzt") == 1 and "unverbindlich" in de
+    assert "bis 3.000 kg" in de and "0,35 EUR/kg" in de and "0.35" not in de and "≤" not in de
+    gb = (await make(p, await lead(p, "GB"))).json()
+    en = text((await p["client"].get(f"/api/quotes/{gb['id']}/pdf")).content)
+    assert "0.35 EUR/kg" in en and "up to 3,000 kg" in en and en.count("estimated") == 1
+    tr = text((await p["client"].get(f"/api/quotes/{q['id']}/pdf?preview=1")).content)
+    assert "0,35 EUR/kg" in tr and "3.000 kg'a kadar" in tr and tr.count("(tahmini, bağlayıcı değil)") == 1 and "tahmini) (" not in tr
+    assert q["logistics_estimate"]["lines"][1]["values"]["rate"] == 0.35

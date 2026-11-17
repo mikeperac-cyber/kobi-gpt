@@ -5,6 +5,7 @@ from datetime import date, datetime
 from pathlib import Path
 from xml.sax.saxutils import escape
 
+from app.services.logistics_service import render_formula
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
@@ -152,9 +153,9 @@ def quote_pdf(quote: dict, company_public: dict, product_public: dict, lang: str
              _p(t["terms"], h2), _p(t["payment"][quote["payment_terms"]], b), _p(t["logistics"], h2)]
     est = quote.get("logistics_estimate") or {}
     if quote.get("freight_included") and est:
-        story.append(_p(f'{t["freight_est"]} ({t["estimated"]})', bold))
+        story.append(_p(t["freight_est"], bold))
         for ln in est.get("lines", []):
-            story.append(_p(f'{t[ln["label_key"].rsplit(".", 1)[1]]}: {ln["formula"]}', small))
+            story.append(_p(f'{t[(k := ln["label_key"].rsplit(".", 1)[1])]}: {render_formula(ln, t["f"][k], lang)}', small))
     else:
         story.append(_p(t["not_included"], b))
     story += [Spacer(1, 8), _p(f'{t["total"]}: {_money(quote["total"], cur, lang)}', _style("tot", "NotoSans-Bold", 13)),

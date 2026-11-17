@@ -1,7 +1,18 @@
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
+import i18n from '../../i18n'
 import Badge from '../../components/ui/Badge'
 import { formatMoney, formatNumber } from '../../i18n/format'
-import type { Estimate } from './types'
+import type { EstLine, Estimate } from './types'
+
+// Locale-aware formula from structured values; old quotes without values show the stored text.
+function formula(l: EstLine, t: TFunction) {
+  if (!l.values) return l.formula
+  const fixed = new Set(['gross', 'freight'])
+  const fmt = (k: string, v: number) => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'tr-TR',
+    fixed.has(k) ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : { maximumFractionDigits: 2 }).format(v)
+  return t(`logistics.f.${l.label_key.split('.').pop()}`, Object.fromEntries(Object.entries(l.values).map(([k, v]) => [k, fmt(k, v)])))
+}
 
 export default function LogisticsPanel({ est, included, total, currency }: { est: Estimate; included?: boolean; total?: number; currency?: string }) {
   const { t } = useTranslation()
@@ -16,7 +27,7 @@ export default function LogisticsPanel({ est, included, total, currency }: { est
       <ul className="space-y-1 text-sm">
         {est.lines.map((l) => (
           <li key={l.label_key} className="flex flex-wrap justify-between gap-x-3">
-            <span><span className="font-semibold">{t(l.label_key)}</span> <span className="text-slate-700">— {l.formula}</span></span>
+            <span><span className="font-semibold">{t(l.label_key)}</span> <span className="text-slate-700">— {formula(l, t)}</span></span>
             <span className="font-semibold">{l.label_key.endsWith('.gross') ? t('logistics.kg', { n: formatNumber(l.value) }) : formatMoney(l.value, 'EUR')}</span>
           </li>
         ))}

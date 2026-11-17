@@ -836,7 +836,13 @@
       "ftl": "Full truck (FTL)",
       "courier": "Courier"
     },
-    "kg": "{{n}} kg"
+    "kg": "{{n}} kg",
+    "f": {
+      "gross": "{{unit}} kg × {{qty}} × (1 + {{pct}}) = {{gross}} kg",
+      "ltl": "{{gross}} kg × {{rate}} EUR/kg (up to {{max}} kg) = {{freight}} EUR",
+      "ftl": "ceil({{gross}} / {{cap}}) = {{trucks}} × {{rate}} EUR = {{freight}} EUR",
+      "courier": "max({{min}}, {{gross}} kg × {{rate}} EUR/kg) = {{freight}} EUR"
+    }
   },
   "sample": {
     "title": "Sample shipment",

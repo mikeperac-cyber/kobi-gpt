@@ -130,7 +130,7 @@
       "ltl": "Teilladung (LTL)",
       "ftl": "Komplette LKW-Ladung (FTL)",
       "courier": "Kurier",
-      "freight_est": "Frachtschätzung (unverbindlich)",
+      "freight_est": "Fracht (geschätzt, unverbindlich)",
       "incoterms": {
         "EXW": "Ab Werk: Ware wird im Werk des Verkäufers bereitgestellt.",
         "FCA": "Frei Frachtführer: Übergabe an den vom Käufer benannten Frachtführer.",
@@ -143,6 +143,12 @@
         "advance_30_70": "30 % Anzahlung, 70 % vor Versand",
         "lc": "Akkreditiv (L/C)",
         "cad": "Dokumente gegen Zahlung (CAD)"
+      },
+      "f": {
+        "gross": "{unit} kg × {qty} × (1 + {pct}) = {gross} kg",
+        "ltl": "{gross} kg × {rate} EUR/kg (bis {max} kg) = {freight} EUR",
+        "ftl": "aufgerundet({gross} / {cap}) = {trucks} × {rate} EUR = {freight} EUR",
+        "courier": "max({min}, {gross} kg × {rate} EUR/kg) = {freight} EUR"
       }
     },
     "en": {
@@ -173,7 +179,7 @@
       "ltl": "Part load (LTL)",
       "ftl": "Full truck load (FTL)",
       "courier": "Courier",
-      "freight_est": "Freight estimate (non-binding)",
+      "freight_est": "Freight (estimated, non-binding)",
       "incoterms": {
         "EXW": "Ex Works: goods are made available at the seller's premises.",
         "FCA": "Free Carrier: goods are handed to the carrier named by the buyer.",
@@ -186,6 +192,12 @@
         "advance_30_70": "30% advance, 70% before shipment",
         "lc": "Letter of credit (L/C)",
         "cad": "Cash against documents (CAD)"
+      },
+      "f": {
+        "gross": "{unit} kg × {qty} × (1 + {pct}) = {gross} kg",
+        "ltl": "{gross} kg × {rate} EUR/kg (up to {max} kg) = {freight} EUR",
+        "ftl": "ceil({gross} / {cap}) = {trucks} × {rate} EUR = {freight} EUR",
+        "courier": "max({min}, {gross} kg × {rate} EUR/kg) = {freight} EUR"
       }
     },
     "tr": {
@@ -216,7 +228,7 @@
       "ltl": "Parsiyel (LTL)",
       "ftl": "Komple kamyon (FTL)",
       "courier": "Kurye",
-      "freight_est": "Navlun tahmini (bağlayıcı değil)",
+      "freight_est": "Navlun (tahmini, bağlayıcı değil)",
       "incoterms": {
         "EXW": "Fabrika teslim: mal satıcının tesisinde hazır edilir.",
         "FCA": "Taşıyıcıya teslim: mal alıcının belirlediği taşıyıcıya verilir.",
@@ -229,6 +241,12 @@
         "advance_30_70": "%30 avans, %70 sevkiyat öncesi",
         "lc": "Akreditif (L/C)",
         "cad": "Belgeler karşılığı ödeme (CAD)"
+      },
+      "f": {
+        "gross": "{unit} kg × {qty} × (1 + {pct}) = {gross} kg",
+        "ltl": "{gross} kg × {rate} EUR/kg ({max} kg'a kadar) = {freight} EUR",
+        "ftl": "yukarı yuvarla({gross} / {cap}) = {trucks} × {rate} EUR = {freight} EUR",
+        "courier": "max({min}, {gross} kg × {rate} EUR/kg) = {freight} EUR"
       }
     }
   }

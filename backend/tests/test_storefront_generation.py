@@ -212,3 +212,33 @@ async def test_regenerate_section_cache_hit_is_persisted(producer, fake_llm, db)
     assert r["fallback"] is False and r["source"] == "cache" and r["section"]["headline"] == "Neu"
     sf = (await p["client"].get("/api/storefronts/mine")).json()
     assert sf["site_config"]["de"]["hero"]["headline"] == "Neu"
+
+
+async def test_llm_turkish_name_is_dropped(producer, fake_llm):
+    p = await producer("Ali")
+    tr = p["product"]["name_tr"]
+
+    def mutate(c):
+        c["de"]["products"][0]["name"] = tr
+        c["en"]["products"][0]["name"] = "Pistachios"
+    fake_llm.responses = _llm(p, mutate=mutate)
+    assert (await _generate(p))["status"] == "done"
+    cfg = (await p["client"].get("/api/storefronts/mine")).json()["site_config"]
+    assert cfg["de"]["products"][0]["name"] is None and cfg["en"]["products"][0]["name"] == "Pistachios"
+    assert "products.0.name" in cfg["missing"]
+
+
+async def test_producer_typed_name_is_kept_even_if_identical(producer, fake_llm):
+    p = await producer("Ali")
+    fake_llm.responses = _llm(p)
+    await _generate(p)
+    sf = (await p["client"].get("/api/storefronts/mine")).json()
+    cfg = sf["site_config"]
+    for lang in ("de", "en"):
+        cfg[lang]["products"][0]["name"] = p["product"]["name_tr"]
+    r = await p["client"].put("/api/storefronts/mine", json={"site_config": cfg, "slug": sf["slug"],
+                                                              "template": sf["template"]})
+    assert r.status_code == 200, r.text
+    out = r.json()["site_config"]
+    assert out["de"]["products"][0]["name"] == p["product"]["name_tr"]
+    assert "products.0.name" not in out["missing"]

@@ -5,6 +5,7 @@ from app.core.text import tr_fold
 from app.models.storefront import IntakeIn
 from app.services.storefront_service import (
     compute_missing,
+    drop_untranslated_names,
     fallback_site_config,
     slugify_tr,
     template_for_sector,
@@ -134,3 +135,23 @@ def test_empty_products_and_slug_fallback():
     assert ": ." not in cfg.de.seo.description and cfg.de.seo.description.endswith(".")
     assert slugify_tr("???") == "shop"
     assert slugify_tr("Straße") == "strasse" and tr_fold("Käse") == "kase"
+
+
+def test_fallback_never_puts_turkish_name_in_de_en():
+    cfg = _cfg()
+    for lang in (cfg.de, cfg.en):
+        b = lang.products[0]
+        assert b.name is None and b.short is None
+        assert "Fıstığı" not in lang.model_dump_json()
+    assert cfg.review.products[0].name == "Antep Fıstığı"
+    assert "products.0.name" in cfg.missing
+
+
+def test_drop_untranslated_names_keeps_translated():
+    cfg = _cfg()
+    cfg.de.products[0].name, cfg.de.products[0].short = "antep fistiği", "Antep Fıstığı von Bozkurt"
+    cfg.en.products[0].name = "Pistachios"
+    drop_untranslated_names(cfg, [PRODUCT])
+    assert cfg.de.products[0].name is None and cfg.de.products[0].short is None
+    assert cfg.en.products[0].name == "Pistachios"
+    assert "products.0.name" in cfg.missing

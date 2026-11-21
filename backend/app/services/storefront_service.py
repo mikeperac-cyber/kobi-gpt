@@ -81,7 +81,8 @@ def _content(t: dict, company: dict, products: list[dict], intake: IntakeIn | No
         pid = p.get("id") or p.get("_id")
         if pid is None:
             continue
-        pname = p.get("name_tr") or None
+        # de/en never get the Turkish name: None lands in `missing` and the producer types the translation
+        pname = (p.get("name_tr") or None) if own_text is not None else None
         specs = ([Spec(label=t["spec_material"], value=p["material_or_ingredients"])]
                  if p.get("material_or_ingredients") else [])
         moq = None
@@ -138,6 +139,19 @@ def fallback_site_config(company: dict, products: list[dict], positioning: str, 
         positioning=positioning)
     cfg.missing = compute_missing(cfg)
     return cfg
+
+
+def drop_untranslated_names(cfg: SiteConfig, products: list[dict]) -> None:
+    """Null de/en product names the model left in Turkish (and a short line built from them); recompute missing."""
+    tr = {str(p.get("id") or p["_id"]): p.get("name_tr") or "" for p in products}
+    for c in (cfg.de, cfg.en):
+        for b in c.products:
+            name_tr = tr_fold(tr.get(b.product_id, "")).strip()
+            if name_tr and b.name and tr_fold(b.name).strip() == name_tr:
+                b.name = None
+                if b.short and name_tr in tr_fold(b.short):
+                    b.short = None
+    cfg.missing = compute_missing(cfg)
 
 
 # ---- AI generation -------------------------------------------------------------------------------
@@ -265,7 +279,7 @@ async def generate_site_config(job_id: str, company: dict, products: list[dict],
     cfg = SiteConfig(de=out.de, en=out.en, review=out.review, review_language=ui_language,
                      slug_suggestion=slugify_tr(out.slug_suggestion or company.get("name", "")),
                      template=template_for_sector(company.get("sector", "")), positioning=intake.positioning)
-    cfg.missing = compute_missing(cfg)
+    drop_untranslated_names(cfg, products)
     return cfg
 
 

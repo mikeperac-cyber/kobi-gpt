@@ -142,3 +142,17 @@ Password: real MongoDB = the `SEED_PASSWORD` you seeded with. `mongomock://` = `
 - Web-check the firm names of the demo leads: they must not point at a real company that could be bothered.
 - Tick a few checklist items live in the readiness report (the score starts at 0).
 - On a 1280x720 screen, collapse the demo guide before presenting.
+
+## 11. Deploying (Vercel frontend + container backend)
+
+The backend cannot run as Vercel serverless functions: AI jobs keep running after the response (`agent_steps.spawn`) and uploads/PDFs are written to disk. Run it as a long-lived container instead; Vercel serves the frontend and forwards `/api` and `/uploads` to it, so the login cookie stays on one domain.
+
+1. **Database:** create a MongoDB Atlas cluster and copy its connection string.
+2. **Backend:** deploy `backend/Dockerfile` (build context `backend/`) on Render, Railway, Fly.io or Cloud Run.
+   - Attach a persistent disk at `/srv/uploads`, or photos and PDFs vanish on redeploy.
+   - Env vars: `MONGO_URI`, `JWT_SECRET` (long random; weak secrets are refused on https origins), `FRONTEND_ORIGIN=https://<app>.vercel.app`, `LLM_PROVIDER` + its API key (e.g. `ANTHROPIC_API_KEY`), `SEED_PASSWORD`, `ADMIN_EMAIL`.
+   - Seed once from the host's shell: `python -m app.seed`.
+3. **Frontend:** in `frontend/vercel.json` replace both `YOUR-BACKEND-HOST` with the backend's host name, commit, then import the GitHub repo in Vercel with **Root Directory = `frontend`**. Build settings come from `vercel.json`.
+4. **Check:** log in, generate a storefront, open `/s/<slug>`; `/uploads/quotes/...` must return 404.
+
+Free tiers that sleep when idle add ~30 s to the first request: warm the backend up before a live demo.

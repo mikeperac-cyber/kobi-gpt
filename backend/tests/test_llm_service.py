@@ -86,8 +86,15 @@ PNG = bytes([137]) + b"PNG" + bytes(20)
 
 
 def _mock(monkeypatch, handler):
-    real = httpx.AsyncClient
-    monkeypatch.setattr(svc.httpx, "AsyncClient", lambda **kw: real(transport=httpx.MockTransport(handler), **kw))
+    """Inject the shared client with a mock transport; no backoff sleeps. Returns the call counter."""
+    calls = []
+
+    def counted(req):
+        calls.append(req)
+        return handler(req)
+    monkeypatch.setattr(svc, "_http", httpx.AsyncClient(transport=httpx.MockTransport(counted)))
+    monkeypatch.setattr(svc, "_BACKOFF", (0, 0))
+    return calls
 
 
 def _providers():
@@ -198,3 +205,62 @@ async def test_anthropic_max_tokens_is_16000(monkeypatch):
     _mock(monkeypatch, h)
     await svc.AnthropicProvider("k", "m").complete("p", [], 1, True)
     assert seen["max_tokens"] == 16000
+
+
+# ---- shared client + bounded retries ----
+URL = "https://api.example.test/v1"
+
+
+def _seq(*resps):
+    it = iter(resps)
+
+    def h(req):
+        r = next(it)
+        if isinstance(r, Exception):
+            raise r
+        return r
+    return h
+
+
+async def test_retry_503_then_ok(monkeypatch):
+    calls = _mock(monkeypatch, _seq(httpx.Response(503, text="busy"), httpx.Response(200, json={"ok": 1})))
+    assert await svc._post(URL, {}, {}, 1) == {"ok": 1}
+    assert len(calls) == 2
+
+
+async def test_429_every_time_stops_after_three(monkeypatch):
+    calls = _mock(monkeypatch, lambda req: httpx.Response(429, text="slow down"))
+    with pytest.raises(LLMProviderError):
+        await svc._post(URL, {}, {}, 1)
+    assert len(calls) == 3
+
+
+async def test_400_not_retried(monkeypatch):
+    calls = _mock(monkeypatch, lambda req: httpx.Response(400, text="bad"))
+    with pytest.raises(LLMProviderError):
+        await svc._post(URL, {}, {}, 1)
+    assert len(calls) == 1
+
+
+async def test_read_timeout_not_retried(monkeypatch):
+    def h(req):
+        raise httpx.ReadTimeout("slow", request=req)
+    calls = _mock(monkeypatch, h)
+    with pytest.raises(LLMTimeout):
+        await svc._post(URL, {}, {}, 1)
+    assert len(calls) == 1
+
+
+async def test_connect_error_retried(monkeypatch):
+    req = httpx.Request("POST", URL)
+    calls = _mock(monkeypatch, _seq(httpx.ConnectError("down", request=req), httpx.Response(200, json={"ok": 2})))
+    assert await svc._post(URL, {}, {}, 1) == {"ok": 2}
+    assert len(calls) == 2
+
+
+async def test_client_is_reused(monkeypatch):
+    monkeypatch.setattr(svc, "_http", None)
+    a = svc._client()
+    assert svc._client() is a
+    await svc.aclose()
+    assert svc._http is None

@@ -1,4 +1,5 @@
 """Single entry point for every LLM call: raw-httpx providers, JSON validation, run logging."""
+import asyncio
 import base64
 import contextvars
 import json
@@ -48,14 +49,43 @@ class Provider(Protocol):
     async def complete(self, prompt: str, images: list[bytes], timeout: float, json_mode: bool) -> str: ...
 
 
+_http: httpx.AsyncClient | None = None
+_BACKOFF = (0.5, 1.5)  # seconds before retry 1 and 2: at most 3 attempts
+_RETRY_STATUS = {429, 500, 502, 503, 504}
+
+
+def _client() -> httpx.AsyncClient:
+    """One pooled client for every provider call; per-request timeouts."""
+    global _http
+    if _http is None:
+        _http = httpx.AsyncClient()
+    return _http
+
+
+async def aclose() -> None:
+    global _http
+    if _http is not None:
+        await _http.aclose()
+        _http = None
+
+
 async def _post(url: str, headers: dict, body: dict, timeout: float) -> dict:
-    try:
-        async with httpx.AsyncClient(timeout=timeout) as c:
-            r = await c.post(url, headers=headers, json=body)
-    except httpx.TimeoutException as e:
-        raise LLMTimeout(str(e) or "timeout") from e
-    except httpx.HTTPError as e:
-        raise LLMProviderError(str(e)) from e
+    # Read timeouts are not retried: agent_steps owns the demo time budget and falls back on LLMTimeout.
+    for attempt in range(len(_BACKOFF) + 1):
+        last = attempt == len(_BACKOFF)
+        try:
+            r = await _client().post(url, headers=headers, json=body, timeout=timeout)
+        except (httpx.ConnectError, httpx.ConnectTimeout) as e:
+            if last:
+                raise (LLMTimeout if isinstance(e, httpx.ConnectTimeout) else LLMProviderError)(str(e) or "connect") from e
+        except httpx.TimeoutException as e:
+            raise LLMTimeout(str(e) or "timeout") from e
+        except httpx.HTTPError as e:
+            raise LLMProviderError(str(e)) from e
+        else:
+            if r.status_code not in _RETRY_STATUS or last:
+                break
+        await asyncio.sleep(_BACKOFF[attempt])
     if not 200 <= r.status_code < 300:
         raise LLMProviderError(f"{r.status_code}: {r.text[:300]}")
     try:

@@ -157,10 +157,11 @@ def fallback_site_config(company: dict, products: list[dict], positioning: str, 
     return cfg
 
 
-def drop_untranslated_names(cfg: SiteConfig, products: list[dict]) -> None:
-    """Null de/en product names the model left in Turkish (and a short line built from them); recompute missing."""
+def drop_untranslated_names(cfg: SiteConfig, products: list[dict], langs: tuple[str, ...] = ("de", "en")) -> None:
+    """Null model-written product names left in Turkish (and a short line built from them); recompute checks.
+    Only for model output: a name the producer typed in the editor is never touched."""
     tr = {str(p.get("id") or p["_id"]): p.get("name_tr") or "" for p in products}
-    for c in (cfg.de, cfg.en):
+    for c in (getattr(cfg, lang) for lang in langs):
         for b in c.products:
             name_tr = tr_fold(tr.get(b.product_id, "")).strip()
             if name_tr and b.name and tr_fold(b.name).strip() == name_tr:

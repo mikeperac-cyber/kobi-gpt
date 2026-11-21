@@ -232,3 +232,10 @@ async def test_reset_restores_translated_names(db, seeded):
     await reset_demo_company(db, "gaziantep")
     prods = await db.products.find({"seed_key": {"$regex": "^bozkurt:"}}).to_list(10)
     assert prods and all(p.get("name_de") and p.get("name_en") for p in prods)
+
+
+async def test_demo_leads_do_not_sink_below_manual_leads(db, seeded):
+    await seed(db)
+    await reset_demo_company(db, "gaziantep")
+    c = await _bozkurt(db)
+    assert all("is_hot" in d for d in await db.leads.find({"company_id": str(c["_id"])}).to_list(50))

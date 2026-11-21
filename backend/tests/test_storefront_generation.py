@@ -243,3 +243,16 @@ async def test_producer_typed_name_is_kept_even_if_identical(producer, fake_llm)
     out = r.json()["site_config"]
     assert out["de"]["products"][0]["name"] == p["product"]["name_tr"]
     assert "products.0.name" not in out["missing"]
+
+
+async def test_regen_products_drops_turkish_names(producer, fake_llm):
+    p = await producer("Ali")
+    fake_llm.responses = _llm(p)
+    await _generate(p)
+    pid = p["product"]["id"]
+    fake_llm.responses = lambda _: json.dumps({"content": [{"product_id": pid, "name": p["product"]["name_tr"]}]})
+    r = await p["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "products", "lang": "de"})
+    assert r.status_code == 200 and r.json()["section"][0]["name"] is None
+    assert "de.products.0.name" in r.json()["blockers"]
+    saved = (await p["client"].get("/api/storefronts/mine")).json()["site_config"]["de"]["products"][0]["name"]
+    assert saved is None

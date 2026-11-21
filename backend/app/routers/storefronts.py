@@ -79,6 +79,9 @@ async def regenerate(body: RegenIn, user: dict = Depends(current_user), company:
         data[body.lang][body.section] = section
         cfg = SiteConfig.model_validate(data)
         sf.refresh_checks(cfg)
+        if body.section == "products":  # model output: same Turkish-name guard as full generation
+            sf.drop_untranslated_names(cfg, products, (body.lang,))
+            section = [b.model_dump(mode="json") for b in getattr(cfg, body.lang).products]
         await db.storefronts.update_one({"_id": doc["_id"]}, {"$set": {"site_config": cfg.model_dump()}})
     return {"section": section, "fallback": fallback, "source": source, "missing": cfg.missing, "blockers": cfg.blockers}
 

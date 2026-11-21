@@ -101,6 +101,8 @@ async def seed(db) -> dict[str, int]:
     if not s.seed_password:
         raise RuntimeError("SEED_PASSWORD is not set; refusing to seed demo accounts")
     await ensure_indexes(db)
+    # leads stored before is_hot existed would sort below every manual lead (missing < false)
+    await db.leads.update_many({"is_hot": {"$exists": False}}, {"$set": {"is_hot": False}})
     now = datetime.now(timezone.utc)
     await _ensure_user(db, (s.admin_email or "admin@kobi-gpt.local").strip().lower(), "Admin", s.seed_password, True, now)
     leads = _load("demo_leads")
@@ -108,7 +110,7 @@ async def seed(db) -> dict[str, int]:
         cid = await _seed_company(db, spec, s.seed_password, now)
         company = await db.companies.find_one({"_id": ObjectId(cid)})
         for lead in leads[spec["key"]]:
-            doc = {**lead, "company_id": cid, "source": "demo", "country": "DE", "is_demo": True,
+            doc = {"is_hot": False, **lead, "company_id": cid, "source": "demo", "country": "DE", "is_demo": True,
                    "source_note": DEMO_LEAD_NOTE}
             sc = await score_for_company(db, company, doc)
             await db.leads.update_one(

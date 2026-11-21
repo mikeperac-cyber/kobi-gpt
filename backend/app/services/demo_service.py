@@ -79,7 +79,7 @@ async def reset_demo_company(db, key: str) -> dict | None:
                                       "$setOnInsert": {"created_at": now}}, upsert=True)
     company = await db.companies.find_one({"_id": company["_id"]})
     for lead in _load("demo_leads")[spec["key"]]:
-        doc = {**lead, "company_id": cid, "source": "demo", "country": "DE", "is_demo": True,
+        doc = {"is_hot": False, **lead, "company_id": cid, "source": "demo", "country": "DE", "is_demo": True,
                "source_note": DEMO_LEAD_NOTE, "status": "new", "created_at": now}
         sc = await score_for_company(db, company, doc)
         await db.leads.replace_one({"company_id": cid, "email": lead["email"]},

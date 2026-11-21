@@ -9,7 +9,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import get_settings
 from app.core.db import ensure_indexes, get_db
@@ -31,17 +30,22 @@ async def validation_handler(_req: Request, exc: RequestValidationError):
 
 
 UPLOADS = Path(__file__).resolve().parents[2] / "uploads"
-PRIVATE_PREFIXES = ("quotes/", "reports/")  # generated PDFs: only the authenticated PDF endpoints return them
+PRIVATE_DIRS = ("quotes", "reports")  # generated PDFs: only the authenticated PDF endpoints return them
 
 
 class PublicUploads(StaticFiles):
     """/uploads minus generated documents. shortcut: path filter, not signed URLs; upgrade with S3 + signed URLs."""
 
-    async def get_response(self, path: str, scope):
-        norm = os.path.normpath(path).replace("\\", "/").lower() + "/"  # case-insensitive disks (Windows)
-        if norm.startswith(PRIVATE_PREFIXES):
-            raise StarletteHTTPException(404)
-        return await super().get_response(path, scope)
+    def lookup_path(self, path: str):
+        full, stat = super().lookup_path(path)
+        if full:
+            # compare resolved paths: Windows ignores trailing dots/spaces, stream suffixes and case in names
+            real = os.path.normcase(os.path.realpath(full))
+            for d in PRIVATE_DIRS:
+                private = os.path.normcase(os.path.realpath(UPLOADS / d))
+                if os.path.commonpath([real, private]) == private:
+                    return "", None
+        return full, stat
 
 
 @asynccontextmanager

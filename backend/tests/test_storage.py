@@ -97,7 +97,8 @@ async def test_generated_pdfs_not_served_but_photos_are(client):
             made.append(f.parent)
         for url in ("/uploads/quotes/zz-test/x.pdf", "/uploads/reports/zz-test/x.pdf",
                     "/uploads/./quotes/zz-test/x.pdf", "/uploads/products/../quotes/zz-test/x.pdf",
-                    "/uploads/QUOTES/zz-test/x.pdf"):
+                    "/uploads/QUOTES/zz-test/x.pdf", "/uploads/quotes./zz-test/x.pdf",
+                    "/uploads/quotes%20/zz-test/x.pdf", "/uploads/quotes::$INDEX_ALLOCATION/zz-test/x.pdf"):
             assert (await client.get(url)).status_code == 404, url
         assert (await client.get("/uploads/products/zz-test/x.webp")).status_code == 200
     finally:

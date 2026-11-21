@@ -83,3 +83,23 @@ async def test_upload_endpoint_ok_and_errors(client, tmp_path):
     assert r.status_code == 422 and r.json()["detail"] == {"code": "bad_type", "message_key": "errors.bad_type"}
     r = await client.post("/api/uploads/image", files={"file": ("x.jpg", b"\xff\xd8\xff" + b"0" * 8_500_000, "image/jpeg")})
     assert r.status_code == 422 and r.json()["detail"]["code"] == "too_large"
+
+
+async def test_generated_pdfs_not_served_but_photos_are(client):
+    import shutil
+    from app.main import UPLOADS
+    made = []
+    try:
+        for rel in ("quotes/zz-test/x.pdf", "reports/zz-test/x.pdf", "products/zz-test/x.webp"):
+            f = UPLOADS / rel
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_bytes(b"data")
+            made.append(f.parent)
+        for url in ("/uploads/quotes/zz-test/x.pdf", "/uploads/reports/zz-test/x.pdf",
+                    "/uploads/./quotes/zz-test/x.pdf", "/uploads/products/../quotes/zz-test/x.pdf",
+                    "/uploads/QUOTES/zz-test/x.pdf"):
+            assert (await client.get(url)).status_code == 404, url
+        assert (await client.get("/uploads/products/zz-test/x.webp")).status_code == 200
+    finally:
+        for d in made:
+            shutil.rmtree(d, ignore_errors=True)

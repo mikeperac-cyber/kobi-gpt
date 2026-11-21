@@ -57,12 +57,11 @@ async def create(body: QuoteIn, company: dict = Depends(current_company)):
     included = lg.freight_included(body.incoterm)
     if included and body.currency != "EUR":
         raise svc.err(422, "freight_currency_mismatch")
-    if body.unit_weight_kg:
-        await db.products.update_one({"_id": product["_id"]}, {"$set": {"unit_weight_kg": body.unit_weight_kg}})
     total = round(body.quantity * body.unit_price + (est.freight_eur if included else 0), 2)
     doc = {"lead_id": body.lead_id, "company_id": cid, "product_id": body.product_id, "quantity": body.quantity,
            "unit": product["unit"], "incoterm": body.incoterm, "unit_price": body.unit_price,
            "currency": body.currency, "payment_terms": body.payment_terms, "logistics_estimate": est.dict(),
+           "unit_weight_kg": weight,  # this quote's weight only; the product's weight changes in the product form
            "freight_included": included, "total": total, "valid_until": body.valid_until.isoformat(),
            "status": "draft", "pdf_url": None, "approved_by": None, "approved_at": None, "delivery_channel": None,
            "created_at": datetime.now(timezone.utc)}

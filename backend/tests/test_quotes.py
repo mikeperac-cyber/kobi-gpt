@@ -69,11 +69,13 @@ async def test_quote_error_codes(producer, db):
     assert code(await make(p, lid, valid_until="2000-01-01")) == "invalid_valid_until"
     await db.products.update_one({}, {"$unset": {"unit_weight_kg": ""}})
     assert code(await make(p, lid)) == "needs_weight"
-    r = await make(p, lid, unit_weight_kg=1)  # saved to the product
-    assert r.status_code == 201 and (await db.products.find_one({}))["unit_weight_kg"] == 1
+    r = await make(p, lid, unit_weight_kg=1)  # kept on the quote only
+    assert r.status_code == 201 and r.json()["unit_weight_kg"] == 1
+    assert "unit_weight_kg" not in await db.products.find_one({})
+    assert code(await make(p, lid)) == "needs_weight"  # the earlier quote's weight is not reused
     await db.products.update_one({}, {"$set": {"price_floor_currency": "USD"}})
-    assert code(await make(p, lid, currency="USD")) == "freight_currency_mismatch"
-    assert (await make(p, lid, currency="USD", incoterm="EXW")).status_code == 201
+    assert code(await make(p, lid, currency="USD", unit_weight_kg=1)) == "freight_currency_mismatch"
+    assert (await make(p, lid, currency="USD", incoterm="EXW", unit_weight_kg=1)).status_code == 201
     await db.leads.update_one({}, {"$set": {"status": "do_not_contact"}})
     assert code(await make(p, lid, currency="USD")) == "do_not_contact"
 

@@ -63,6 +63,11 @@ async def backfill_seed_keys(db, cid: str, spec: dict) -> None:
             await db.products.update_one({"_id": d["_id"]}, {"$set": {"seed_photos": d.get("photos") or []}})
 
 
+def _names(p: dict) -> dict:
+    """Demo-only buyer-language product names (not part of ProductIn): keep the fallback storefront demo-ready."""
+    return {k: p[k] for k in ("name_de", "name_en") if p.get(k)}
+
+
 async def _seed_company(db, spec: dict, password: str, now) -> str:
     owner = await _ensure_user(db, spec["user"]["email"], spec["user"]["name"], password, False, now)
     fields = CompanyIn(**spec["company"]).model_dump()  # same model the API validates with
@@ -79,7 +84,8 @@ async def _seed_company(db, spec: dict, password: str, now) -> str:
                   for label in p["photo_labels"]]
         body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos)
         await db.products.insert_one({**body.model_dump(), "company_id": cid, "hs_code_confirmed": None,
-                                      "seed_photos": photos, "seed_key": f"{spec['key']}:{i}", "created_at": now})
+                                      "seed_photos": photos, "seed_key": f"{spec['key']}:{i}", "created_at": now,
+                                      **_names(p)})
     for p in await db.products.find({"company_id": cid}).to_list(500):  # also backfills pre-registry seeds
         for url in p.get("photos") or []:
             await record_upload(db, url, owner)

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from bson import ObjectId
 
-from tests.helpers import assert_no_floor
+from tests.helpers import assert_no_floor, publishable_site_config
 
 T0 = datetime(2026, 1, 1, 10, 0, tzinfo=timezone.utc)
 
@@ -54,7 +54,7 @@ async def test_first_published_at_kept_on_republish(producer, db):
     p = await producer("Ali")
     c = p["client"]
     cid = p["company"]["id"]
-    await db.storefronts.insert_one({"company_id": cid, "country": "DE", "status": "draft", "slug": "x-y", "site_config": {}})
+    await db.storefronts.insert_one({"company_id": cid, "country": "DE", "status": "draft", "slug": "x-y", "site_config": publishable_site_config()})
     assert (await c.post("/api/storefronts/mine/publish")).status_code == 200
     first = (await db.storefronts.find_one({"company_id": cid}))["first_published_at"]
     await c.post("/api/storefronts/mine/unpublish")

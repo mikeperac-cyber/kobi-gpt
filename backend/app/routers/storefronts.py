@@ -46,7 +46,10 @@ async def generate(body: IntakeIn, user: dict = Depends(current_user), company: 
 
 @router.get("/mine")
 async def get_mine(company: dict = Depends(current_company)):
-    return to_json(await _mine(company))
+    doc = await _mine(company)
+    cfg = SiteConfig.model_validate(doc["site_config"])
+    sf.refresh_checks(cfg)  # stored docs from before the checklist have no blockers
+    return to_json({**doc, "site_config": cfg.model_dump()})
 
 
 @router.put("/mine")
@@ -56,7 +59,7 @@ async def put_mine(body: SiteConfigIn, company: dict = Depends(current_company))
     if slug != doc["slug"] and await get_db().storefronts.find_one({"slug": slug, "_id": {"$ne": doc["_id"]}}):
         raise _err(409, "slug_taken")
     cfg = body.site_config.model_copy(update={"template": body.template})
-    cfg.missing = sf.compute_missing(cfg)  # never trust the client's list
+    sf.refresh_checks(cfg)  # never trust the client's lists
     patch = {"site_config": cfg.model_dump(), "template": body.template, "slug": slug,
              "updated_at": datetime.now(timezone.utc)}
     await get_db().storefronts.update_one({"_id": doc["_id"]}, {"$set": patch})
@@ -67,6 +70,7 @@ async def put_mine(body: SiteConfigIn, company: dict = Depends(current_company))
 async def regenerate(body: RegenIn, user: dict = Depends(current_user), company: dict = Depends(current_company)):
     db, doc = get_db(), await _mine(company)
     cfg = SiteConfig.model_validate(doc["site_config"])
+    sf.refresh_checks(cfg)  # stored docs from before the checklist have no blockers
     products = await db.products.find({"company_id": str(company["_id"])}).to_list(50)
     section, fallback, source = await sf.regenerate_section(company, products, cfg, body.section, body.lang,
                                                     body.instruction, user.get("ui_language", "tr"))
@@ -74,9 +78,9 @@ async def regenerate(body: RegenIn, user: dict = Depends(current_user), company:
         data = cfg.model_dump()
         data[body.lang][body.section] = section
         cfg = SiteConfig.model_validate(data)
-        cfg.missing = sf.compute_missing(cfg)
+        sf.refresh_checks(cfg)
         await db.storefronts.update_one({"_id": doc["_id"]}, {"$set": {"site_config": cfg.model_dump()}})
-    return {"section": section, "fallback": fallback, "source": source, "missing": cfg.missing}
+    return {"section": section, "fallback": fallback, "source": source, "missing": cfg.missing, "blockers": cfg.blockers}
 
 
 async def _set_status(company: dict, status: str, stamp: str) -> dict:
@@ -92,6 +96,10 @@ async def _set_status(company: dict, status: str, stamp: str) -> dict:
 
 @router.post("/mine/publish")
 async def publish(company: dict = Depends(current_company)):
+    blockers = sf.publish_blockers(SiteConfig.model_validate((await _mine(company))["site_config"]))
+    if blockers:
+        raise HTTPException(422, {"code": "publish_blocked", "message_key": "errors.publish_blocked",
+                                  "blockers": blockers})
     return await _set_status(company, "published", "published_at")
 
 

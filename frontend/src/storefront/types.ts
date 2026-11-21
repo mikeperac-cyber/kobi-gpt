@@ -23,6 +23,7 @@ export type SiteConfig = {
   slug_suggestion: string
   template: Template
   missing: string[]
+  blockers?: string[] // pre-publish checklist (server-computed)
   positioning: 'b2b' | 'b2c'
 }
 export type Storefront = {

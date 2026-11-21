@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../../api/client'
 import Button from '../../components/ui/Button'
@@ -36,14 +37,14 @@ export default function Editor({ initial, onPublished, onRestart }: {
     template,
   })
 
-  const save = async (): Promise<string | null> => {
+  const save = async (): Promise<Storefront | null> => {
     setBusy('save'); setErr(''); setMsg('')
     try {
       const r = await api<Storefront>('/api/storefronts/mine', { method: 'PUT', json: body() })
-      setCfg((c) => ({ ...c, missing: r.site_config.missing }))
+      setCfg((c) => ({ ...c, missing: r.site_config.missing, blockers: r.site_config.blockers }))
       setSlug(r.slug)
       setMsg(t('storefront.saved'))
-      return r.slug
+      return r
     } catch (x) {
       setErr(t(x instanceof ApiError ? x.messageKey : 'errors.network'))
       return null
@@ -53,10 +54,11 @@ export default function Editor({ initial, onPublished, onRestart }: {
   const publish = async () => {
     const saved = await save()
     if (!saved) return
+    if (saved.site_config.blockers?.length) { setMsg(''); return } // the checklist below says what is missing
     setBusy('publish')
     try {
       await api('/api/storefronts/mine/publish', { method: 'POST' })
-      onPublished(saved)
+      onPublished(saved.slug)
     } catch (x) {
       setErr(t(x instanceof ApiError ? x.messageKey : 'errors.network'))
     } finally { setBusy('') }
@@ -67,12 +69,12 @@ export default function Editor({ initial, onPublished, onRestart }: {
     if (!(await save())) return // server regenerates from the saved copy: persist local edits first
     setBusy('regen'); setErr(''); setMsg(''); setUnchanged(null)
     try {
-      const r = await api<{ section: unknown; fallback: boolean; missing: string[] }>('/api/storefronts/mine/regenerate-section', {
+      const r = await api<{ section: unknown; fallback: boolean; missing: string[]; blockers: string[] }>('/api/storefronts/mine/regenerate-section', {
         method: 'POST', json: { section, lang: tab, instruction: instruction ?? null },
       })
       if (r.fallback) setUnchanged(`${tab}-${section}`)
       else {
-        setCfg((c) => ({ ...c, [tab]: { ...c[tab], [section]: r.section }, missing: r.missing }))
+        setCfg((c) => ({ ...c, [tab]: { ...c[tab], [section]: r.section }, missing: r.missing, blockers: r.blockers }))
         setMsg(t('storefront.regenDone'))
       }
     } catch (x) {
@@ -124,6 +126,12 @@ export default function Editor({ initial, onPublished, onRestart }: {
             <Input value={slug} maxLength={60} onChange={(e) => setSlug(e.target.value)} />
           </Field>
           {cfg.missing.length > 0 && <p className="text-sm text-yellow-800">{t('storefront.missingCount', { n: cfg.missing.length })}</p>}
+          {!!cfg.blockers?.length && (
+            <div role="alert" className="text-sm border border-yellow-400 bg-yellow-50 rounded-md p-3">
+              <p className="font-semibold">{t('storefront.blockersTitle')}</p>
+              <ul className="list-disc pl-5">{cfg.blockers.map((b) => <li key={b}>{blockerText(b, t)}</li>)}</ul>
+            </div>
+          )}
           {err && <p role="alert" className="text-brand font-semibold">{err}</p>}
           {msg && <p role="status" className="text-sm text-slate-700">{msg}</p>}
           <div className="flex flex-wrap gap-3">
@@ -140,6 +148,18 @@ export default function Editor({ initial, onPublished, onRestart }: {
       </div>
     </div>
   )
+}
+
+const BLOCKER_FIELD: Record<string, string> = { 'hero.headline': 'headline', 'about.story': 'story', 'rfq.intro': 'intro' }
+
+/** "de.products.0.name" -> "DE · name of product 1"; "products" -> add a product. */
+function blockerText(b: string, t: TFunction): string {
+  if (b === 'products') return t('storefront.blockerNoProducts')
+  const [lang, ...rest] = b.split('.')
+  const path = rest.join('.')
+  const m = /^products\.(\d+)\.name$/.exec(path)
+  if (m) return t('storefront.blockerProduct', { lang: lang.toUpperCase(), n: Number(m[1]) + 1 })
+  return t('storefront.blockerField', { lang: lang.toUpperCase(), field: t(`storefront.f.${BLOCKER_FIELD[path] ?? path}`) })
 }
 
 /** Drop blank why_us lines before saving (the textarea keeps them while typing). */

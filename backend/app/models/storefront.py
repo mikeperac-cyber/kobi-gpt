@@ -83,6 +83,7 @@ class SiteConfig(BaseModel):
     slug_suggestion: str
     template: Literal["industrial", "natural", "textile"]
     missing: list[str] = Field(default_factory=list)
+    blockers: list[str] = Field(default_factory=list)  # pre-publish checklist; empty = publishable
     positioning: Literal["b2b", "b2c"]
 
 

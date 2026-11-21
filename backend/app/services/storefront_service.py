@@ -57,6 +57,22 @@ def compute_missing(cfg: SiteConfig) -> list[str]:
     return list(dict.fromkeys(found))
 
 
+def publish_blockers(cfg: SiteConfig) -> list[str]:
+    """Facts a buyer page cannot go live without; optional facts (year, lead time, ...) never block."""
+    out = [] if cfg.de.products else ["products"]
+    for lang in ("de", "en"):
+        c = getattr(cfg, lang)
+        for path, v in (("hero.headline", c.hero.headline), ("about.story", c.about.story), ("rfq.intro", c.rfq.intro)):
+            if not (v or "").strip():
+                out.append(f"{lang}.{path}")
+        out += [f"{lang}.products.{i}.name" for i, b in enumerate(c.products) if not (b.name or "").strip()]
+    return out
+
+
+def refresh_checks(cfg: SiteConfig) -> None:
+    cfg.missing, cfg.blockers = compute_missing(cfg), publish_blockers(cfg)
+
+
 def _num(v: float, sep: str) -> str:
     """Thousands-separated, no trailing .0 (de/tr: 1.000.000, en: 1,000,000)."""
     txt = f"{v:,.2f}".rstrip("0").rstrip(".")
@@ -65,7 +81,7 @@ def _num(v: float, sep: str) -> str:
 
 
 def _content(t: dict, company: dict, products: list[dict], intake: IntakeIn | None,
-             own_text: str | None) -> LocalizedContent:
+             own_text: str | None, lang: str = "tr") -> LocalizedContent:
     # Never format a missing value into a sentence: skip the clause or leave the field None.
     name, city = company.get("name") or None, company.get("city") or None
     year, team = company.get("founded_year"), company.get("employee_count")
@@ -82,7 +98,7 @@ def _content(t: dict, company: dict, products: list[dict], intake: IntakeIn | No
         if pid is None:
             continue
         # de/en never get the Turkish name: None lands in `missing` and the producer types the translation
-        pname = (p.get("name_tr") or None) if own_text is not None else None
+        pname = (p.get("name_tr") or None) if own_text is not None else (p.get(f"name_{lang}") or None)
         specs = ([Spec(label=t["spec_material"], value=p["material_or_ingredients"])]
                  if p.get("material_or_ingredients") else [])
         moq = None
@@ -127,8 +143,8 @@ def _content(t: dict, company: dict, products: list[dict], intake: IntakeIn | No
 def fallback_site_config(company: dict, products: list[dict], positioning: str, ui_language: str,
                          intake: IntakeIn | None = None) -> SiteConfig:
     """Deterministic, facts-only config. de/en are never built from the producer's Turkish prose."""
-    de = _content(_TEMPLATES["de"], company, products, intake, None)
-    en = _content(_TEMPLATES["en"], company, products, intake, None)
+    de = _content(_TEMPLATES["de"], company, products, intake, None, "de")
+    en = _content(_TEMPLATES["en"], company, products, intake, None, "en")
     if ui_language == "tr":
         review = _content(_TEMPLATES["tr"], company, products, intake, company.get("description_tr") or "")
     else:
@@ -137,7 +153,7 @@ def fallback_site_config(company: dict, products: list[dict], positioning: str, 
         de=de, en=en, review=review, review_language="tr" if ui_language == "tr" else "en",
         slug_suggestion=slugify_tr(company.get("name", "")), template=template_for_sector(company.get("sector", "")),
         positioning=positioning)
-    cfg.missing = compute_missing(cfg)
+    refresh_checks(cfg)
     return cfg
 
 
@@ -151,7 +167,7 @@ def drop_untranslated_names(cfg: SiteConfig, products: list[dict]) -> None:
                 b.name = None
                 if b.short and name_tr in tr_fold(b.short):
                     b.short = None
-    cfg.missing = compute_missing(cfg)
+    refresh_checks(cfg)
 
 
 # ---- AI generation -------------------------------------------------------------------------------

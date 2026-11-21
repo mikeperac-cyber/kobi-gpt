@@ -224,3 +224,11 @@ async def test_storefront_cache_ignores_free_text_intake(producer, fake_llm, db,
     fake_llm.responses = _failing
     job = await _generate(p, {**INTAKE, "text": "baska bir aciklama", "incoterms": ["EXW"]})
     assert [s["source"] for s in job["steps"]][:3] == ["cache"] * 3
+
+
+async def test_reset_restores_translated_names(db, seeded):
+    await seed(db)
+    await db.products.update_many({}, {"$unset": {"name_de": "", "name_en": ""}})
+    await reset_demo_company(db, "gaziantep")
+    prods = await db.products.find({"seed_key": {"$regex": "^bozkurt:"}}).to_list(10)
+    assert prods and all(p.get("name_de") and p.get("name_en") for p in prods)

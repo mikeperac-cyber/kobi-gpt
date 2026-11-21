@@ -133,7 +133,8 @@ async def test_regenerate_section_fallback_unchanged(producer, fake_llm):
     before = (await p["client"].get("/api/storefronts/mine")).json()["site_config"]["en"]["seo"]
     fake_llm.responses = [LLMProviderError("x")] * 3
     r = await p["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "seo", "lang": "en"})
-    assert r.json() == {"section": before, "fallback": True, "source": "template", "missing": r.json()["missing"]}
+    assert r.json() == {"section": before, "fallback": True, "source": "template", "missing": r.json()["missing"],
+                        "blockers": ["de.products.0.name", "en.products.0.name"]}
     bad = await p["client"].post("/api/storefronts/mine/regenerate-section", json={"section": "nope", "lang": "en"})
     assert bad.status_code == 422
 

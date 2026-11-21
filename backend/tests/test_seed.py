@@ -141,3 +141,9 @@ async def test_seed_records_photo_owners_and_backfills(db, seeded_env):
         for p in await db.products.find({"company_id": str(c["_id"])}).to_list(10):
             for url in p["photos"]:
                 assert await db.uploads.find_one({"url": url, "user_id": c["owner_id"]}), url
+
+
+async def test_demo_products_have_translated_names(db, seeded_env):
+    await seed(db)
+    prods = await db.products.find({"seed_key": {"$exists": True}}).to_list(50)
+    assert prods and all(p.get("name_de") and p.get("name_en") for p in prods)

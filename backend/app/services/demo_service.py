@@ -6,7 +6,7 @@ from bson import ObjectId
 
 from app.models.company import CompanyIn
 from app.models.product import ProductIn
-from app.seed import DEMO_LEAD_NOTE, _load, backfill_seed_keys
+from app.seed import DEMO_LEAD_NOTE, _load, _names, backfill_seed_keys
 from app.seed.images import make_placeholder
 from app.services.storage_service import get_storage
 from app.services.agent_steps import spawn
@@ -75,7 +75,7 @@ async def reset_demo_company(db, key: str) -> dict | None:
         for url in photos:
             await record_upload(db, url, company["owner_id"])
         await db.products.update_one({"company_id": cid, "seed_key": key_},
-                                     {"$set": {**body, "hs_code_confirmed": None, "seed_photos": photos},
+                                     {"$set": {**body, "hs_code_confirmed": None, "seed_photos": photos, **_names(p)},
                                       "$setOnInsert": {"created_at": now}}, upsert=True)
     company = await db.companies.find_one({"_id": company["_id"]})
     for lead in _load("demo_leads")[spec["key"]]:

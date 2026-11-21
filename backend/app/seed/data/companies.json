@@ -9,11 +9,11 @@
       "logo_url": null, "min_order_note": "Asgari sipariş 500 kg; palet halinde sevkiyat."
     },
     "products": [
-      {"name_tr": "Kabuklu Kavrulmuş Antep Fıstığı", "unit": "kg", "moq": 500, "unit_weight_kg": 1.0, "price_floor": 11.5,
+      {"name_tr": "Kabuklu Kavrulmuş Antep Fıstığı", "name_de": "Geröstete Pistazien in der Schale", "name_en": "Roasted in-shell pistachios", "unit": "kg", "moq": 500, "unit_weight_kg": 1.0, "price_floor": 11.5,
        "material_or_ingredients": "Antep fıstığı, deniz tuzu",
        "description_tr": "Kabuğu çatlak, taze kavrulmuş tuzlu Antep fıstığı. 1 kg ve 10 kg'lık paketlerde sunulur. Her parti ayıklanır ve gıda güvenliği kontrolünden geçer.",
        "photo_labels": ["Kabuklu Antep Fıstığı", "Kavrulmuş Fıstık 1 kg ve 10 kg"]},
-      {"name_tr": "İç Antep Fıstığı", "unit": "kg", "moq": 300, "unit_weight_kg": 1.0, "price_floor": 19.0,
+      {"name_tr": "İç Antep Fıstığı", "name_de": "Geschälte Pistazienkerne", "name_en": "Shelled pistachio kernels", "unit": "kg", "moq": 300, "unit_weight_kg": 1.0, "price_floor": 19.0,
        "material_or_ingredients": "Antep fıstığı (iç)",
        "description_tr": "Kabuğu soyulmuş, yeşil renkli iç Antep fıstığı. Pastacılık, dondurma ve gıda sanayisi için uygundur. 1 kg ve 10 kg'lık paketlerde sunulur.",
        "photo_labels": ["İç Antep Fıstığı", "İç Fıstık Paketleri"]}
@@ -29,11 +29,11 @@
       "logo_url": null, "min_order_note": "Asgari sipariş 300 adet; renk ve logo çalışması yapılabilir."
     },
     "products": [
-      {"name_tr": "%100 Pamuk Havlu", "unit": "adet", "moq": 1000, "unit_weight_kg": 0.5, "price_floor": 3.2,
+      {"name_tr": "%100 Pamuk Havlu", "name_de": "Handtuch aus 100 % Baumwolle", "name_en": "100% cotton towel", "unit": "adet", "moq": 1000, "unit_weight_kg": 0.5, "price_floor": 3.2,
        "material_or_ingredients": "%100 pamuk",
        "description_tr": "Yumuşak ve emici, %100 pamuklu havlu. Yüz, el ve banyo boyları mevcuttur. Otel ve perakende için uygundur.",
        "photo_labels": ["%100 Pamuk Havlu", "Havlu Renk Seçenekleri"]},
-      {"name_tr": "Pamuk Bornoz", "unit": "adet", "moq": 300, "unit_weight_kg": 0.9, "price_floor": 9.5,
+      {"name_tr": "Pamuk Bornoz", "name_de": "Bademantel aus Baumwolle", "name_en": "Cotton bathrobe", "unit": "adet", "moq": 300, "unit_weight_kg": 0.9, "price_floor": 9.5,
        "material_or_ingredients": "%100 pamuk",
        "description_tr": "Havlu kumaştan, %100 pamuklu bornoz. Kadın ve erkek modelleri vardır. Otel, spa ve perakende için uygundur.",
        "photo_labels": ["Pamuk Bornoz", "Bornoz Modelleri"]}
@@ -49,11 +49,11 @@
       "logo_url": null, "min_order_note": "Asgari sipariş 50.000 adet; teknik resme göre üretim yapılabilir."
     },
     "products": [
-      {"name_tr": "Galvanizli Çelik Cıvata M8", "unit": "adet", "moq": 50000, "unit_weight_kg": 0.02, "price_floor": 0.04,
+      {"name_tr": "Galvanizli Çelik Cıvata M8", "name_de": "Verzinkte Stahlschraube M8", "name_en": "Galvanised steel bolt M8", "unit": "adet", "moq": 50000, "unit_weight_kg": 0.02, "price_floor": 0.04,
        "material_or_ingredients": "Çelik, galvaniz kaplama",
        "description_tr": "M8 ölçüsünde galvaniz kaplamalı çelik cıvata. Seri üretimdir; ölçü ve kaplama kontrolü her partide yapılır.",
        "photo_labels": ["Galvanizli Cıvata M8", "Cıvata Üretim Hattı"]},
-      {"name_tr": "Galvanizli Çelik Somun M8", "unit": "adet", "moq": 100000, "unit_weight_kg": 0.01, "price_floor": 0.02,
+      {"name_tr": "Galvanizli Çelik Somun M8", "name_de": "Verzinkte Stahlmutter M8", "name_en": "Galvanised steel nut M8", "unit": "adet", "moq": 100000, "unit_weight_kg": 0.01, "price_floor": 0.02,
        "material_or_ingredients": "Çelik, galvaniz kaplama",
        "description_tr": "M8 ölçüsünde galvaniz kaplamalı çelik somun. Seri üretimdir; cıvata ile birlikte set halinde de sunulabilir.",
        "photo_labels": ["Galvanizli Somun M8", "Somun Çeşitleri"]}

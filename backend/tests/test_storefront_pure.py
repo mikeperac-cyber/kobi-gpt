@@ -155,3 +155,11 @@ def test_drop_untranslated_names_keeps_translated():
     assert cfg.de.products[0].name is None and cfg.de.products[0].short is None
     assert cfg.en.products[0].name == "Pistachios"
     assert "products.0.name" in cfg.missing
+
+
+def test_fallback_uses_seeded_translated_names():
+    p = {**PRODUCT, "name_de": "Pistazien geröstet", "name_en": "Roasted pistachios"}
+    cfg = fallback_site_config(COMPANY, [public_product(p)], "b2b", "tr")
+    assert cfg.de.products[0].name == "Pistazien geröstet" and cfg.en.products[0].name == "Roasted pistachios"
+    assert cfg.review.products[0].name == "Antep Fıstığı"
+    assert cfg.blockers == []

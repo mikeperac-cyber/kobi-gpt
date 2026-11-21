@@ -14,3 +14,14 @@ def load_kb_json(name):
     from pathlib import Path
     return json.loads((Path(__file__).resolve().parents[1] / "app" / "seed" / "data" / f"{name}.json")
                       .read_text(encoding="utf-8"))
+
+
+def publishable_site_config(**over) -> dict:
+    """A complete stored site_config that passes the pre-publish checklist (one named product)."""
+    from app.services.storefront_service import fallback_site_config
+    company = {"name": "Bozkurt Gıda", "city": "Gaziantep", "sector": "gida"}
+    cfg = fallback_site_config(company, [{"id": "p1", "name_tr": "Antep Fıstığı"}], "b2b", "tr")
+    cfg.de.products[0].name, cfg.en.products[0].name = "Pistazien", "Pistachios"
+    data = cfg.model_dump()
+    data.update(over)
+    return data

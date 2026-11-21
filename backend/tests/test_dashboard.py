@@ -23,9 +23,9 @@ async def test_dashboard_counts_real(producer, db):
     p = await producer("Ali")
     cid, pid = p["company"]["id"], p["product"]["id"]
     l1, _ = await _lead(db, cid, 2)
-    await db.messages.insert_one({"lead_id": str(l1), "status": "draft"})
-    await db.messages.insert_one({"lead_id": str(l1), "status": "sent"})
-    await db.quotes.insert_one({"lead_id": str(l1), "status": "draft"})
+    await db.messages.insert_one({"lead_id": str(l1), "status": "draft", "company_id": cid})
+    await db.messages.insert_one({"lead_id": str(l1), "status": "sent", "company_id": cid})
+    await db.quotes.insert_one({"lead_id": str(l1), "status": "draft", "company_id": cid})
     await db.storefronts.insert_one({"company_id": cid, "country": "DE", "slug": "ali", "status": "published"})
     await db.readiness_reports.insert_one({"product_id": pid, "score": 40, "created_at": datetime(2026, 1, 1)})
     await db.readiness_reports.insert_one({"product_id": pid, "score": 65, "created_at": datetime(2026, 2, 1)})
@@ -34,7 +34,7 @@ async def test_dashboard_counts_real(producer, db):
     assert d["storefront"] == {"status": "published", "slug": "ali"}
     assert d["compliance"]["score"] == 65
     assert d["roadmap"] == {"profile": True, "storefront": True, "compliance": True, "first_quote": False}
-    await db.quotes.insert_one({"lead_id": str(l1), "status": "sent"})
+    await db.quotes.insert_one({"lead_id": str(l1), "status": "sent", "company_id": cid})
     assert (await p["client"].get("/api/dashboard")).json()["roadmap"]["first_quote"] is True
 
 
@@ -64,3 +64,14 @@ async def test_notifications_order_and_read(producer, db):
     assert (await b["client"].post(f"/api/notifications/{new}/read")).status_code == 404
     assert (await a["client"].post(f"/api/notifications/{new}/read")).status_code == 200
     assert (await db.notifications.find_one({"_id": new}))["read"] is True
+
+
+async def test_pending_ignores_other_company(producer, db):
+    a, b = await producer("Ali"), await producer("Veli")
+    lid = str((await _lead(db, b["company"]["id"], 1))[0])
+    for coll in ("messages", "quotes"):
+        await db[coll].insert_one({"lead_id": lid, "company_id": b["company"]["id"], "status": "draft"})
+    await db.quotes.insert_one({"lead_id": lid, "company_id": b["company"]["id"], "status": "sent"})
+    d = (await a["client"].get("/api/dashboard")).json()
+    assert d["leads"] == {"count": 0, "pending_approvals": 0} and d["roadmap"]["first_quote"] is False
+    assert (await b["client"].get("/api/dashboard")).json()["leads"]["pending_approvals"] == 2

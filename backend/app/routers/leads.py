@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
 
 from app.core.csvutil import MAX_IMPORT, parse_csv
 from app.core.db import get_db
@@ -36,25 +36,23 @@ async def _make(db, company: dict, source: str, fields: dict, note: str, now) ->
     return lead
 
 
-def _ts(d):
-    return d["created_at"].timestamp()
+_SORTS = {"score": [("score", -1), ("created_at", -1)], "created_at": [("created_at", -1)],
+          None: [("is_hot", -1), ("score", -1), ("created_at", -1)]}  # default: hot (RFQ) first, then score, newest
 
 
 @router.get("")
-async def list_leads(sort: str | None = None, status: str | None = None, company: dict = Depends(current_company)):
+async def list_leads(response: Response, sort: str | None = None, status: str | None = None,
+                     limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0),
+                     company: dict = Depends(current_company)):
     q = {"company_id": str(company["_id"])}
     if status:
         if status not in STATUSES:
             raise _err(422, "validation_error")
         q["status"] = status
-    docs = await get_db().leads.find(q).to_list(5000)
-    if sort == "score":
-        docs.sort(key=lambda d: (-d.get("score", 0), -_ts(d)))
-    elif sort == "created_at":
-        docs.sort(key=lambda d: -_ts(d))
-    else:  # hot (RFQ) first, then score, then newest
-        docs.sort(key=lambda d: (not d.get("is_hot"), -d.get("score", 0), -_ts(d)))
-    return to_json(docs)
+    db = get_db()
+    response.headers["X-Total-Count"] = str(await db.leads.count_documents(q))
+    order = _SORTS.get(sort, _SORTS[None]) + [("_id", -1)]  # _id: stable pages on ties
+    return to_json(await db.leads.find(q).sort(order).skip(offset).limit(limit).to_list(limit))
 
 
 @router.post("", status_code=201)

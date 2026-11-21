@@ -121,3 +121,31 @@ async def test_csv_import_country_defaults_to_market(producer, db):
 async def test_status_filter_validated(producer):
     c = (await producer("Ali"))["client"]
     assert (await c.get("/api/leads?status=bogus")).status_code == 422
+
+
+async def _three(db, cid):
+    from datetime import datetime, timezone
+    docs = [{"company_name": "A", "score": 50, "is_hot": False, "created_at": datetime(2026, 1, 1, tzinfo=timezone.utc)},
+            {"company_name": "B", "score": 90, "is_hot": False, "created_at": datetime(2026, 1, 2, tzinfo=timezone.utc)},
+            {"company_name": "C", "score": 10, "is_hot": True, "created_at": datetime(2026, 1, 3, tzinfo=timezone.utc)}]
+    await db.leads.insert_many([{**d, "company_id": cid, "status": "new", "country": "DE"} for d in docs])
+
+
+async def test_list_leads_db_sort_and_pages(producer, db):
+    p = await producer("Ali")
+    c = p["client"]
+    await _three(db, p["company"]["id"])
+    names = lambda r: [x["company_name"] for x in r.json()]  # noqa: E731
+    assert names(await c.get("/api/leads")) == ["C", "B", "A"]  # hot first, then score
+    assert names(await c.get("/api/leads?sort=score")) == ["B", "A", "C"]
+    assert names(await c.get("/api/leads?sort=created_at")) == ["C", "B", "A"]
+    r = await c.get("/api/leads?limit=2")
+    assert names(r) == ["C", "B"] and r.headers["x-total-count"] == "3"
+    assert names(await c.get("/api/leads?limit=2&offset=2")) == ["A"]
+    assert (await c.get("/api/leads?limit=501")).status_code == 422
+    assert len((await c.get("/api/leads?sort=score&limit=500")).json()) == 3  # pipeline page request
+
+
+async def test_total_count_header_exposed_to_browser(client):
+    r2 = await client.get("/api/health", headers={"Origin": "http://localhost:5173"})
+    assert "x-total-count" in r2.headers.get("access-control-expose-headers", "").lower()

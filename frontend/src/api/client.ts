@@ -14,8 +14,9 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
-  const { json, headers, ...rest } = init
+/** `onHeaders` sees the response headers of a successful call (e.g. X-Total-Count for paged lists). */
+export async function api<T>(path: string, init: RequestInit & { json?: unknown; onHeaders?(h: Headers): void } = {}): Promise<T> {
+  const { json, headers, onHeaders, ...rest } = init
   const res = await fetch(path, {
     credentials: 'include',
     ...rest,
@@ -29,6 +30,7 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
     } catch { /* non-JSON error body */ }
     throw new ApiError(res.status, d.code ?? 'unknown', d.message_key ?? 'errors.generic', d.fields, d.rows)
   }
+  onHeaders?.(res.headers)
   const text = await res.text() // 201/204 may have an empty body
   return (text ? JSON.parse(text) : undefined) as T
 }

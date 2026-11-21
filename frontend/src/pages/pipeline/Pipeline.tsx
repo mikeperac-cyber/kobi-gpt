@@ -17,7 +17,7 @@ export default function Pipeline() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
-    Promise.all([api<Lead[]>('/api/leads?sort=score'), api<Stats>('/api/pipeline/stats')])
+    Promise.all([api<Lead[]>('/api/leads?sort=score&limit=500'), api<Stats>('/api/pipeline/stats')])
       .then(([l, s]) => { setLeads(l); setStats(s) }).catch(() => setFailed(true))
   }, [])
 

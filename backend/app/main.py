@@ -77,6 +77,7 @@ def create_app() -> FastAPI:
         allow_origins=[get_settings().frontend_origin],
         allow_credentials=True,
         allow_methods=["*"],
+        expose_headers=["X-Total-Count"],
         allow_headers=["*"],
     )
     app.include_router(health.router, prefix="/api")

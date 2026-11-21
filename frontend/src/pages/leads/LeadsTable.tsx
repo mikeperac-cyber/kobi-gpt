@@ -13,6 +13,8 @@ import LeadForm from './LeadForm'
 import ScoreBreakdown from './ScoreBreakdown'
 import { STATUSES, type Lead } from './types'
 
+const PAGE = 100
+
 export default function LeadsTable() {
   const { t } = useTranslation()
   const [leads, setLeads] = useState<Lead[] | null>(null)
@@ -20,13 +22,24 @@ export default function LeadsTable() {
   const [status, setStatus] = useState('')
   const [panel, setPanel] = useState<'' | 'csv' | 'form'>('')
   const [failed, setFailed] = useState(false)
+  const [total, setTotal] = useState(0)
+  const [more, setMore] = useState(false)
 
-  const load = useCallback(async () => {
-    const q = new URLSearchParams()
+  // offset 0 replaces the list (reload, filter, sort); a later offset appends the next page
+  const fetchPage = useCallback(async (offset: number) => {
+    const q = new URLSearchParams({ limit: String(PAGE), offset: String(offset) })
     if (sort) q.set('sort', sort)
     if (status) q.set('status', status)
-    try { setLeads(await api<Lead[]>(`/api/leads?${q}`)); setFailed(false) } catch { setFailed(true) }
+    const page = await api<Lead[]>(`/api/leads?${q}`, { onHeaders: (h) => setTotal(Number(h.get('X-Total-Count') ?? 0)) })
+    setLeads((prev) => (offset && prev ? [...prev, ...page] : page))
   }, [sort, status])
+  const load = useCallback(async () => {
+    try { await fetchPage(0); setFailed(false) } catch { setFailed(true) }
+  }, [fetchPage])
+  const loadMore = async () => {
+    setMore(true)
+    try { await fetchPage(leads?.length ?? 0); setFailed(false) } catch { setFailed(true) } finally { setMore(false) }
+  }
   useEffect(() => { void load() }, [load])
 
   return (
@@ -79,6 +92,12 @@ export default function LeadsTable() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      {leads && leads.length > 0 && total > leads.length && (
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-600">{t('leads.shown', { n: leads.length, total })}</span>
+          <Button variant="secondary" disabled={more} onClick={() => void loadMore()}>{t('leads.loadMore')}</Button>
         </div>
       )}
     </section>

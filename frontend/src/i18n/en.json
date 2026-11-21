@@ -434,6 +434,8 @@
     "unconfirmed": "Not yet verified (demo data)"
   },
   "leads": {
+    "shown": "Showing {{n}} of {{total}} buyers",
+    "loadMore": "Load more",
     "title": "Buyers",
     "intro": "Your potential buyers are here. Prepare a first contact; nothing is sent without your approval.",
     "colCompany": "Company",

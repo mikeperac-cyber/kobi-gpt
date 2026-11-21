@@ -434,6 +434,8 @@
     "unconfirmed": "Henüz doğrulanmamış (demo verisi)"
   },
   "leads": {
+    "shown": "{{total}} alıcıdan {{n}} tanesi gösteriliyor",
+    "loadMore": "Daha fazla yükle",
     "title": "Alıcılar",
     "intro": "Potansiyel alıcılarınız burada. İlk teması hazırlayın; hiçbir mesaj sizin onayınız olmadan gönderilmez.",
     "colCompany": "Firma",

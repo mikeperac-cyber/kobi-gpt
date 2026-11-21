@@ -18,7 +18,7 @@ export function useSpeech(lang = 'tr-TR', onFinal?: (text: string) => void) {
   const [transcript, setTranscript] = useState('')
   const rec = useRef<Rec | null>(null)
   const cb = useRef(onFinal)
-  cb.current = onFinal
+  useEffect(() => { cb.current = onFinal }, [onFinal])
 
   const start = useCallback(() => {
     const C = Ctor()

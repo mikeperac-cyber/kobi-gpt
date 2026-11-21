@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDemoGuide } from './DemoGuide'
 
@@ -16,21 +16,23 @@ export default function AgentSteps({ steps, labels, explain, failed = false }: {
   const { report } = guide
   useEffect(() => report(steps), [steps, report])
   const [now, setNow] = useState(() => Date.now())
-  const began = useRef<Record<string, number>>({})
+  const [began, setBegan] = useState<Record<string, number>>({})
   const running = steps.some((s) => s.status === 'running') && !failed
   useEffect(() => {
     if (!running) return
     const id = window.setInterval(() => setNow(Date.now()), 250)
     return () => window.clearInterval(id)
   }, [running])
-  steps.forEach((s) => { if (s.status === 'running') began.current[s.key] ??= Date.now() })
+  // first time a step is seen running: remember when (state adjusted during render, no ref writes)
+  const fresh = steps.filter((s) => s.status === 'running' && began[s.key] === undefined)
+  if (fresh.length) setBegan((b) => ({ ...b, ...Object.fromEntries(fresh.map((s) => [s.key, Date.now()])) }))
 
   return (
     <ol className="space-y-3" aria-live="polite">
       {steps.map((s) => {
         const live = s.status === 'running' && !failed
         const state = s.status === 'running' && !live ? 'waiting' : s.status
-        const secs = live ? (now - (began.current[s.key] ?? now)) / 1000 : (s.elapsed_ms ?? 0) / 1000
+        const secs = live ? (now - (began[s.key] ?? now)) / 1000 : (s.elapsed_ms ?? 0) / 1000
         return (
           <li key={s.key} className="flex gap-3 items-start" data-state={state}>
             <span className="mt-1 w-5 h-5 shrink-0 flex items-center justify-center" aria-hidden>

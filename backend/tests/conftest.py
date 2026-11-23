@@ -38,9 +38,11 @@ class FakeLLM:
     def __init__(self, responses=None):
         self.responses = responses if responses is not None else []
         self.prompts: list[str] = []
+        self.images: list[list[bytes]] = []
 
     async def complete(self, prompt, images, timeout, json_mode):
         self.prompts.append(prompt)
+        self.images.append(list(images))
         if callable(self.responses):
             return self.responses(prompt)
         r = self.responses.pop(0)

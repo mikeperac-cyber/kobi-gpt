@@ -226,3 +226,16 @@ async def test_share_page_lang_en(producer, db, client):
 async def test_qr_url_matches_origin(producer, db):
     p, c = await _published(producer, db)
     assert (await c.get("/api/storefronts/mine/qr-url")).json() == {"url": "http://localhost:5173/s/bozkurt-test"}
+
+
+async def test_whatsapp_never_uses_seeded_demo_number(producer, db, client, monkeypatch):
+    from app.core.config import get_settings
+    p, c = await _published(producer, db)
+    await c.post("/api/storefronts/mine/publish")
+    url = "/api/public/storefronts/bozkurt-test"
+    assert (await client.get(url)).json()["company"]["whatsapp"] == "+90 342 000 00 00"  # real company: own phone
+    await db.companies.update_one({}, {"$set": {"is_demo_company": True}})
+    assert (await client.get(url)).json()["company"]["whatsapp"] is None
+    monkeypatch.setenv("DEMO_WHATSAPP_PHONE", "+90 555 000 00 00")
+    get_settings.cache_clear()
+    assert (await client.get(url)).json()["company"]["whatsapp"] == "+90 555 000 00 00"

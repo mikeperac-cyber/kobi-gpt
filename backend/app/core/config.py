@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
     email_provider: str = ""
     seed_password: str = ""
+    demo_whatsapp_phone: str = ""  # presenter's own phone; seeded demo numbers are invented
     admin_email: str = ""
 
     @field_validator("jwt_secret")

@@ -6,9 +6,9 @@ import { THEMES } from './themes'
 export type CompanyInfo = { name?: string | null; city?: string | null; logo_url?: string | null }
 
 /** Pure renderer shared by the public page and the producer editor preview. Null values never render. */
-export default function StorefrontView({ config: c, template, lang, company, device = 'desktop', rfq, footer }: {
+export default function StorefrontView({ config: c, template, lang, company, device = 'desktop', rfq, footer, whatsapp }: {
   config: LocalizedContent; template: string; lang: Lang; company?: CompanyInfo
-  device?: 'desktop' | 'mobile'; rfq?: ReactNode; footer?: ReactNode
+  device?: 'desktop' | 'mobile'; rfq?: ReactNode; footer?: ReactNode; whatsapp?: string | null
 }) {
   const t = THEMES[template] ?? THEMES.industrial
   const s = STR[lang]
@@ -38,7 +38,12 @@ export default function StorefrontView({ config: c, template, lang, company, dev
             )}
             {c.hero.headline && <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{c.hero.headline}</h1>}
             {c.hero.subheadline && <p className={`mt-4 text-lg ${t.heroSub}`}>{c.hero.subheadline}</p>}
-            {c.hero.cta && rfq && <a href="#rfq" className={`${t.btn} inline-block mt-6`}>{c.hero.cta}</a>}
+            {((c.hero.cta && rfq) || whatsapp) && (
+              <div className="flex flex-wrap gap-3 mt-6">
+                {c.hero.cta && rfq && <a href="#rfq" className={`${t.btn} inline-block`}>{c.hero.cta}</a>}
+                {whatsapp && <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={`${t.btn} inline-block opacity-90`}>{s.whatsapp}</a>}
+              </div>
+            )}
           </div>
           {heroPhoto && <img src={heroPhoto} alt="" width={800} height={600} loading="eager" decoding="async" fetchPriority="high" className="w-full aspect-[4/3] object-cover rounded-lg" />}
         </div>
@@ -105,6 +110,7 @@ export default function StorefrontView({ config: c, template, lang, company, dev
             {c.rfq.title && <h2 className={`text-2xl mb-2 ${t.h}`}>{c.rfq.title}</h2>}
             {c.rfq.intro && <p className={`mb-5 ${t.muted}`}>{c.rfq.intro}</p>}
             {rfq}
+            {whatsapp && <p className="mt-4"><a href={whatsapp} target="_blank" rel="noopener noreferrer" className="underline font-semibold">{s.whatsapp}</a></p>}
           </section>
         )}
       </main>

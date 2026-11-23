@@ -72,7 +72,10 @@ async def get_storefront(slug: str):
         "slug": doc["slug"],
         "site_config": {"de": cfg.get("de"), "en": cfg.get("en"), "template": cfg.get("template")},
         "company": {"name": co.get("name"), "city": co.get("city"), "logo_url": co.get("logo_url"),
-                    "contact": pub_contact, "founded_year": co.get("founded_year")},
+                    "contact": pub_contact, "founded_year": co.get("founded_year"),
+                    # a judge must never dial an invented seed number: demo companies use the presenter's phone
+                    "whatsapp": (get_settings().demo_whatsapp_phone or None) if co.get("is_demo_company")
+                    else contact.get("phone")},
         "legal": {"name": co.get("name"), "address": co.get("city"), **pub_contact,
                   "representative": None, "register": None},
     }

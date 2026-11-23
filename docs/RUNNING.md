@@ -150,7 +150,7 @@ The backend cannot run as Vercel serverless functions: AI jobs keep running afte
 1. **Database:** create a MongoDB Atlas cluster and copy its connection string.
 2. **Backend:** deploy `backend/Dockerfile` (build context `backend/`) on Render, Railway, Fly.io or Cloud Run.
    - Attach a persistent disk at `/srv/uploads`, or photos and PDFs vanish on redeploy.
-   - Env vars: `MONGO_URI`, `JWT_SECRET` (long random; weak secrets are refused on https origins), `FRONTEND_ORIGIN=https://<app>.vercel.app`, `LLM_PROVIDER` + its API key (e.g. `ANTHROPIC_API_KEY`), `SEED_PASSWORD`, `ADMIN_EMAIL`.
+   - Env vars: `MONGO_URI`, `JWT_SECRET` (long random; weak secrets are refused on https origins), `FRONTEND_ORIGIN=https://<app>.vercel.app`, `LLM_PROVIDER` + its API key (e.g. `ANTHROPIC_API_KEY`), `SEED_PASSWORD`, `ADMIN_EMAIL`, and `DEMO_WHATSAPP_PHONE` (your own phone: the storefront's WhatsApp button for demo companies dials it; empty = no button, because the seeded demo numbers are invented).
    - Seed once from the host's shell: `python -m app.seed`.
 3. **Frontend:** in `frontend/vercel.json` replace both `YOUR-BACKEND-HOST` with the backend's host name, commit, then import the GitHub repo in Vercel with **Root Directory = `frontend`**. Build settings come from `vercel.json`.
 4. **Check:** log in, generate a storefront, open `/s/<slug>`; `/uploads/quotes/...` must return 404.

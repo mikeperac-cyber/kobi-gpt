@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { api, ApiError } from '../api/client'
 import RfqForm from './RfqForm'
 import StorefrontView from './StorefrontView'
+import { waLink } from './whatsapp'
 import { STR, type PublicCompany, type PublicLegal } from './strings'
 import type { Lang, LocalizedContent } from './types'
 
@@ -86,6 +87,7 @@ export default function PublicStorefront() {
         return (
           <StorefrontView
             config={cfg} template={data.site_config.template} lang={lang} company={data.company}
+            whatsapp={waLink(data.company.whatsapp, STR[lang].waText.replace('{url}', location.href))}
             rfq={<RfqForm key={lang} slug={slug} lang={lang} productNames={cfg.products.map((p) => p.name).filter((n): n is string => !!n)} />}
             footer={<nav><Link className={link} to={`/s/${slug}/impressum${q}`}>{STR[lang].imprint}</Link><Link className={link} to={`/s/${slug}/datenschutz${q}`}>{STR[lang].privacy}</Link></nav>}
           />

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KOBİ-GPT Sunum Rehberi</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { font: 10pt/1.35"Noto Sans", "Segoe UI", Arial, sans-serif; color: #1a2230; margin: 0 auto; max-width: 186mm; padding: 16px; background: #fff; }
+  h1 { font-size: 17pt; margin: 0; color: #12305a; }
+  .sub { color: #555; margin: 2px 0 10px; }
+  h2 { font-size: 11.5pt; margin: 12px 0 5px; color: #12305a; border-bottom: 1.5px solid #c8102e; padding-bottom: 2px; }
+  ol, ul { margin: 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  td { vertical-align: top; padding: 4px 6px; border-bottom: 1px solid #ddd; }
+  td.t { width: 15mm; font-weight: 700; color: #c8102e; white-space: nowrap; }
+  td.w { width: 52mm; }
+  .say { font-style: italic; color: #333; }
+  b.ui { background: #eef2f8; border-radius: 3px; padding: 0 3px; font-weight: 600; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .box { border: 1.5px solid #c8102e; border-radius: 6px; padding: 6px 9px; margin-top: 10px; }
+  code { font-family: Consolas, monospace; font-size: 9.5pt; }
+  @media (max-width: 600px) { .cols { grid-template-columns: 1fr; } td.w { width: auto; } }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+<h1>KOBİ-GPT &amp; Otonom İhracat Ajanı — Sunum Rehberi</h1>
+<p class="sub">3 dakikalık canlı demo · Bozkurt Antep Fıstığı (Gaziantep) · Hedef pazar: Almanya</p>
+
+<h2>Sunumdan önce</h2>
+<div class="cols">
+<ol>
+  <li>Uygulamayı açın: <code>http://localhost:5173</code></li>
+  <li>Temiz başlangıç: backend'i yeniden başlatın <i>veya</i> admin olarak <code>/demo</code> → <b class="ui">Gaziantep</b>.</li>
+  <li>Giriş: <code>bozkurt@demo.local</code> · şifre: <code>SEED_PASSWORD</code> (yerelde <code>demo12345</code>).</li>
+</ol>
+<ol start="4">
+  <li><code>Ctrl+Shift+D</code> → demo rehberi ve kronometre (küçük ekranda daraltın).</li>
+  <li>İkinci sekmeyi hazır tutun (Alman alıcı için).</li>
+  <li>Mümkünse AI anahtarıyla bir prova yapın: önbellek dolar, sahnede yavaş çağrı olursa oradan gelir.</li>
+</ol>
+</div>
+
+<h2>Akış</h2>
+<table>
+<tr><td class="t">0:00</td><td class="w"><b>Panel</b><br>Yol haritası 1/4.</td>
+<td class="say">“Gaziantep'te 25 kişilik bir fıstık üreticisi. Hiç ihracat yapmamış. Yol haritası nerede olduğunu gösteriyor.”</td></tr>
+<tr><td class="t">0:15</td><td class="w"><b>Vitrin</b><br>Bir cümle söyleyin/yazın → <b class="ui">Vitrini oluştur</b> → AI adımları → Almanca sekme → <b class="ui">Yayınla</b> → <code>/s/bozkurt-pistazien</code> + QR.</td>
+<td class="say">“Tek bir Türkçe cümleden Almanca ve İngilizce ihracat vitrini. Üretici her satırı kontrol eder; ürün adı gibi zorunlu bilgiler eksikse yayınlanamaz.”</td></tr>
+<tr><td class="t">1:15</td><td class="w"><b>Mevzuat</b><br>GTİP önerisi 2008.19 (güven + gerekçe) → kontrol listesi → teşvikler → hazırlık puanı → PDF. 2–3 maddeyi canlı işaretleyin (puan 0'dan başlar).</td>
+<td class="say">“GTİP bir öneridir; gümrük müşaviri onaylar. Her kural kaynağı ve son doğrulama tarihiyle bizim veri tabanımızdan gelir; yapay zekâ mevzuat uydurmaz.”</td></tr>
+<tr><td class="t">2:15</td><td class="w"><b>Alıcı talebi</b><br>2. sekmede vitrinden Alman alıcı olarak <b class="ui">Anfrage senden</b> → uygulamada sıcak müşteri → Almanca ilk temas metni → DAP teklifi → <b class="ui">Onayla ve Gönder</b>.</td>
+<td class="say">“Hiçbir şey kendiliğinden gitmez. Yapay zekâ Almanca taslak hazırlar; her mesajı üretici onaylar.”</td></tr>
+<tr><td class="t">3:00</td><td class="w"><b>Kapanış</b><br>Panele dönün: yol haritası 4/4, sayaçlar güncel.</td>
+<td class="say">“Üç dakikada: vitrin, mevzuat hazırlığı ve ilk alıcı teması — kontrol her an üreticide.”</td></tr>
+</table>
+
+<h2>Olası jüri soruları</h2>
+<ul>
+  <li><b>Mevzuat verisi nereden?</b> Kaynaklı, küratörlü veri tabanı. Demo kayıtları örnektir; gerçek kullanımdan önce uzman doğrulaması gerekir (İhracatçı Birliği, gümrük müşaviri).</li>
+  <li><b>E-postayı uygulama mı gönderiyor?</b> Hayır. Onay, üreticinin kendi e-posta uygulamasını açar.</li>
+  <li><b>Rakamlar gerçek mi?</b> Navlun ve hazırlık puanı “tahmini” olarak işaretli; nasıl hesaplandıkları ekranda görünür.</li>
+  <li><b>Fiyat güvenliği?</b> Taban fiyat hiçbir zaman alıcıya veya yapay zekâya gösterilmez; altındaki teklif reddedilir.</li>
+</ul>
+
+<div class="box"><b>Bir şey ters giderse:</b> AI adımı yavaşsa bekleyin — yedek metinle devam eder (↺ işareti). Sayfa boşsa yenileyin. Veriler bozulduysa <code>/demo</code> → <b class="ui">Gaziantep</b> ile saniyeler içinde sıfırlayın.</div>
+</body>
+</html>

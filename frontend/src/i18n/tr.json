@@ -967,5 +967,10 @@
     "approved_messages": "Onaylanan mesajlar",
     "rfqs": "Teklif talepleri",
     "note": "Yalnızca gerçek sayımlar; firma adı veya kimliği içermez."
+  },
+  "alerts": {
+    "newRfq": "Yeni teklif talebi: {{company}}",
+    "open": "Aç",
+    "close": "Kapat"
   }
 }

@@ -967,5 +967,10 @@
     "approved_messages": "Approved messages",
     "rfqs": "Quote requests (RFQ)",
     "note": "Real counts only; no company names or ids."
+  },
+  "alerts": {
+    "newRfq": "New quote request: {{company}}",
+    "open": "Open",
+    "close": "Close"
   }
 }

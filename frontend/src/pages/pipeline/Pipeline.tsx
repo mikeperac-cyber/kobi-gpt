@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { PageSkeleton } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../api/client'
+import { useOnRfq } from '../../hooks/useRfqAlerts'
 import DemoBadge from '../../components/DemoBadge'
 import Card from '../../components/ui/Card'
 import type { Lead } from '../leads/types'
@@ -16,10 +17,12 @@ export default function Pipeline() {
   const [leads, setLeads] = useState<Lead[] | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
   const [failed, setFailed] = useState(false)
-  useEffect(() => {
+  const load = useCallback(() => {
     Promise.all([api<Lead[]>('/api/leads?sort=score&limit=500'), api<Stats>('/api/pipeline/stats')])
       .then(([l, s]) => { setLeads(l); setStats(s) }).catch(() => setFailed(true))
   }, [])
+  useEffect(() => { load() }, [load])
+  useOnRfq(load)
 
   if (failed) return <p role="alert" className="text-brand font-semibold">{t('pipeline.loadError')}</p>
   if (!leads || !stats) return <PageSkeleton />

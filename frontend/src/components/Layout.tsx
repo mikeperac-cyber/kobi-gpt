@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import LanguageSwitch from './LanguageSwitch'
 import Button from './ui/Button'
+import RfqToast from './RfqToast'
+import { useRfqAlerts } from '../hooks/useRfqAlerts'
 
 export default function Layout() {
   const { t } = useTranslation()
@@ -12,6 +14,7 @@ export default function Layout() {
   const { pathname } = useLocation()
   const main = useRef<HTMLElement>(null)
   const first = useRef(true)
+  const { alerts, dismiss } = useRfqAlerts(!!user?.has_company)
   // keyboard users: a route change must not leave focus on a removed element
   useEffect(() => { if (first.current) { first.current = false; return } main.current?.focus() }, [pathname])
   return (
@@ -42,6 +45,7 @@ export default function Layout() {
         )}
       </header>
       <main id="main" ref={main} tabIndex={-1} className="outline-none flex-1 w-full max-w-5xl mx-auto px-4 py-6"><Outlet /></main>
+      <RfqToast alerts={alerts} onClose={dismiss} />
       <footer className="text-center text-sm text-slate-600 py-4">
         <Link to="/privacy" className="underline inline-flex min-h-11 items-center">{t('nav.privacy')}</Link>
       </footer>

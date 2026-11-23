@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../api/client'
+import { useOnRfq } from '../../hooks/useRfqAlerts'
 import Button from '../../components/ui/Button'
 import Flag from '../../components/Flag'
 import Card from '../../components/ui/Card'
@@ -28,6 +29,7 @@ export default function Dashboard() {
     api<Data>('/api/dashboard').then(setData).catch(() => setFailed(true))
   }, [])
   useEffect(() => { load() }, [load])
+  useOnRfq(load)
 
   const markRead = (id: string) => {
     setData((d) => d && { ...d, notifications: d.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) })

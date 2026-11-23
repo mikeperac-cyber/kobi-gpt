@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../api/client'
+import { useOnRfq } from '../../hooks/useRfqAlerts'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
@@ -41,6 +42,7 @@ export default function LeadsTable() {
     try { await fetchPage(leads?.length ?? 0); setFailed(false) } catch { setFailed(true) } finally { setMore(false) }
   }
   useEffect(() => { void load() }, [load])
+  useOnRfq(load)
 
   return (
     <section className="space-y-4">

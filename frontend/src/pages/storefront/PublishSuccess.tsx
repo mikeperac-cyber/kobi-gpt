@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Button from '../../components/ui/Button'
+import QrPresenter from '../../components/QrPresenter'
 
 export default function PublishSuccess({ slug, onBack }: { slug: string; onBack(): void }) {
   const { t } = useTranslation()
@@ -29,6 +30,7 @@ export default function PublishSuccess({ slug, onBack }: { slug: string; onBack(
       <div className="flex flex-wrap justify-center gap-3">
         <Button onClick={() => void share()}>{t('storefront.share')}</Button>
         <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center min-h-11 px-4 rounded-md font-semibold border border-slate-300 bg-white">{t('storefront.open')}</a>
+        <QrPresenter />
         <Button variant="secondary" onClick={onBack}>{t('storefront.backToEditor')}</Button>
       </div>
       {toast && <p role="status" className="text-sm text-slate-700">{toast}</p>}

@@ -972,5 +972,9 @@
     "newRfq": "New quote request: {{company}}",
     "open": "Open",
     "close": "Close"
+  },
+  "qr": {
+    "show": "Show QR full screen",
+    "localWarning": "This address only opens on this computer. For phones, use the deployed URL or the same-Wi-Fi network address."
   }
 }

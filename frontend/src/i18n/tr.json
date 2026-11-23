@@ -972,5 +972,9 @@
     "newRfq": "Yeni teklif talebi: {{company}}",
     "open": "Aç",
     "close": "Kapat"
+  },
+  "qr": {
+    "show": "QR'ı büyük göster",
+    "localWarning": "Bu adres yalnızca bu bilgisayarda açılır. Telefonla taramak için yayındaki adresi veya aynı Wi-Fi ağ adresini kullanın."
   }
 }

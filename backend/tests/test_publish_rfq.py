@@ -221,3 +221,8 @@ async def test_share_page_lang_en(producer, db, client):
     await c.post("/api/storefronts/mine/publish")
     html = (await client.get("/api/public/storefronts/bozkurt-test/share?lang=en")).text
     assert "<title>English Title</title>" in html and 'og:locale" content="en_GB"' in html and '<html lang="en">' in html
+
+
+async def test_qr_url_matches_origin(producer, db):
+    p, c = await _published(producer, db)
+    assert (await c.get("/api/storefronts/mine/qr-url")).json() == {"url": "http://localhost:5173/s/bozkurt-test"}

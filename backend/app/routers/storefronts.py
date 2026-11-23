@@ -111,11 +111,20 @@ async def unpublish(company: dict = Depends(current_company)):
     return await _set_status(company, "draft", "unpublished_at")
 
 
+def _public_url(doc: dict) -> str:
+    return f"{get_settings().frontend_origin}/s/{doc['slug']}"
+
+
+@router.get("/mine/qr-url")
+async def qr_url(company: dict = Depends(current_company)):
+    return {"url": _public_url(await _mine(company))}
+
+
 @router.get("/mine/qr.png")
 async def qr_png(company: dict = Depends(current_company)):
     doc = await _mine(company)
     buf = io.BytesIO()
-    qrcode.make(f"{get_settings().frontend_origin}/s/{doc['slug']}").save(buf, format="PNG")
+    qrcode.make(_public_url(doc)).save(buf, format="PNG")
     return Response(buf.getvalue(), media_type="image/png")
 
 

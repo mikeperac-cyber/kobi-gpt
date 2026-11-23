@@ -157,3 +157,14 @@ The backend cannot run as Vercel serverless functions: AI jobs keep running afte
 5. **Link previews:** WhatsApp/LinkedIn/Telegram bots are routed to `/api/public/storefronts/<slug>/share` (rule at the top of `frontend/vercel.json`); test with `curl -A WhatsApp https://<app>/s/<slug>` — the HTML must contain `og:title`.
 
 Free tiers that sleep when idle add ~30 s to the first request: warm the backend up before a live demo.
+
+### Demo network (judges scan the QR with their phones)
+
+The QR encodes `FRONTEND_ORIGIN/s/<slug>`. A phone cannot open `localhost`, and the "QR'ı büyük göster" window warns when that is what it encodes.
+
+- **Preferred:** the deployed URL (`FRONTEND_ORIGIN=https://<app>.vercel.app`).
+- **Same-network fallback:** put the laptop and the phones on one network. A phone hotspot is safer than venue Wi-Fi, which often blocks devices from seeing each other.
+  1. Find the laptop's address: `ipconfig` → "IPv4 Address", e.g. `192.168.1.23`.
+  2. Start the frontend with `npm run dev -- --host` (in `frontend/`), allowing Node through Windows Firewall when asked.
+  3. Set `FRONTEND_ORIGIN=http://192.168.1.23:5173` in `.env` and restart the backend.
+  4. On the laptop, open `http://192.168.1.23:5173` too (not `localhost`), so the login cookie and QR match.

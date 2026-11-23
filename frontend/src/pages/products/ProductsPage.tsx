@@ -90,7 +90,7 @@ export default function ProductsPage() {
       {editing && (
         <Modal title={editing.id ? t('products.editTitle') : t('products.addTitle')} onClose={() => setEditing(null)}>
           <form onSubmit={save} noValidate className="space-y-4">
-            <ProductForm mode="edit" value={editing.draft} onChange={(draft) => setEditing({ ...editing, draft })} errs={translateErrs(t, errs)} />
+            <ProductForm mode="edit" value={editing.draft} onChange={(draft) => setEditing((e) => e && { ...e, draft })} errs={translateErrs(t, errs)} />
             {formTop && <p role="alert" className="text-brand font-semibold">{t(formTop)}</p>}
             <div className="flex gap-3">
               <Button type="button" variant="secondary" onClick={() => setEditing(null)}>{t('common.cancel')}</Button>

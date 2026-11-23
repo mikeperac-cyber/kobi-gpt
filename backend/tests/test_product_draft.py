@@ -90,3 +90,14 @@ async def test_draft_demo_cache(producer, fake_llm, db, _root):
     assert (await _draft(p, photos)).json()["source"] == "llm"
     fake_llm.responses = [LLMProviderError("down")] * 3
     assert (await _draft(p, photos)).json() == {"draft": GOOD, "source": "cache"}
+
+
+async def test_draft_demo_cache_survives_new_upload_url(producer, fake_llm, db, _root):
+    """The live demo uploads a fresh photo (new uuid URL): the cache must key on the image, not the URL."""
+    p = await producer("Ali")
+    await db.companies.update_one({"_id": ObjectId(p["company"]["id"])}, {"$set": {"is_demo_company": True}})
+    photos = await _photos(db, p, _root, n=2)
+    fake_llm.responses = [json.dumps(GOOD)]
+    assert (await _draft(p, photos[:1])).json()["source"] == "llm"
+    fake_llm.responses = [LLMProviderError("down")] * 3
+    assert (await _draft(p, photos[1:])).json() == {"draft": GOOD, "source": "cache"}  # same bytes, new URL

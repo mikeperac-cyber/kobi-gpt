@@ -1,4 +1,5 @@
 import io
+import logging
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -32,5 +33,8 @@ def demo_photo(spec_key: str, label: str, color: str) -> bytes:
     for ext in ("jpg", "jpeg", "png", "webp"):
         f = PHOTOS_DIR / spec_key / f"{slugify_tr(label)}.{ext}"
         if f.is_file():
-            return validate_and_process_image(f.read_bytes())
+            try:
+                return validate_and_process_image(f.read_bytes())
+            except ValueError as e:  # too big / not an image: a bad file must never stop the app from starting
+                logging.getLogger(__name__).warning("demo photo %s unusable (%s); using a placeholder", f, e)
     return make_placeholder(label, color)

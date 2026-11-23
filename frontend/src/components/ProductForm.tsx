@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, ApiError } from '../api/client'
 import { numToInput, parseLocaleNumber } from '../i18n/format'
@@ -64,6 +64,12 @@ export default function ProductForm({ value: v, onChange, mode, errs = {} }: {
   const { t } = useTranslation()
   const [ai, setAi] = useState<string[]>([]) // fields filled by the AI and not edited since
   const [fill, setFill] = useState<{ busy: boolean; msg: string }>({ busy: false, msg: '' })
+  // the AI call can take ~25-45 s while the form stays editable: apply its answer to the latest values,
+  // and drop it if the form has closed meanwhile
+  const latest = useRef({ v, onChange })
+  const alive = useRef(true)
+  useEffect(() => { latest.current = { v, onChange } }, [v, onChange])
+  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
   const bind = (k: Exclude<keyof ProductDraft, 'photos'>) => ({
     value: v[k], onChange: (e: { target: { value: string } }) => { setAi((a) => a.filter((x) => x !== k)); onChange({ ...v, [k]: e.target.value }) },
   })
@@ -74,11 +80,14 @@ export default function ProductForm({ value: v, onChange, mode, errs = {} }: {
     setFill({ busy: true, msg: '' })
     try {
       const r = await api<{ draft: Draft; source: string }>('/api/products/draft', { method: 'POST', json: { photos: v.photos } })
-      const { next, filled } = applyDraft(v, r.draft)
-      if (filled.length) { onChange(next); setAi(filled) }
-      setFill({ busy: false, msg: t(filled.length ? 'products.fillDone' : 'products.fillNothing') })
+      if (!alive.current) return
+      const { v: now, onChange: set } = latest.current
+      const { next, filled } = applyDraft(now, r.draft)
+      if (filled.length) { set(next); setAi(filled) }
+      // template = the AI never looked at the photo (no key, timeout, error): don't blame the photo
+      setFill({ busy: false, msg: t(filled.length ? 'products.fillDone' : r.source === 'template' ? 'products.fillUnavailable' : 'products.fillNothing') })
     } catch (x) {
-      setFill({ busy: false, msg: t(x instanceof ApiError ? x.messageKey : 'errors.network') })
+      if (alive.current) setFill({ busy: false, msg: t(x instanceof ApiError ? x.messageKey : 'errors.network') })
     }
   }
   return (

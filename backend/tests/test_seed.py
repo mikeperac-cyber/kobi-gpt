@@ -175,3 +175,20 @@ async def test_seed_uses_owner_photos(db, seeded_env, monkeypatch, tmp_path):
     first, second = (storage_service.get_storage().read(u) for u in prod["photos"][:2])
     assert Image.open(io.BytesIO(first)).size == (400, 300)  # the owner's photo
     assert Image.open(io.BytesIO(second)).size == (1200, 900)  # no file for this label: placeholder
+
+
+async def test_bad_owner_photo_falls_back_to_placeholder(db, seeded_env, monkeypatch, tmp_path):
+    import io
+
+    from PIL import Image
+
+    from app.seed import images
+    from app.services.storefront_service import slugify_tr
+    photos = tmp_path / "owner-photos"
+    monkeypatch.setattr(images, "PHOTOS_DIR", photos)
+    (photos / "bozkurt").mkdir(parents=True)
+    (photos / "bozkurt" / f"{slugify_tr('Kabuklu Antep Fıstığı')}.jpg").write_bytes(b"not really a jpeg (HEIC?)")
+    await seed(db)  # must not crash the app's startup
+    prod = await db.products.find_one({"seed_key": "bozkurt:0"})
+    img = storage_service.get_storage().read(prod["photos"][0])
+    assert Image.open(io.BytesIO(img)).size == (1200, 900)  # placeholder

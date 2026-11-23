@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -52,7 +53,9 @@ async def draft_from_photos(body: DraftIn, user: dict = Depends(current_user), c
         return ProductDraftOut()
 
     draft, fb = await agent_steps.run_ai_step(None, "product_draft", company, call, fallback,
-                                              agent_steps.cache_key("product_draft", ui, *photos),
+                                              # key on the image bytes: a fresh upload gets a new URL every time
+                                              agent_steps.cache_key("product_draft", ui,
+                                                                    hashlib.sha1(b"".join(images)).hexdigest()),
                                               ProductDraftOut.model_validate)
     source = "llm" if not fb else ("template" if templated else "cache")
     return {"draft": draft.model_dump(), "source": source}

@@ -234,6 +234,7 @@
     "errEmail": "Geçerli bir e-posta girin."
   },
   "products": {
+    "fillUnavailable": "Yapay zekâ şu an kullanılamıyor. Alanları kendiniz doldurun; fotoğrafınızda sorun yok.",
     "fillFromPhoto": "Fotoğraftan doldur",
     "fillRunning": "Fotoğraf inceleniyor…",
     "fillDone": "Yapay zekâ önerisi — lütfen kontrol edin ve düzeltin.",

@@ -234,6 +234,7 @@
     "errEmail": "Enter a valid email."
   },
   "products": {
+    "fillUnavailable": "The AI is not available right now. Please fill in the fields yourself; your photo is fine.",
     "fillFromPhoto": "Fill in from photo",
     "fillRunning": "Looking at the photo…",
     "fillDone": "AI suggestion — please check and correct it.",

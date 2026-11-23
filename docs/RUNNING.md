@@ -154,5 +154,6 @@ The backend cannot run as Vercel serverless functions: AI jobs keep running afte
    - Seed once from the host's shell: `python -m app.seed`.
 3. **Frontend:** in `frontend/vercel.json` replace both `YOUR-BACKEND-HOST` with the backend's host name, commit, then import the GitHub repo in Vercel with **Root Directory = `frontend`**. Build settings come from `vercel.json`.
 4. **Check:** log in, generate a storefront, open `/s/<slug>`; `/uploads/quotes/...` must return 404.
+5. **Link previews:** WhatsApp/LinkedIn/Telegram bots are routed to `/api/public/storefronts/<slug>/share` (rule at the top of `frontend/vercel.json`); test with `curl -A WhatsApp https://<app>/s/<slug>` — the HTML must contain `og:title`.
 
 Free tiers that sleep when idle add ~30 s to the first request: warm the backend up before a live demo.

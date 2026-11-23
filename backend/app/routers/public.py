@@ -1,9 +1,14 @@
+import html
+import json
 from datetime import datetime, timezone
+from typing import Literal
 
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, field_validator
 
+from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.ratelimit import RateLimiter
 from app.core.text import EMAIL as _EMAIL
@@ -71,6 +76,41 @@ async def get_storefront(slug: str):
         "legal": {"name": co.get("name"), "address": co.get("city"), **pub_contact,
                   "representative": None, "register": None},
     }
+
+
+_LOCALE = {"de": "de_DE", "en": "en_GB"}
+
+
+@router.get("/storefronts/{slug}/share", response_class=HTMLResponse)
+async def share_page(slug: str, lang: Literal["de", "en"] = "de"):
+    """Link-preview page for chat apps and crawlers (they do not run the React app); humans are sent on."""
+    doc = await _published(slug)
+    co, c = await _company(doc), doc["site_config"].get(lang) or {}
+    origin = get_settings().frontend_origin.rstrip("/")
+    url = f"{origin}/s/{slug}"
+    seo, hero = c.get("seo") or {}, c.get("hero") or {}
+    title = seo.get("title") or co.get("name") or slug  # same fallbacks as PublicStorefront.useHead
+    desc = seo.get("description") or hero.get("subheadline") or ""
+    img = next((ph[0] for ph in ((pr.get("photos") or []) for pr in c.get("products") or []) if ph), None)
+    img = img or co.get("logo_url")
+    org = {"@context": "https://schema.org", "@type": "Organization", "name": co.get("name"), "url": url,
+           "address": {"@type": "PostalAddress", "addressLocality": co.get("city")}}
+    if co.get("logo_url"):
+        org["logo"] = origin + co["logo_url"]
+    e = lambda v: html.escape(str(v), quote=True)  # noqa: E731
+    meta = [("name", "description", desc), ("property", "og:type", "website"), ("property", "og:title", title),
+            ("property", "og:description", desc), ("property", "og:url", url), ("property", "og:locale", _LOCALE[lang]),
+            ("name", "twitter:card", "summary_large_image"), ("name", "twitter:title", title)]
+    if img:
+        meta.append(("property", "og:image", origin + img))
+    ld = json.dumps(org, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e")  # no "</script>" inside the block
+    page = (f'<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><title>{e(title)}</title>'
+            + "".join(f'<meta {a}="{k}" content="{e(v)}">' for a, k, v in meta)
+            + f'<link rel="canonical" href="{e(url)}">'
+            + f'<script type="application/ld+json">{ld}</script>'
+            + f'<meta http-equiv="refresh" content="0;url=/s/{e(slug)}"></head>'
+            + f'<body><a href="/s/{e(slug)}">{e(title)}</a></body></html>')
+    return HTMLResponse(page)
 
 
 @router.post("/storefronts/{slug}/rfq")

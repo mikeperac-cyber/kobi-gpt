@@ -181,3 +181,43 @@ async def test_already_published_incomplete_stays_public(producer, db, client):
                                      "status": "published", "template": "natural", "site_config": data})
     assert (await client.get("/api/public/storefronts/alt")).status_code == 200
     assert (await p["client"].post("/api/storefronts/mine/unpublish")).status_code == 200
+
+
+async def test_share_page_has_preview_tags(producer, db, client):
+    p, c = await _published(producer, db)
+    await c.post("/api/storefronts/mine/publish")
+    r = await client.get("/api/public/storefronts/bozkurt-test/share")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("text/html")
+    html = r.text
+    for want in ('property="og:title"', 'property="og:url" content="http://localhost:5173/s/bozkurt-test"',
+                 'name="twitter:card" content="summary_large_image"', 'application/ld+json',
+                 '"@type": "Organization"', 'og:locale" content="de_DE"', 'rel="canonical"'):
+        assert want in html, want
+    for bad in ("GEHEIM-TR", "price_floor", "9.5"):
+        assert bad not in html
+
+
+async def test_share_page_escapes_text(producer, db, client):
+    p, c = await _published(producer, db)
+    await db.storefronts.update_one({"slug": "bozkurt-test"},
+                                    {"$set": {"site_config.de.seo.title": 'A"<script>alert(1)</script>'}})
+    await db.companies.update_one({}, {"$set": {"name": "Evil</script><script>x()</script>"}})
+    await c.post("/api/storefronts/mine/publish")
+    html = (await client.get("/api/public/storefronts/bozkurt-test/share")).text
+    assert "<script>alert" not in html and "<script>x()" not in html
+    assert "&quot;" in html and "&lt;script&gt;" in html
+    ld = html.split('application/ld+json">', 1)[1].split("</script>", 1)[0]
+    assert "</" not in ld and "<" not in ld
+
+
+async def test_share_page_404_when_draft(producer, db, client):
+    await _published(producer, db)
+    assert (await client.get("/api/public/storefronts/bozkurt-test/share")).status_code == 404
+
+
+async def test_share_page_lang_en(producer, db, client):
+    p, c = await _published(producer, db)
+    await db.storefronts.update_one({"slug": "bozkurt-test"}, {"$set": {"site_config.en.seo.title": "English Title"}})
+    await c.post("/api/storefronts/mine/publish")
+    html = (await client.get("/api/public/storefronts/bozkurt-test/share?lang=en")).text
+    assert "<title>English Title</title>" in html and 'og:locale" content="en_GB"' in html and '<html lang="en">' in html

@@ -4,8 +4,28 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://YOUR-BACKEND-HOST/api/:path*" },
-    { "source": "/uploads/:path*", "destination": "https://YOUR-BACKEND-HOST/uploads/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/s/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(WhatsApp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Googlebot|bingbot).*"
+        }
+      ],
+      "destination": "https://YOUR-BACKEND-HOST/api/public/storefronts/:slug/share"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://YOUR-BACKEND-HOST/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://YOUR-BACKEND-HOST/uploads/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }

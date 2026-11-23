@@ -87,8 +87,8 @@ async def rfq(slug: str, body: RfqIn, request: Request):
         "status": "new", "is_demo": False, "is_hot": True, "products_of_interest": body.products,
         "quantity": body.quantity, "source_note": f"RFQ /s/{slug}", "created_at": now}
     s = await score_for_company(db, await _company(doc), lead)
-    await db.leads.insert_one({**lead, "score": s["total"], "score_breakdown": s["breakdown"]})
+    lead_id = (await db.leads.insert_one({**lead, "score": s["total"], "score_breakdown": s["breakdown"]})).inserted_id
     await db.notifications.insert_one({
-        "company_id": cid, "type": "rfq", "params": {"company": body.company_name},
+        "company_id": cid, "type": "rfq", "params": {"company": body.company_name}, "lead_id": str(lead_id),
         "message_tr": f"Yeni teklif talebi: {body.company_name}", "read": False, "created_at": now})
     return Response(status_code=201)

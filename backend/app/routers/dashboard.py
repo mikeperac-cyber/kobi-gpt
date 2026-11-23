@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends
 
@@ -31,10 +31,29 @@ async def dashboard(company: dict = Depends(current_company)):
         "leads": {"count": lead_count, "pending_approvals": pending},
         "roadmap": {"profile": bool(pids), "storefront": bool(sf and sf["status"] == "published"),
                     "compliance": report is not None, "first_quote": sent_quote > 0},
-        "notifications": [{"id": str(n["_id"]), "type": n["type"], "message_key": f"dashboard.notif.{n['type']}",
-                           "params": n.get("params", {}), "read": bool(n.get("read")),
-                           "created_at": to_json(n.get("created_at"))} for n in notes],
+        "notifications": [_notif(n) for n in notes],
     }
+
+
+def _notif(n: dict) -> dict:
+    return {"id": str(n["_id"]), "type": n["type"], "message_key": f"dashboard.notif.{n['type']}",
+            "params": n.get("params", {}), "read": bool(n.get("read")), "lead_id": n.get("lead_id"),
+            "created_at": to_json(n.get("created_at"))}
+
+
+OVERLAP = timedelta(seconds=10)  # a write stamped just before a poll can land after it; the client dedupes by id
+
+
+@router.get("/notifications/since")
+async def notifications_since(after: datetime | None = None, company: dict = Depends(current_company)):
+    """Polling feed for live alerts. The client only ever echoes back our `now`, so its clock never matters."""
+    now = datetime.now(timezone.utc)
+    if after is None:
+        return {"now": now.isoformat(), "items": []}
+    after = after if after.tzinfo else after.replace(tzinfo=timezone.utc)
+    q = {"company_id": str(company["_id"]), "created_at": {"$gte": after - OVERLAP, "$lte": now}}
+    notes = await get_db().notifications.find(q).sort("created_at", 1).limit(20).to_list(20)
+    return {"now": now.isoformat(), "items": [_notif(n) for n in notes]}
 
 
 def _aware(d):

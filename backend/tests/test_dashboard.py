@@ -75,3 +75,58 @@ async def test_pending_ignores_other_company(producer, db):
     d = (await a["client"].get("/api/dashboard")).json()
     assert d["leads"] == {"count": 0, "pending_approvals": 0} and d["roadmap"]["first_quote"] is False
     assert (await b["client"].get("/api/dashboard")).json()["leads"]["pending_approvals"] == 2
+
+
+async def _publish(db, p, slug):
+    from tests.helpers import publishable_site_config
+    await db.storefronts.insert_one({"company_id": p["company"]["id"], "country": "DE", "slug": slug,
+                                     "status": "published", "template": "natural",
+                                     "site_config": publishable_site_config()})
+
+
+def _rfq_body(company="Müller GmbH"):
+    return {"company_name": company, "contact_name": "Hans", "email": "hans@mueller.de", "country": "DE",
+            "products": ["Pistazien"], "quantity": "2 Paletten", "message": "Bitte Angebot",
+            "gdpr_consent": True, "website_hp": ""}
+
+
+async def test_since_baseline_then_new_rfq(producer, db, client):
+    a = await producer("Ali")
+    await _publish(db, a, "ali-shop")
+    first = (await a["client"].get("/api/notifications/since")).json()
+    assert first["items"] == [] and first["now"]
+    assert (await client.post("/api/public/storefronts/ali-shop/rfq", json=_rfq_body())).status_code == 201
+    second = (await a["client"].get("/api/notifications/since", params={"after": first["now"]})).json()
+    assert len(second["items"]) == 1
+    item = second["items"][0]
+    lead = await db.leads.find_one({"source": "rfq", "company_id": a["company"]["id"]})
+    assert item["type"] == "rfq" and item["params"]["company"] == "Müller GmbH"
+    assert item["lead_id"] == str(lead["_id"])
+    third = (await a["client"].get("/api/notifications/since", params={"after": second["now"]})).json()
+    assert [i["id"] for i in third["items"]] in ([], [item["id"]])  # overlap window may repeat; client dedupes
+
+
+async def test_since_scoped_to_company(producer, db, client):
+    a, b = await producer("Ali"), await producer("Veli")
+    await _publish(db, b, "veli-shop")
+    first = (await a["client"].get("/api/notifications/since")).json()
+    await client.post("/api/public/storefronts/veli-shop/rfq", json=_rfq_body())
+    r = (await a["client"].get("/api/notifications/since", params={"after": first["now"]})).json()
+    assert r["items"] == []
+
+
+async def test_since_rejects_bad_after(producer):
+    a = await producer("Ali")
+    assert (await a["client"].get("/api/notifications/since", params={"after": "yesterday"})).status_code == 422
+
+
+async def test_since_overlap_catches_late_insert(producer, db):
+    from datetime import timedelta
+    a = await producer("Ali")
+    first = (await a["client"].get("/api/notifications/since")).json()
+    after = datetime.fromisoformat(first["now"])
+    # created just before the poll's "now" but inserted after it ran (slow write)
+    await db.notifications.insert_one({"company_id": a["company"]["id"], "type": "rfq", "params": {"company": "X"},
+                                       "read": False, "created_at": after - timedelta(milliseconds=3)})
+    r = (await a["client"].get("/api/notifications/since", params={"after": first["now"]})).json()
+    assert [i["params"]["company"] for i in r["items"]] == ["X"]

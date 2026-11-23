@@ -22,7 +22,11 @@ export default function Pipeline() {
       .then(([l, s]) => { setLeads(l); setStats(s) }).catch(() => setFailed(true))
   }, [])
   useEffect(() => { load() }, [load])
-  useOnRfq(load)
+  // background refresh: a failed request keeps what is on screen
+  useOnRfq(useCallback(() => {
+    Promise.all([api<Lead[]>('/api/leads?sort=score&limit=500'), api<Stats>('/api/pipeline/stats')])
+      .then(([l, s]) => { setLeads(l); setStats(s) }).catch(() => {})
+  }, []))
 
   if (failed) return <p role="alert" className="text-brand font-semibold">{t('pipeline.loadError')}</p>
   if (!leads || !stats) return <PageSkeleton />

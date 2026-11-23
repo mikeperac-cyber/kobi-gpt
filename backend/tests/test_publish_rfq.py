@@ -239,3 +239,12 @@ async def test_whatsapp_never_uses_seeded_demo_number(producer, db, client, monk
     monkeypatch.setenv("DEMO_WHATSAPP_PHONE", "+90 555 000 00 00")
     get_settings.cache_clear()
     assert (await client.get(url)).json()["company"]["whatsapp"] == "+90 555 000 00 00"
+
+
+async def test_demo_storefront_allows_a_room_of_judges(producer, db, client):
+    p, c = await _published(producer, db)
+    await c.post("/api/storefronts/mine/publish")
+    await db.companies.update_one({}, {"$set": {"is_demo_company": True}})
+    codes = [(await client.post("/api/public/storefronts/bozkurt-test/rfq",
+                                json=rfq(email=f"j{i}@jury.de"))).status_code for i in range(12)]
+    assert codes == [201] * 12  # one venue Wi-Fi = one IP for every judge

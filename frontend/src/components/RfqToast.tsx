@@ -5,7 +5,7 @@ import type { RfqAlert } from '../hooks/useRfqAlerts'
 export default function RfqToast({ alerts, onClose }: { alerts: RfqAlert[]; onClose(id: string): void }) {
   const { t } = useTranslation()
   return (
-    <div role="status" aria-live="polite" className="fixed bottom-4 right-4 left-4 sm:left-auto z-40 flex flex-col gap-2 sm:w-96">
+    <div role="status" aria-live="polite" className="fixed bottom-4 right-4 left-4 sm:left-auto z-[60] flex flex-col gap-2 sm:w-96">
       {alerts.map((a) => (
         <div key={a.id} className="bg-white border-l-4 border-brand shadow-lg rounded-md p-4 flex items-start gap-3">
           <span aria-hidden className="text-xl">📩</span>

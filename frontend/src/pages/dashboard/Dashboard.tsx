@@ -30,7 +30,8 @@ export default function Dashboard() {
     api<Data>('/api/dashboard').then(setData).catch(() => setFailed(true))
   }, [])
   useEffect(() => { load() }, [load])
-  useOnRfq(load)
+  // background refresh: a failed request keeps what is on screen (and an open QR window)
+  useOnRfq(useCallback(() => { api<Data>('/api/dashboard').then(setData).catch(() => {}) }, []))
 
   const markRead = (id: string) => {
     setData((d) => d && { ...d, notifications: d.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) })

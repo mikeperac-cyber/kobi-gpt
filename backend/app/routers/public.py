@@ -16,6 +16,7 @@ from app.services.scoring import score_for_company
 
 router = APIRouter(prefix="/public")
 _limiter = RateLimiter(5, 3600)
+_demo_limiter = RateLimiter(30, 3600)  # a jury on one venue Wi-Fi shares an IP; demo data is throwaway
 
 
 class RfqIn(BaseModel):
@@ -121,7 +122,9 @@ async def rfq(slug: str, body: RfqIn, request: Request):
     doc = await _published(slug)
     if body.website_hp:
         return Response(status_code=204)  # bot: pretend success, store nothing
-    _limiter.check(f"{request.client.host if request.client else '-'}|{slug}")
+    co = await _company(doc)
+    (_demo_limiter if co.get("is_demo_company") else _limiter).check(
+        f"{request.client.host if request.client else '-'}|{slug}")
     db, now = get_db(), datetime.now(timezone.utc)
     cid = doc["company_id"]
     lead = {
@@ -129,7 +132,7 @@ async def rfq(slug: str, body: RfqIn, request: Request):
         "contact_name": body.contact_name, "email": body.email, "website": None, "notes": body.message,
         "status": "new", "is_demo": False, "is_hot": True, "products_of_interest": body.products,
         "quantity": body.quantity, "source_note": f"RFQ /s/{slug}", "created_at": now}
-    s = await score_for_company(db, await _company(doc), lead)
+    s = await score_for_company(db, co, lead)
     lead_id = (await db.leads.insert_one({**lead, "score": s["total"], "score_breakdown": s["breakdown"]})).inserted_id
     await db.notifications.insert_one({
         "company_id": cid, "type": "rfq", "params": {"company": body.company_name}, "lead_id": str(lead_id),

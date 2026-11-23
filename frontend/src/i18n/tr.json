@@ -234,6 +234,11 @@
     "errEmail": "Geçerli bir e-posta girin."
   },
   "products": {
+    "fillFromPhoto": "Fotoğraftan doldur",
+    "fillRunning": "Fotoğraf inceleniyor…",
+    "fillDone": "Yapay zekâ önerisi — lütfen kontrol edin ve düzeltin.",
+    "fillNothing": "Fotoğraftan bilgi çıkarılamadı. Alanları kendiniz doldurun.",
+    "aiBadge": "YZ önerisi",
     "title": "Ürünler",
     "pageTitle": "Ürünlerim",
     "add": "Ürün ekle",

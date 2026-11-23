@@ -234,6 +234,11 @@
     "errEmail": "Enter a valid email."
   },
   "products": {
+    "fillFromPhoto": "Fill in from photo",
+    "fillRunning": "Looking at the photo…",
+    "fillDone": "AI suggestion — please check and correct it.",
+    "fillNothing": "Nothing could be read from the photo. Please fill in the fields yourself.",
+    "aiBadge": "AI suggestion",
     "title": "Products",
     "pageTitle": "My products",
     "add": "Add product",

@@ -1,7 +1,7 @@
 import { useId, cloneElement, type ReactElement, type ReactNode } from 'react'
 
 export default function Field({ label, hint, error, children }: {
-  label: string
+  label: ReactNode
   hint?: ReactNode
   error?: string
   children: ReactElement<Record<string, unknown>>

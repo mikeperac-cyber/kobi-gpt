@@ -22,3 +22,10 @@ def test_vercel_bot_rule_spares_search_engines():
     ua = bot["has"][0]["value"]
     assert "WhatsApp" in ua and "facebookexternalhit" in ua
     assert "Googlebot" not in ua and "bingbot" not in ua
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_product_draft_apply_cases():
+    r = subprocess.run(["node", "--experimental-strip-types", str(SRC / "components" / "productDraft.check.ts")],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr

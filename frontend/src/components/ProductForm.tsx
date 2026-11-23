@@ -1,13 +1,17 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { api, ApiError } from '../api/client'
 import { numToInput, parseLocaleNumber } from '../i18n/format'
 import PhotoPicker from './PhotoPicker'
+import { applyDraft, UNITS, type Draft } from './productDraft'
+import Button from './ui/Button'
 import type { Errs } from './CompanyFields'
 import Field from './ui/Field'
 import Input from './ui/Input'
 import Select from './ui/Select'
 import Textarea from './ui/Textarea'
 
-export const UNITS = ['kg', 'adet', 'metre', 'koli'] as const
+export { UNITS }
 
 export interface ProductDraft {
   name_tr: string; description_tr: string; material_or_ingredients: string; unit: string
@@ -58,18 +62,47 @@ export default function ProductForm({ value: v, onChange, mode, errs = {} }: {
   value: ProductDraft; onChange(v: ProductDraft): void; mode: 'onboarding' | 'edit'; errs?: Errs
 }) {
   const { t } = useTranslation()
+  const [ai, setAi] = useState<string[]>([]) // fields filled by the AI and not edited since
+  const [fill, setFill] = useState<{ busy: boolean; msg: string }>({ busy: false, msg: '' })
   const bind = (k: Exclude<keyof ProductDraft, 'photos'>) => ({
-    value: v[k], onChange: (e: { target: { value: string } }) => onChange({ ...v, [k]: e.target.value }),
+    value: v[k], onChange: (e: { target: { value: string } }) => { setAi((a) => a.filter((x) => x !== k)); onChange({ ...v, [k]: e.target.value }) },
   })
+  const label = (k: string, text: string) => ai.includes(k)
+    ? <>{text} <span className="ml-1 text-xs font-semibold bg-amber-100 text-amber-900 rounded px-1.5 py-0.5">{t('products.aiBadge')}</span></>
+    : text
+  const fillFromPhoto = async () => {
+    setFill({ busy: true, msg: '' })
+    try {
+      const r = await api<{ draft: Draft; source: string }>('/api/products/draft', { method: 'POST', json: { photos: v.photos } })
+      const { next, filled } = applyDraft(v, r.draft)
+      if (filled.length) { onChange(next); setAi(filled) }
+      setFill({ busy: false, msg: t(filled.length ? 'products.fillDone' : 'products.fillNothing') })
+    } catch (x) {
+      setFill({ busy: false, msg: t(x instanceof ApiError ? x.messageKey : 'errors.network') })
+    }
+  }
   return (
     <div className="space-y-4">
-      <Field label={t('products.name')} error={errs.name_tr}><Input required {...bind('name_tr')} /></Field>
-      <Field label={t('products.description')} hint={t('products.descriptionHint')} error={errs.description_tr}>
+      <div>
+        <p className="text-sm font-semibold">{t('products.photos')}{mode === 'onboarding' && <span className="text-brand"> *</span>}</p>
+        <PhotoPicker urls={v.photos} max={6} onChange={(photos) => onChange({ ...v, photos })} />
+        {errs.photos && <p role="alert" className="text-sm text-brand font-semibold">{errs.photos}</p>}
+        {v.photos.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <Button type="button" variant="secondary" disabled={fill.busy} aria-busy={fill.busy} onClick={() => void fillFromPhoto()}>
+              {fill.busy ? t('products.fillRunning') : t('products.fillFromPhoto')}
+            </Button>
+            {fill.msg && <p role="status" className="text-sm text-slate-700">{fill.msg}</p>}
+          </div>
+        )}
+      </div>
+      <Field label={label('name_tr', t('products.name'))} error={errs.name_tr}><Input required {...bind('name_tr')} /></Field>
+      <Field label={label('description_tr', t('products.description'))} hint={t('products.descriptionHint')} error={errs.description_tr}>
         <Textarea {...bind('description_tr')} />
       </Field>
-      <Field label={t('products.material')} hint={t('products.materialHint')} error={errs.material_or_ingredients}><Input {...bind('material_or_ingredients')} /></Field>
+      <Field label={label('material_or_ingredients', t('products.material'))} hint={t('products.materialHint')} error={errs.material_or_ingredients}><Input {...bind('material_or_ingredients')} /></Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label={t('products.unit')} error={errs.unit}>
+        <Field label={label('unit', t('products.unit'))} error={errs.unit}>
           <Select {...bind('unit')}>{UNITS.map((u) => <option key={u} value={u}>{t(`products.units.${u}`)}</option>)}</Select>
         </Field>
         <Field label={t('products.moq')} hint={t('products.moqHint')} error={errs.moq}><Input inputMode="decimal" {...bind('moq')} /></Field>
@@ -78,11 +111,6 @@ export default function ProductForm({ value: v, onChange, mode, errs = {} }: {
       <Field label={`${t('products.floor')} (${t('products.floorCur')})`} hint={<><Lock />{t('products.floorTip')}</>} error={errs.price_floor}>
         <Input inputMode="decimal" className="bg-slate-50 border-navy/40" {...bind('price_floor')} />
       </Field>
-      <div>
-        <p className="text-sm font-semibold">{t('products.photos')}{mode === 'onboarding' && <span className="text-brand"> *</span>}</p>
-        <PhotoPicker urls={v.photos} max={6} onChange={(photos) => onChange({ ...v, photos })} />
-        {errs.photos && <p role="alert" className="text-sm text-brand font-semibold">{errs.photos}</p>}
-      </div>
     </div>
   )
 }

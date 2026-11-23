@@ -4,6 +4,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 FONT_BOLD = Path(__file__).resolve().parents[1] / "assets" / "fonts" / "NotoSans-Bold.ttf"
+PHOTOS_DIR = Path(__file__).parent / "photos"  # owner-supplied demo photos; see photos/README.md
 W, H = 1200, 900
 
 
@@ -22,3 +23,14 @@ def make_placeholder(label: str, color: str) -> bytes:
     out = io.BytesIO()
     img.save(out, "WEBP", quality=80)
     return out.getvalue()
+
+
+def demo_photo(spec_key: str, label: str, color: str) -> bytes:
+    """The owner's photo for this label if present (same pipeline as uploads), else a labelled placeholder."""
+    from app.services.storage_service import validate_and_process_image
+    from app.services.storefront_service import slugify_tr
+    for ext in ("jpg", "jpeg", "png", "webp"):
+        f = PHOTOS_DIR / spec_key / f"{slugify_tr(label)}.{ext}"
+        if f.is_file():
+            return validate_and_process_image(f.read_bytes())
+    return make_placeholder(label, color)

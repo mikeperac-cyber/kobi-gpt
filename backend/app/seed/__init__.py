@@ -10,7 +10,7 @@ from app.core.security import hash_password
 from app.models.company import CompanyIn
 from app.models.product import ProductIn
 from app.services.scoring import score_for_company
-from app.seed.images import make_placeholder
+from app.seed.images import demo_photo
 from app.services.storage_service import get_storage
 from app.services.upload_registry import record_upload
 
@@ -80,7 +80,7 @@ async def _seed_company(db, spec: dict, password: str, now) -> str:
         existing = await db.products.find_one({"company_id": cid, "seed_key": f"{spec['key']}:{i}"})
         if existing:
             continue  # keeps photos and any edits; no new files on re-run
-        photos = [await get_storage().save(make_placeholder(label, spec["color"]), "products")
+        photos = [await get_storage().save(demo_photo(spec["key"], label, spec["color"]), "products")
                   for label in p["photo_labels"]]
         body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos)
         await db.products.insert_one({**body.model_dump(), "company_id": cid, "hs_code_confirmed": None,

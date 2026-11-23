@@ -147,3 +147,31 @@ async def test_demo_products_have_translated_names(db, seeded_env):
     await seed(db)
     prods = await db.products.find({"seed_key": {"$exists": True}}).to_list(50)
     assert prods and all(p.get("name_de") and p.get("name_en") for p in prods)
+
+
+def _owner_photo(root, key="bozkurt", label="Kabuklu Antep Fıstığı"):
+    import io
+
+    from PIL import Image
+
+    from app.services.storefront_service import slugify_tr
+    out = io.BytesIO()
+    Image.new("RGB", (400, 300), "orange").save(out, "JPEG")
+    (root / key).mkdir(parents=True, exist_ok=True)
+    (root / key / f"{slugify_tr(label)}.jpg").write_bytes(out.getvalue())
+
+
+async def test_seed_uses_owner_photos(db, seeded_env, monkeypatch, tmp_path):
+    import io
+
+    from PIL import Image
+
+    from app.seed import images
+    photos = tmp_path / "owner-photos"
+    monkeypatch.setattr(images, "PHOTOS_DIR", photos)
+    _owner_photo(photos)
+    await seed(db)
+    prod = await db.products.find_one({"seed_key": "bozkurt:0"})
+    first, second = (storage_service.get_storage().read(u) for u in prod["photos"][:2])
+    assert Image.open(io.BytesIO(first)).size == (400, 300)  # the owner's photo
+    assert Image.open(io.BytesIO(second)).size == (1200, 900)  # no file for this label: placeholder

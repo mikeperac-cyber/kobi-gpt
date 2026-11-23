@@ -239,3 +239,21 @@ async def test_demo_leads_do_not_sink_below_manual_leads(db, seeded):
     await reset_demo_company(db, "gaziantep")
     c = await _bozkurt(db)
     assert all("is_hot" in d for d in await db.leads.find({"company_id": str(c["_id"])}).to_list(50))
+
+
+async def test_reset_uses_owner_photos(db, seeded, monkeypatch, tmp_path):
+    import io
+
+    from PIL import Image
+
+    from app.seed import images
+    from tests.test_seed import _owner_photo
+    await seed(db)
+    photos = tmp_path / "owner-photos"
+    monkeypatch.setattr(images, "PHOTOS_DIR", photos)
+    _owner_photo(photos)
+    await db.products.delete_one({"seed_key": "bozkurt:0"})  # deleted: reset regenerates its photos
+    await reset_demo_company(db, "gaziantep")
+    prod = await db.products.find_one({"seed_key": "bozkurt:0"})
+    img = storage_service.get_storage().read(prod["photos"][0])
+    assert Image.open(io.BytesIO(img)).size == (400, 300)

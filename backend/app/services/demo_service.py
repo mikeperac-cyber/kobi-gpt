@@ -7,7 +7,7 @@ from bson import ObjectId
 from app.models.company import CompanyIn
 from app.models.product import ProductIn
 from app.seed import DEMO_LEAD_NOTE, _load, _names, backfill_seed_keys
-from app.seed.images import make_placeholder
+from app.seed.images import demo_photo
 from app.services.storage_service import get_storage
 from app.services.agent_steps import spawn
 from app.services.llm_service import generate_text
@@ -69,7 +69,7 @@ async def reset_demo_company(db, key: str) -> dict | None:
     for key_, p in zip(keys, spec["products"]):
         old = await db.products.find_one({"company_id": cid, "seed_key": key_}) or {}
         photos = old.get("seed_photos") or old.get("photos") or [
-            await get_storage().save(make_placeholder(label, spec["color"]), "products")
+            await get_storage().save(demo_photo(spec["key"], label, spec["color"]), "products")
             for label in p["photo_labels"]]  # the product was deleted: regenerate its placeholders
         body = ProductIn(**{k: v for k, v in p.items() if k != "photo_labels"}, photos=photos).model_dump()
         for url in photos:

@@ -985,5 +985,21 @@
   "qr": {
     "show": "QR'ı büyük göster",
     "localWarning": "Bu adres yalnızca bu bilgisayarda açılır. Telefonla taramak için yayındaki adresi veya aynı Wi-Fi ağ adresini kullanın."
+  },
+  "verify": {
+    "title": "Belge doğrulama",
+    "intro": "Vergi levhanızı ve sertifikalarınızı yükleyin. Belgeleriniz ekibimiz tarafından kontrol edilir. Alıcılar belgenin kendisini görmez; vitrininizde yalnızca 'Belgeler kontrol edildi' etiketini ve kontrol edilen sertifikaları görür. Kontrol edilmeyen sertifikalar 'Üretici beyanı' olarak gösterilir.",
+    "taxPlate": "Vergi levhası",
+    "upload": "Belge yükle (PDF veya fotoğraf)",
+    "uploading": "Yükleniyor…",
+    "validUntilLabel": "Geçerlilik tarihi",
+    "validUntil": "geçerlilik: {{date}}",
+    "noCerts": "Firma bilgilerinize sertifika eklerseniz burada doğrulatabilirsiniz.",
+    "status": {
+      "none": "Belge yok",
+      "pending": "İncelemede",
+      "verified": "Doğrulandı ({{date}})",
+      "rejected": "Reddedildi: {{reason}}"
+    }
   }
 }

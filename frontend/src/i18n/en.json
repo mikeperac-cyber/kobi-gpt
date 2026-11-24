@@ -985,5 +985,21 @@
   "qr": {
     "show": "Show QR full screen",
     "localWarning": "This address only opens on this computer. For phones, use the deployed URL or the same-Wi-Fi network address."
+  },
+  "verify": {
+    "title": "Document verification",
+    "intro": "Upload your tax plate and certificates. Our team checks your documents. Buyers never see the documents themselves; your storefront only shows a 'Documents checked' label and which certificates were checked. Unchecked certificates are shown as 'self-declared'.",
+    "taxPlate": "Tax plate",
+    "upload": "Upload document (PDF or photo)",
+    "uploading": "Uploading…",
+    "validUntilLabel": "Valid until",
+    "validUntil": "valid until {{date}}",
+    "noCerts": "Add certificates to your company details to have them verified here.",
+    "status": {
+      "none": "No document",
+      "pending": "Under review",
+      "verified": "Verified ({{date}})",
+      "rejected": "Rejected: {{reason}}"
+    }
   }
 }

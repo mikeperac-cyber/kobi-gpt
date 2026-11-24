@@ -5,6 +5,7 @@ import CompanyFields, { companyFromDoc, companyPayload, serverErrs, translateErr
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import Skeleton from '../../components/ui/Skeleton'
+import VerificationSection from './VerificationSection'
 
 export default function CompanyPage() {
   const { t } = useTranslation()
@@ -13,9 +14,10 @@ export default function CompanyPage() {
   const [top, setTop] = useState('')
   const [saved, setSaved] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [certs, setCerts] = useState<string[] | null>(null) // saved profile: the server checks names against it
 
   useEffect(() => {
-    api<CompanyDoc>('/api/company').then((c) => setDraft(companyFromDoc(c))).catch((x) => setTop(serverErrs(x).top))
+    api<CompanyDoc>('/api/company').then((c) => { setDraft(companyFromDoc(c)); setCerts(c.certifications ?? []) }).catch((x) => setTop(serverErrs(x).top))
   }, [])
 
   const submit = async (e: FormEvent) => {
@@ -28,7 +30,9 @@ export default function CompanyPage() {
     if (Object.keys(ve).length) return
     setBusy(true)
     try {
-      setDraft(companyFromDoc(await api<CompanyDoc>('/api/company', { method: 'PUT', json: payload })))
+      const c = await api<CompanyDoc>('/api/company', { method: 'PUT', json: payload })
+      setDraft(companyFromDoc(c))
+      setCerts(c.certifications ?? [])
       setSaved(true)
     } catch (x) {
       const s = serverErrs(x)
@@ -40,6 +44,7 @@ export default function CompanyPage() {
   }
 
   return (
+    <>
     <Card className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">{t('company.pageTitle')}</h1>
       {!draft && !top && <div role="status" aria-label={t('common.loading')} className="space-y-3"><Skeleton className="h-11" /><Skeleton className="h-11" /><Skeleton className="h-24" /></div>}
@@ -53,5 +58,7 @@ export default function CompanyPage() {
       )}
       {!draft && top && <p role="alert" className="text-brand font-semibold">{t(top)}</p>}
     </Card>
+    {certs && <VerificationSection certifications={certs} />}
+    </>
   )
 }

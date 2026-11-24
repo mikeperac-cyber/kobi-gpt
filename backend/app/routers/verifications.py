@@ -11,11 +11,11 @@ from app.core.clock import tr_today
 from app.core.db import get_db
 from app.core.security import current_company, current_user, owned, require_admin
 from app.core.serialize import to_json
-from app.core.text import tr_fold
 from app.models.message import RejectIn
 from app.models.verification import VerificationIn
 from app.services.storage_service import get_storage
 from app.services.upload_registry import require_owned
+from app.services.verification_service import fold
 
 router = APIRouter(prefix="/verifications")
 admin_router = APIRouter(prefix="/admin/verifications", dependencies=[Depends(require_admin)])
@@ -23,10 +23,6 @@ admin_router = APIRouter(prefix="/admin/verifications", dependencies=[Depends(re
 
 def _err(status: int, code: str) -> HTTPException:
     return HTTPException(status, {"code": code, "message_key": f"errors.{code}"})
-
-
-def fold(name: str) -> str:
-    return tr_fold(name).strip()
 
 
 @router.post("", status_code=201)

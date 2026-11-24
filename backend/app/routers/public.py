@@ -12,7 +12,9 @@ from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.ratelimit import RateLimiter
 from app.core.text import EMAIL as _EMAIL
+from app.core.clock import tr_today
 from app.services.scoring import score_for_company
+from app.services.verification_service import public_trust
 
 router = APIRouter(prefix="/public")
 _limiter = RateLimiter(5, 3600)
@@ -76,7 +78,8 @@ async def get_storefront(slug: str):
                     "contact": pub_contact, "founded_year": co.get("founded_year"),
                     # a judge must never dial an invented seed number: demo companies use the presenter's phone
                     "whatsapp": (get_settings().demo_whatsapp_phone or None) if co.get("is_demo_company")
-                    else contact.get("phone")},
+                    else contact.get("phone"),
+                    "trust": await public_trust(get_db(), co, tr_today())},
         "legal": {"name": co.get("name"), "address": co.get("city"), **pub_contact,
                   "representative": None, "register": None},
     }

@@ -106,3 +106,62 @@ async def test_reject_needs_reason_and_pending(producer, admin_client):
     r = await admin_client.post(f"/api/admin/verifications/{vid}/verify")
     assert r.status_code == 409 and _code(r) == "not_pending"
     assert (await p["client"].delete(f"/api/verifications/{vid}")).status_code == 409
+
+
+async def _publish(db, p, slug="ali-shop"):
+    from tests.helpers import publishable_site_config
+    await db.storefronts.insert_one({"company_id": p["company"]["id"], "country": "DE", "slug": slug,
+                                     "status": "published", "template": "natural",
+                                     "site_config": publishable_site_config()})
+    return f"/api/public/storefronts/{slug}"
+
+
+async def _verified(p, admin_client, **kw) -> str:
+    vid = (await _submit(p["client"], **kw)).json()["id"]
+    assert (await admin_client.post(f"/api/admin/verifications/{vid}/verify")).status_code == 200
+    return vid
+
+
+async def test_public_trust_labels(producer, admin_client, db, client):
+    p = await producer("Ali")
+    url = await _publish(db, p)
+    await _verified(p, admin_client, name="iso 22000")  # folded match
+    trust = (await client.get(url)).json()["company"]["trust"]
+    assert trust["company_verified"] is False and trust["verified_at"] is None
+    assert trust["certificates"] == [{"name": "ISO 22000", "verified": True, "valid_until": NEXT_YEAR},
+                                     {"name": "IATF 16949", "verified": False, "valid_until": None}]
+    await _verified(p, admin_client, kind="tax_plate", name="", valid_until=None)
+    trust = (await client.get(url)).json()["company"]["trust"]
+    assert trust["company_verified"] is True and trust["verified_at"] == date.today().isoformat()
+
+
+async def test_public_trust_expiry(producer, admin_client, db, client):
+    p = await producer("Ali")
+    url = await _publish(db, p)
+    await _verified(p, admin_client)
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    await db.verifications.update_many({}, {"$set": {"valid_until": yesterday}})
+    cert = (await client.get(url)).json()["company"]["trust"]["certificates"][0]
+    assert cert == {"name": "ISO 22000", "verified": False, "valid_until": None}
+
+
+async def test_public_trust_follows_profile(producer, admin_client, db, client):
+    from bson import ObjectId
+    p = await producer("Ali")
+    url = await _publish(db, p)
+    await _verified(p, admin_client)
+    await db.companies.update_one({"_id": ObjectId(p["company"]["id"])}, {"$set": {"certifications": ["IATF 16949"]}})
+    certs = (await client.get(url)).json()["company"]["trust"]["certificates"]
+    assert [c["name"] for c in certs] == ["IATF 16949"]
+
+
+async def test_public_payload_trust_has_no_private_fields(producer, admin_client, db, client):
+    p = await producer("Ali")
+    url = await _publish(db, p)
+    await _verified(p, admin_client)
+    await _verified(p, admin_client, kind="tax_plate", name="", valid_until=None)
+    r = await client.get(url)
+    trust = r.json()["company"]["trust"]
+    assert set(trust) == {"company_verified", "verified_at", "certificates"}
+    assert all(set(c) == {"name", "verified", "valid_until"} for c in trust["certificates"])
+    assert "/uploads/documents" not in r.text and "reviewed_by" not in r.text

@@ -73,6 +73,7 @@ SWEEP = {
     ("GET", "/api/compliance/reports/{report_id}/pdf"): None,
     ("GET", "/api/jobs/{job_id}"): None,
     ("POST", "/api/notifications/{notification_id}/read"): None,
+    ("DELETE", "/api/verifications/{vid}"): None,
 }
 # Same guarantee for ids passed in the query string / body (no path parameter, so not enumerable from app.routes).
 SWEEP_OTHER = [
@@ -113,7 +114,8 @@ async def test_ownership_all_routes(producer, db, fake_llm, tmp_path):
     for key, coll, doc in (
             ("message_id", "messages", {"lead_id": ids["lead_id"], "status": "draft", "direction": "outbound"}),
             ("job_id", "jobs", {"kind": "x", "status": "done"}),
-            ("notification_id", "notifications", {"read": False})):
+            ("notification_id", "notifications", {"read": False}),
+            ("vid", "verifications", {"status": "pending", "kind": "certificate", "name": "ISO 22000"})):
         ids[key] = str((await db[coll].insert_one({"company_id": cid, "created_at": now, **doc})).inserted_id)
     ids["report_id"] = str((await db.readiness_reports.insert_one(
         {"company_id": cid, "product_id": pid, "checklist": [{"rule_id": "r1", "done": False, "side": "TR", "level": "zorunlu", "title_tr": "t", "title_en": "t",

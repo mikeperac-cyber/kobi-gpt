@@ -1,9 +1,11 @@
+import type { Trust } from './StorefrontView'
 import type { Lang } from './types'
 
 export type PublicCompany = {
   name: string | null; city: string | null; logo_url: string | null; founded_year: number | null
   contact: { phone: string | null; email: string | null; website: string | null }
   whatsapp: string | null // the number buyers may message; null hides the button
+  trust: Trust
 }
 export type PublicLegal = {
   name: string | null; address: string | null; phone: string | null; email: string | null
@@ -19,7 +21,7 @@ export function countryName(code: string, lang: Lang): string {
 type S = {
   products: string; about: string; whyUs: string; exportInfo: string; incoterms: string; leadTime: string
   samples: string; founded: string; team: string; certs: string; imprint: string; privacy: string
-  back: string; langLabel: string; errTitle: string; errBody: string; retry: string; whatsapp: string; waText: string; notFound: string; loading: string; loadError: string
+  back: string; langLabel: string; errTitle: string; errBody: string; retry: string; verifiedSupplier: string; certChecked: string; selfDeclared: string; validUntil: string; whatsapp: string; waText: string; notFound: string; loading: string; loadError: string
   rfq: {
     company: string; contact: string; email: string; country: string; products: string; quantity: string
     message: string; consent: string; consentLink: string; submit: string; sending: string
@@ -33,7 +35,7 @@ export const STR: Record<Lang, S> = {
   de: {
     products: 'Produkte', about: 'Über uns', whyUs: 'Warum wir', exportInfo: 'Export & Lieferung',
     incoterms: 'Incoterms', leadTime: 'Lieferzeit', samples: 'Muster', founded: 'Gegründet', team: 'Mitarbeitende',
-    certs: 'Zertifikate', imprint: 'Impressum', privacy: 'Datenschutzerklärung', back: 'Zurück zur Seite', langLabel: 'Sprache', errTitle: 'Etwas ist schiefgelaufen', errBody: 'Die Seite konnte nicht angezeigt werden.', retry: 'Erneut versuchen', whatsapp: 'Per WhatsApp schreiben', waText: 'Guten Tag, ich interessiere mich für Ihre Produkte ({url}).',
+    certs: 'Zertifikate', imprint: 'Impressum', privacy: 'Datenschutzerklärung', back: 'Zurück zur Seite', langLabel: 'Sprache', errTitle: 'Etwas ist schiefgelaufen', errBody: 'Die Seite konnte nicht angezeigt werden.', retry: 'Erneut versuchen', verifiedSupplier: 'Dokumente geprüft am {date}', certChecked: 'geprüft', selfDeclared: 'Herstellerangabe', validUntil: 'gültig bis', whatsapp: 'Per WhatsApp schreiben', waText: 'Guten Tag, ich interessiere mich für Ihre Produkte ({url}).',
     notFound: 'Diese Seite existiert nicht oder ist nicht veröffentlicht.', loading: 'Wird geladen…',
     loadError: 'Die Seite konnte nicht geladen werden.',
     rfq: {
@@ -66,7 +68,7 @@ export const STR: Record<Lang, S> = {
   en: {
     products: 'Products', about: 'About us', whyUs: 'Why us', exportInfo: 'Export & delivery',
     incoterms: 'Incoterms', leadTime: 'Lead time', samples: 'Samples', founded: 'Founded', team: 'Team size',
-    certs: 'Certifications', imprint: 'Legal notice', privacy: 'Privacy policy', back: 'Back to the site', langLabel: 'Language', errTitle: 'Something went wrong', errBody: 'The page could not be displayed.', retry: 'Try again', whatsapp: 'Message on WhatsApp', waText: 'Hello, I am interested in your products ({url}).',
+    certs: 'Certifications', imprint: 'Legal notice', privacy: 'Privacy policy', back: 'Back to the site', langLabel: 'Language', errTitle: 'Something went wrong', errBody: 'The page could not be displayed.', retry: 'Try again', verifiedSupplier: 'Documents checked on {date}', certChecked: 'checked', selfDeclared: 'self-declared by the manufacturer', validUntil: 'valid until', whatsapp: 'Message on WhatsApp', waText: 'Hello, I am interested in your products ({url}).',
     notFound: 'This page does not exist or is not published.', loading: 'Loading…',
     loadError: 'The page could not be loaded.',
     rfq: {

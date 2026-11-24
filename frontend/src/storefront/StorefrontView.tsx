@@ -3,7 +3,14 @@ import type { LocalizedContent, Lang } from './types'
 import { STR } from './strings'
 import { THEMES } from './themes'
 
-export type CompanyInfo = { name?: string | null; city?: string | null; logo_url?: string | null }
+export type Trust = {
+  company_verified: boolean; verified_at: string | null
+  certificates: { name: string; verified: boolean; valid_until: string | null }[]
+}
+export type CompanyInfo = { name?: string | null; city?: string | null; logo_url?: string | null; trust?: Trust }
+
+const fold = (x: string) => x.toLocaleLowerCase('tr').trim()
+const day = (iso: string, lang: Lang) => new Date(`${iso}T00:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB')
 
 /** Pure renderer shared by the public page and the producer editor preview. Null values never render. */
 export default function StorefrontView({ config: c, template, lang, company, device = 'desktop', rfq, footer, whatsapp }: {
@@ -34,6 +41,11 @@ export default function StorefrontView({ config: c, template, lang, company, dev
               <p className="flex items-center gap-2 mb-4 font-semibold">
                 {company.logo_url && <img src={company.logo_url} alt="" width={32} height={32} className="h-8 w-8 object-contain bg-white rounded" />}
                 {company.name}
+              </p>
+            )}
+            {company?.trust?.company_verified && company.trust.verified_at && (
+              <p className="inline-flex items-center gap-1.5 mb-4 rounded-full bg-green-100 text-green-900 text-sm font-semibold px-3 py-1">
+                <span aria-hidden>✓</span>{s.verifiedSupplier.replace('{date}', day(company.trust.verified_at, lang))}
               </p>
             )}
             {c.hero.headline && <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{c.hero.headline}</h1>}
@@ -81,7 +93,14 @@ export default function StorefrontView({ config: c, template, lang, company, dev
             {facts.length > 0 && <p className={`mt-3 ${t.muted}`}>{facts.join(' · ')}</p>}
             {c.about.certifications.length > 0 && (
               <p className="mt-3 flex flex-wrap gap-2 items-center"><span className="font-semibold">{s.certs}:</span>
-                {c.about.certifications.map((x) => <span key={x} className={`${t.chip} text-sm rounded-full px-3 py-1`}>{x}</span>)}
+                {c.about.certifications.map((x) => {
+                  // with trust (public page): every certificate says whether a document was checked; editor preview has none
+                  const v = company?.trust?.certificates.find((cert) => fold(cert.name) === fold(x))
+                  const label = !company?.trust ? x
+                    : v?.verified ? `✓ ${x} · ${s.certChecked}${v.valid_until ? `, ${s.validUntil} ${day(v.valid_until, lang)}` : ''}`
+                    : `${x} · ${s.selfDeclared}`
+                  return <span key={x} className={`${t.chip} text-sm rounded-full px-3 py-1 ${v?.verified ? 'ring-1 ring-green-700' : ''}`}>{label}</span>
+                })}
               </p>
             )}
           </section>

@@ -112,8 +112,7 @@ def _content(t: dict, company: dict, products: list[dict], intake: IntakeIn | No
             "long": (p.get("description_tr") or None) if own_text is not None else None,
             "specs": [x.model_dump() for x in specs], "moq": moq, "photos": list(p.get("photos") or []),
         })
-    if certs:
-        why.append(t["why_cert"].format(certs=", ".join(certs)))
+    # certificates are listed only in About, where each is labelled checked or self-declared
     if year:
         why.append(t["why_founded"].format(founded_year=year))
     if team:

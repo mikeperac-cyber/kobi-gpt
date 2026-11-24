@@ -165,3 +165,42 @@ async def test_public_payload_trust_has_no_private_fields(producer, admin_client
     assert set(trust) == {"company_verified", "verified_at", "certificates"}
     assert all(set(c) == {"name", "verified", "valid_until"} for c in trust["certificates"])
     assert "/uploads/documents" not in r.text and "reviewed_by" not in r.text
+
+
+async def test_renewed_certificate_does_not_break_storefront(producer, admin_client, db, client):
+    """Two verified records for one certificate (renewal), one without a date: the page must still load."""
+    p = await producer("Ali")
+    url = await _publish(db, p)
+    await _verified(p, admin_client, valid_until=None)
+    await _verified(p, admin_client, valid_until=NEXT_YEAR)
+    r = await client.get(url)
+    assert r.status_code == 200
+    cert = r.json()["company"]["trust"]["certificates"][0]
+    assert cert == {"name": "ISO 22000", "verified": True, "valid_until": None}  # open-ended wins over dated
+
+
+async def test_stores_the_profile_spelling(producer):
+    p = await producer("Ali")
+    r = await _submit(p["client"], name="  iso 22000 ")
+    assert r.status_code == 201 and r.json()["name"] == "ISO 22000"
+
+
+async def test_admin_can_revoke_verified(producer, admin_client, db, client):
+    p = await producer("Ali")
+    url = await _publish(db, p)
+    vid = await _verified(p, admin_client)
+    r = await admin_client.post(f"/api/admin/verifications/{vid}/reject", json={"reason": "Sahte belge"})
+    assert r.status_code == 200 and r.json()["status"] == "rejected"
+    assert (await client.get(url)).json()["company"]["trust"]["certificates"][0]["verified"] is False
+    r = await admin_client.post(f"/api/admin/verifications/{vid}/verify")
+    assert r.status_code == 409  # a revoked record is not silently re-approved; the producer resubmits
+
+
+async def test_account_delete_and_export_cover_verifications(producer, db):
+    p = await producer("Ali")
+    await _submit(p["client"])
+    export = (await p["client"].get("/api/account/export")).json()
+    assert len(export["verifications"]) == 1
+    r = await p["client"].request("DELETE", "/api/account", json={"confirm": "SİL", "password": "password123"})
+    assert r.status_code == 204, r.text
+    assert await db.verifications.count_documents({}) == 0

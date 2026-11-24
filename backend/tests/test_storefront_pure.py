@@ -163,3 +163,10 @@ def test_fallback_uses_seeded_translated_names():
     assert cfg.de.products[0].name == "Pistazien geröstet" and cfg.en.products[0].name == "Roasted pistachios"
     assert cfg.review.products[0].name == "Antep Fıstığı"
     assert cfg.blockers == []
+
+
+def test_fallback_why_us_never_lists_certificates():
+    """Certificates appear only in About, where each is labelled checked or self-declared."""
+    cfg = _cfg()
+    for lang in (cfg.de, cfg.en, cfg.review):
+        assert not any("ISO 22000" in line for line in lang.why_us), lang.why_us

@@ -18,15 +18,18 @@ async def public_trust(db, company: dict, today: date) -> dict:
     to 'self-declared' without anyone acting."""
     docs = await db.verifications.find({"company_id": str(company["_id"]), "status": "verified"}).to_list(200)
     live = [d for d in docs if _live(d, today)]
-    certs = {}
+    open_ended = "9999-12-31"  # sorts after every real date, so an open-ended record wins over a dated one
+    certs: dict[str, str] = {}
     for d in live:
         if d["kind"] == "certificate":
-            certs[fold(d["name"])] = max(d.get("valid_until") or "", certs.get(fold(d["name"]), "")) or None
+            k = fold(d["name"])
+            certs[k] = max(d.get("valid_until") or open_ended, certs.get(k, ""))
     plates = [d for d in live if d["kind"] == "tax_plate"]
     at = max((d["reviewed_at"] for d in plates if isinstance(d.get("reviewed_at"), datetime)), default=None)
     return {
         "company_verified": bool(plates),
         "verified_at": at.date().isoformat() if at else None,
-        "certificates": [{"name": c, "verified": fold(c) in certs, "valid_until": certs.get(fold(c))}
+        "certificates": [{"name": c, "verified": fold(c) in certs,
+                          "valid_until": None if certs.get(fold(c), open_ended) == open_ended else certs[fold(c)]}
                          for c in company.get("certifications") or []],
     }

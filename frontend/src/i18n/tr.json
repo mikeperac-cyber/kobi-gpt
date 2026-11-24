@@ -70,6 +70,7 @@
     "placeholderNote": "Köşeli parantezli alanlar yayın öncesinde platform işletmecisi tarafından doldurulmalıdır."
   },
   "errors": {
+    "not_pending": "Bu belge artık incelemede değil; sayfayı yenileyin.",
     "deal_value_required": "Kazanılan bir satış için tutar ve para birimi girin.",
     "unknown_certificate": "Bu sertifika firma profilinizde yok. Önce profilinize ekleyin.",
     "expired_document": "Belgenin geçerlilik tarihi geçmiş.",
@@ -1025,6 +1026,7 @@
     "submitted": "gönderim: {{date}}",
     "open": "Belgeyi aç",
     "verify": "Doğrula",
+    "revoke": "Doğrulamayı geri al",
     "reject": "Reddet",
     "reason": "Red nedeni (üreticiye gösterilir)"
   }

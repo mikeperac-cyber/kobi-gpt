@@ -67,6 +67,7 @@ export default function Verifications() {
                   <Button disabled={busy === it.id} onClick={() => void decide(it, 'verify')}>{t('adminVerify.verify')}</Button>
                   <Button variant="secondary" disabled={busy === it.id} onClick={() => setRejecting(it)}>{t('adminVerify.reject')}</Button>
                 </>}
+                {tab === 'verified' && <Button variant="secondary" disabled={busy === it.id} onClick={() => setRejecting(it)}>{t('adminVerify.revoke')}</Button>}
               </div>
             </Card></li>
           ))}

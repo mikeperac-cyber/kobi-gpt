@@ -14,7 +14,7 @@ from app.services.storage_service import get_storage
 router = APIRouter(prefix="/account")
 # Exported = the user's own data. Internal collections (jobs, agent_runs, demo_cache, lead_imports) are not.
 EXPORT = ("products", "markets", "storefronts", "classifications", "leads", "messages", "quotes", "tasks",
-          "notifications")
+          "notifications", "verifications")
 # Deleted = everything company-scoped, internal collections included.
 DELETE = EXPORT + ("readiness_reports", "jobs", "agent_runs", "demo_cache", "lead_imports")
 WORDS = {"tr": "SİL", "en": "DELETE"}

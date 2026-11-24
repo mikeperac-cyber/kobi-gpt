@@ -32,9 +32,10 @@ async def submit(body: VerificationIn, company: dict = Depends(current_company))
         raise _err(422, "bad_document")
     await require_owned(db, [body.file_url], company["owner_id"])
     if body.kind == "certificate":
-        if fold(body.name) not in {fold(c) for c in company.get("certifications") or []}:
+        profile = {fold(c): c for c in company.get("certifications") or []}
+        if fold(body.name) not in profile:
             raise _err(422, "unknown_certificate")
-        name = body.name.strip()
+        name = profile[fold(body.name)]  # the profile's spelling: what the storefront shows and matches on
     else:
         name = "tax_plate"
     if body.valid_until and body.valid_until < tr_today():
@@ -99,11 +100,12 @@ async def document_file(vid: str):
     return Response(data, media_type=media, headers={"Content-Disposition": "inline"})
 
 
-async def _decide(vid: str, admin: dict, status: str, reason: str | None) -> dict:
+async def _decide(vid: str, admin: dict, status: str, reason: str | None, allowed: tuple[str, ...]) -> dict:
     doc = await _get(vid)
     patch = {"status": status, "reject_reason": reason, "reviewed_by": str(admin["_id"]),
              "reviewed_at": datetime.now(timezone.utc)}
-    res = await get_db().verifications.update_one({"_id": doc["_id"], "status": "pending"}, {"$set": patch})
+    res = await get_db().verifications.update_one({"_id": doc["_id"], "status": {"$in": list(allowed)}},
+                                                  {"$set": patch})
     if not res.modified_count:
         raise _err(409, "not_pending")
     return to_json({**doc, **patch})
@@ -111,9 +113,10 @@ async def _decide(vid: str, admin: dict, status: str, reason: str | None) -> dic
 
 @admin_router.post("/{vid}/verify")
 async def verify(vid: str, admin: dict = Depends(current_user)):
-    return await _decide(vid, admin, "verified", None)
+    return await _decide(vid, admin, "verified", None, ("pending",))
 
 
 @admin_router.post("/{vid}/reject")
 async def reject(vid: str, body: RejectIn, admin: dict = Depends(current_user)):
-    return await _decide(vid, admin, "rejected", body.reason.strip())
+    # also revokes a verified record (forged or withdrawn document): buyers stop seeing the check at once
+    return await _decide(vid, admin, "rejected", body.reason.strip(), ("pending", "verified"))

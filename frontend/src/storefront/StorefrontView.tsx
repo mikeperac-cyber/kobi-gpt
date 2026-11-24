@@ -9,7 +9,6 @@ export type Trust = {
 }
 export type CompanyInfo = { name?: string | null; city?: string | null; logo_url?: string | null; trust?: Trust }
 
-const fold = (x: string) => x.toLocaleLowerCase('tr').trim()
 const day = (iso: string, lang: Lang) => new Date(`${iso}T00:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB')
 
 /** Pure renderer shared by the public page and the producer editor preview. Null values never render. */
@@ -19,6 +18,10 @@ export default function StorefrontView({ config: c, template, lang, company, dev
 }) {
   const t = THEMES[template] ?? THEMES.industrial
   const s = STR[lang]
+  // public page: certificates follow the live company profile, each labelled checked or self-declared;
+  // editor preview (no trust): the generated text's list, unlabelled
+  const certs = company?.trust ? company.trust.certificates
+    : c.about.certifications.map((name) => ({ name, verified: false, valid_until: null as string | null }))
   const grid = device === 'mobile' ? 'grid-cols-1' : `grid-cols-1 ${t.grid}`
   const heroPhoto = c.products.find((p) => p.photos[0])?.photos[0]
   const facts = [
@@ -86,20 +89,18 @@ export default function StorefrontView({ config: c, template, lang, company, dev
           </section>
         )}
 
-        {(c.about.story || facts.length > 0 || c.about.certifications.length > 0) && (
+        {(c.about.story || facts.length > 0 || certs.length > 0) && (
           <section className={`${t.section} pt-2`}>
             <h2 className={h2}>{s.about}</h2>
             {c.about.story && <p className="max-w-3xl">{c.about.story}</p>}
             {facts.length > 0 && <p className={`mt-3 ${t.muted}`}>{facts.join(' · ')}</p>}
-            {c.about.certifications.length > 0 && (
+            {certs.length > 0 && (
               <p className="mt-3 flex flex-wrap gap-2 items-center"><span className="font-semibold">{s.certs}:</span>
-                {c.about.certifications.map((x) => {
-                  // with trust (public page): every certificate says whether a document was checked; editor preview has none
-                  const v = company?.trust?.certificates.find((cert) => fold(cert.name) === fold(x))
-                  const label = !company?.trust ? x
-                    : v?.verified ? `✓ ${x} · ${s.certChecked}${v.valid_until ? `, ${s.validUntil} ${day(v.valid_until, lang)}` : ''}`
-                    : `${x} · ${s.selfDeclared}`
-                  return <span key={x} className={`${t.chip} text-sm rounded-full px-3 py-1 ${v?.verified ? 'ring-1 ring-green-700' : ''}`}>{label}</span>
+                {certs.map((v) => {
+                  const label = !company?.trust ? v.name
+                    : v.verified ? `✓ ${v.name} · ${s.certChecked}${v.valid_until ? `, ${s.validUntil} ${day(v.valid_until, lang)}` : ''}`
+                    : `${v.name} · ${s.selfDeclared}`
+                  return <span key={v.name} className={`${t.chip} text-sm rounded-full px-3 py-1 ${v.verified ? 'ring-1 ring-green-700' : ''}`}>{label}</span>
                 })}
               </p>
             )}

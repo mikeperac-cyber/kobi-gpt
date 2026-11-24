@@ -70,6 +70,7 @@
     "placeholderNote": "Fields in square brackets must be completed by the platform operator before launch."
   },
   "errors": {
+    "not_pending": "This document is no longer under review; refresh the page.",
     "deal_value_required": "Enter the amount and currency of the won deal.",
     "unknown_certificate": "This certificate is not in your company profile. Add it there first.",
     "expired_document": "The document has expired.",
@@ -1025,6 +1026,7 @@
     "submitted": "submitted {{date}}",
     "open": "Open document",
     "verify": "Verify",
+    "revoke": "Revoke verification",
     "reject": "Reject",
     "reason": "Reason (shown to the producer)"
   }

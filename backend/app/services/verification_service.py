@@ -5,7 +5,7 @@ from app.core.text import tr_fold
 
 def fold(name: str) -> str:
     """Certificate names compare case- and Turkish-letter-insensitively ("İSO 22000" == "iso 22000")."""
-    return trfold(name).strip()
+    return tr_fold(name).strip()
 
 
 def _live(doc: dict, today: date) -> bool:

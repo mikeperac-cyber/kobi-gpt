@@ -69,6 +69,7 @@
     "placeholderNote": "Köşeli parantezli alanlar yayın öncesinde platform işletmecisi tarafından doldurulmalıdır."
   },
   "errors": {
+    "bad_document": "Belge PDF veya fotoğraf (JPG, PNG, WebP) olmalı.",
     "generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
     "publish_blocked": "Vitrin henüz yayınlanamaz: eksik zorunlu alanlar var.",
     "confirm_mismatch": "Onay kelimesi yanlış. SİL yazın.",

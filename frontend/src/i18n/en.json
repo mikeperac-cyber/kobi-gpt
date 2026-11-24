@@ -69,6 +69,8 @@
     "placeholderNote": "Fields in square brackets must be completed by the platform operator before launch."
   },
   "errors": {
+    "unknown_certificate": "This certificate is not in your company profile. Add it there first.",
+    "expired_document": "The document has expired.",
     "bad_document": "The document must be a PDF or a photo (JPG, PNG, WebP).",
     "generic": "Something went wrong. Please try again.",
     "publish_blocked": "The storefront cannot be published yet: required fields are missing.",

@@ -69,6 +69,8 @@
     "placeholderNote": "Köşeli parantezli alanlar yayın öncesinde platform işletmecisi tarafından doldurulmalıdır."
   },
   "errors": {
+    "unknown_certificate": "Bu sertifika firma profilinizde yok. Önce profilinize ekleyin.",
+    "expired_document": "Belgenin geçerlilik tarihi geçmiş.",
     "bad_document": "Belge PDF veya fotoğraf (JPG, PNG, WebP) olmalı.",
     "generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
     "publish_blocked": "Vitrin henüz yayınlanamaz: eksik zorunlu alanlar var.",

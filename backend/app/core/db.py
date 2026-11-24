@@ -30,3 +30,4 @@ async def ensure_indexes(db) -> None:
     await db.storefronts.create_index([("company_id", 1), ("country", 1)], unique=True)
     await db.classifications.create_index("product_id", unique=True)
     await db.leads.create_index([("company_id", 1), ("created_at", -1)])
+    await db.verifications.create_index([("company_id", 1), ("status", 1)])

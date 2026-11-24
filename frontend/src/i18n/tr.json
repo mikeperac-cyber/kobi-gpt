@@ -37,6 +37,7 @@
     "nameRequired": "Ad soyad gerekli."
   },
   "nav": {
+    "verifications": "Belgeler",
     "dashboard": "Panel",
     "privacy": "Aydınlatma Metni",
     "account": "Hesabım",
@@ -1001,5 +1002,19 @@
       "verified": "Doğrulandı ({{date}})",
       "rejected": "Reddedildi: {{reason}}"
     }
+  },
+  "adminVerify": {
+    "title": "Belge doğrulama kuyruğu",
+    "tab": {
+      "pending": "Bekleyen",
+      "verified": "Doğrulanan",
+      "rejected": "Reddedilen"
+    },
+    "empty": "Bu listede belge yok.",
+    "submitted": "gönderim: {{date}}",
+    "open": "Belgeyi aç",
+    "verify": "Doğrula",
+    "reject": "Reddet",
+    "reason": "Red nedeni (üreticiye gösterilir)"
   }
 }

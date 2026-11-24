@@ -19,6 +19,7 @@ const QuoteBuilder = lazy(() => import('./pages/quotes/QuoteBuilder'))
 const Pipeline = lazy(() => import('./pages/pipeline/Pipeline'))
 const LogisticsRates = lazy(() => import('./pages/admin/LogisticsRates'))
 const AdminStats = lazy(() => import('./pages/admin/AdminStats'))
+const AdminVerifications = lazy(() => import('./pages/admin/Verifications'))
 const KbList = lazy(() => import('./pages/admin/KbList'))
 const DemoPage = lazy(() => import('./pages/demo/DemoPage'))
 const AccountPage = lazy(() => import('./pages/account/AccountPage'))
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/admin/kb" element={<KbList />} />
             <Route path="/admin/stats" element={<AdminStats />} />
+            <Route path="/admin/verifications" element={<AdminVerifications />} />
             <Route path="/admin/logistics-rates" element={<LogisticsRates />} />
           </Route>
         </Route>

@@ -37,6 +37,7 @@
     "nameRequired": "Full name is required."
   },
   "nav": {
+    "verifications": "Documents",
     "dashboard": "Dashboard",
     "privacy": "Privacy Notice",
     "account": "My account",
@@ -1001,5 +1002,19 @@
       "verified": "Verified ({{date}})",
       "rejected": "Rejected: {{reason}}"
     }
+  },
+  "adminVerify": {
+    "title": "Document review queue",
+    "tab": {
+      "pending": "Pending",
+      "verified": "Verified",
+      "rejected": "Rejected"
+    },
+    "empty": "No documents in this list.",
+    "submitted": "submitted {{date}}",
+    "open": "Open document",
+    "verify": "Verify",
+    "reject": "Reject",
+    "reason": "Reason (shown to the producer)"
   }
 }

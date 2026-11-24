@@ -90,7 +90,7 @@ async def test_generated_pdfs_not_served_but_photos_are(client):
     from app.main import UPLOADS
     made = []
     try:
-        for rel in ("quotes/zz-test/x.pdf", "reports/zz-test/x.pdf", "products/zz-test/x.webp"):
+        for rel in ("quotes/zz-test/x.pdf", "reports/zz-test/x.pdf", "documents/zz-test/x.pdf", "products/zz-test/x.webp"):
             f = UPLOADS / rel
             f.parent.mkdir(parents=True, exist_ok=True)
             f.write_bytes(b"data")
@@ -98,9 +98,52 @@ async def test_generated_pdfs_not_served_but_photos_are(client):
         for url in ("/uploads/quotes/zz-test/x.pdf", "/uploads/reports/zz-test/x.pdf",
                     "/uploads/./quotes/zz-test/x.pdf", "/uploads/products/../quotes/zz-test/x.pdf",
                     "/uploads/QUOTES/zz-test/x.pdf", "/uploads/quotes./zz-test/x.pdf",
-                    "/uploads/quotes%20/zz-test/x.pdf", "/uploads/quotes::$INDEX_ALLOCATION/zz-test/x.pdf"):
+                    "/uploads/quotes%20/zz-test/x.pdf", "/uploads/quotes::$INDEX_ALLOCATION/zz-test/x.pdf",
+                    "/uploads/documents/zz-test/x.pdf"):
             assert (await client.get(url)).status_code == 404, url
         assert (await client.get("/uploads/products/zz-test/x.webp")).status_code == 200
     finally:
         for d in made:
             shutil.rmtree(d, ignore_errors=True)
+
+
+
+PDF = b"%PDF-1.4 1 0 obj<<>>endobj trailer<<>> %%EOF"
+
+
+def _jpeg() -> bytes:
+    out = io.BytesIO()
+    Image.new("RGB", (40, 30), "blue").save(out, "JPEG")
+    return out.getvalue()
+
+
+async def _upload_doc(c, data: bytes, name="doc.bin"):
+    return await c.post("/api/uploads/document", files={"file": (name, data, "application/octet-stream")})
+
+
+async def test_document_upload_pdf_and_image(producer, tmp_path):
+    ss.set_root(tmp_path)
+    try:
+        p = await producer("Ali")
+        r = await _upload_doc(p["client"], PDF, "cert.pdf")
+        assert r.status_code == 200 and r.json()["url"].startswith(f"/uploads/documents/{p['user']['id']}/")
+        assert r.json()["url"].endswith(".pdf")
+        r = await _upload_doc(p["client"], _jpeg(), "plate.jpg")
+        assert r.status_code == 200 and r.json()["url"].endswith(".webp")
+    finally:
+        ss.set_root(None)
+
+
+async def test_document_upload_rejects_other(producer, tmp_path):
+    ss.set_root(tmp_path)
+    try:
+        p = await producer("Ali")
+        for data in (b"PK word document", b"random bytes", b"%PDF-" + b"0" * (8 * 1024 * 1024)):
+            r = await _upload_doc(p["client"], data)
+            assert r.status_code == 422, data[:10]
+        codes = [(await _upload_doc(p["client"], d)).json()["detail"]["code"]
+                 for d in (b"PK", b"%PDF-" + b"0" * (8 * 1024 * 1024))]
+        assert codes == ["bad_document", "too_large"]
+        assert not (tmp_path / "documents").exists()
+    finally:
+        ss.set_root(None)

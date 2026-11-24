@@ -55,6 +55,18 @@ def get_storage() -> Storage:
     return LocalStorage(_root or DEFAULT_ROOT)
 
 
+def validate_document(data: bytes) -> tuple[bytes, str]:
+    """Supplier documents: an image (normalised to WebP) or a PDF kept as-is. Returns (bytes, extension)."""
+    if len(data) > MAX_BYTES:
+        raise ValueError("too_large")
+    if data.startswith(b"%PDF-"):
+        return data, ".pdf"
+    try:
+        return validate_and_process_image(data), ".webp"
+    except ValueError:
+        raise ValueError("bad_document") from None
+
+
 def validate_and_process_image(data: bytes) -> bytes:
     if len(data) > MAX_BYTES:
         raise ValueError("too_large")

@@ -30,7 +30,7 @@ async def validation_handler(_req: Request, exc: RequestValidationError):
 
 
 UPLOADS = Path(__file__).resolve().parents[2] / "uploads"
-PRIVATE_DIRS = ("quotes", "reports")  # generated PDFs: only the authenticated PDF endpoints return them
+PRIVATE_DIRS = ("quotes", "reports", "documents")  # generated PDFs: only the authenticated PDF endpoints return them
 
 
 class PublicUploads(StaticFiles):

@@ -149,3 +149,30 @@ async def test_list_leads_db_sort_and_pages(producer, db):
 async def test_total_count_header_exposed_to_browser(client):
     r2 = await client.get("/api/health", headers={"Origin": "http://localhost:5173"})
     assert "x-total-count" in r2.headers.get("access-control-expose-headers", "").lower()
+
+
+async def test_won_requires_deal_value(producer, db):
+    p = await producer("Ali")
+    c = p["client"]
+    lid = (await c.post("/api/leads", json={"company_name": "Müller GmbH", "country": "DE",
+                                            "source_note": "fair"})).json()["id"]
+    url = f"/api/leads/{lid}"
+    r = await c.patch(url, json={"status": "won"})
+    assert r.status_code == 422 and r.json()["detail"]["code"] == "deal_value_required"
+    for bad in (0, -5, 1e12):
+        assert (await c.patch(url, json={"status": "won", "deal_value": bad, "deal_currency": "EUR"})).status_code == 422
+    raw = '{"status": "won", "deal_value": NaN, "deal_currency": "EUR"}'
+    assert (await c.patch(url, content=raw, headers={"Content-Type": "application/json"})).status_code == 422
+    assert (await c.patch(url, json={"status": "won", "deal_value": 5, "deal_currency": "GBP"})).status_code == 422
+    r = await c.patch(url, json={"status": "won", "deal_value": 12500, "deal_currency": "EUR"})
+    assert r.status_code == 200 and r.json()["deal_value"] == 12500 and r.json()["deal_currency"] == "EUR"
+    assert r.json()["won_at"]
+
+
+async def test_lost_ignores_deal_fields(producer, db):
+    p = await producer("Ali")
+    c = p["client"]
+    lid = (await c.post("/api/leads", json={"company_name": "Müller GmbH", "country": "DE",
+                                            "source_note": "fair"})).json()["id"]
+    r = await c.patch(f"/api/leads/{lid}", json={"status": "lost", "deal_value": 100, "deal_currency": "EUR"})
+    assert r.status_code == 200 and "deal_value" not in r.json()

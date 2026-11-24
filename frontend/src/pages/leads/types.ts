@@ -16,6 +16,9 @@ export interface Lead {
   products_of_interest?: string[]
   quantity?: string | number | null
   created_at: string
+  deal_value?: number | null // self-reported when the lead was marked won
+  deal_currency?: 'EUR' | 'USD' | 'TRY' | null
+  won_at?: string | null
 }
 
 export interface Analysis {

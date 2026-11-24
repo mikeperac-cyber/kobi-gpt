@@ -7,7 +7,10 @@ import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import Modal from '../../components/ui/Modal'
 import DemoBadge from '../../components/DemoBadge'
-import { formatDate } from '../../i18n/format'
+import { formatDate, formatMoney, parseLocaleNumber } from '../../i18n/format'
+import Field from '../../components/ui/Field'
+import Input from '../../components/ui/Input'
+import Select from '../../components/ui/Select'
 import OutreachDraft from './OutreachDraft'
 import ReplyAssistant from './ReplyAssistant'
 import SampleTask from './SampleTask'
@@ -20,6 +23,7 @@ export default function LeadDetail() {
   const [lead, setLead] = useState<Lead | null>(null)
   const [msgs, setMsgs] = useState<Message[]>([])
   const [draft, setDraft] = useState<Message | null>(null)
+  const [deal, setDeal] = useState({ amount: '', currency: 'EUR' })
   const [confirm, setConfirm] = useState<'won' | 'lost' | 'do_not_contact' | null>(null)
   const [busy, setBusy] = useState(false)
   const [sample, setSample] = useState(false)
@@ -49,9 +53,11 @@ export default function LeadDetail() {
     setBusy(false)
   }
 
+  const dealValue = parseLocaleNumber(deal.amount)
   async function setStatus(s: string) {
     setConfirm(null); setErr('')
-    try { await api(`/api/leads/${id}`, { method: 'PATCH', json: { status: s } }); await load() }
+    const extra = s === 'won' ? { deal_value: dealValue, deal_currency: deal.currency } : {}
+    try { await api(`/api/leads/${id}`, { method: 'PATCH', json: { status: s, ...extra } }); await load() }
     catch (x) { setErr(x instanceof ApiError ? t(x.messageKey) : t('errors.network')) }
   }
 
@@ -72,6 +78,8 @@ export default function LeadDetail() {
           <dt className="font-semibold">{t('leads.detail.contact')}</dt><dd>{[lead.contact_name, lead.email].filter(Boolean).join(' · ') || '—'}</dd>
           {lead.website && <><dt className="font-semibold">{t('leads.detail.website')}</dt><dd>{lead.website}</dd></>}
           <dt className="font-semibold">{t('leads.colStatus')}</dt><dd>{t(`leads.status.${lead.status}`)}</dd>
+          {lead.deal_value != null && lead.deal_currency && <><dt className="font-semibold">{t('leads.detail.dealValue')}</dt>
+            <dd>{formatMoney(lead.deal_value, lead.deal_currency)} <span className="text-slate-600">{t('leads.detail.selfReported')}</span></dd></>}
           <dt className="font-semibold">{t('leads.colScore')}</dt><dd><ScoreBreakdown score={lead.score} breakdown={lead.score_breakdown} /></dd>
           <dt className="font-semibold">{t('leads.detail.sourceNote')}</dt><dd>{lead.source_note}</dd>
           <dt className="font-semibold">{t('leads.colCreated')}</dt><dd>{formatDate(lead.created_at)}</dd>
@@ -127,8 +135,23 @@ export default function LeadDetail() {
         <Modal title={t('leads.detail.confirmTitle')} onClose={() => setConfirm(null)}>
           <p>{t('leads.detail.confirmBody', { status: t(`leads.status.${confirm}`) })}</p>
           {confirm === 'do_not_contact' && <p className="font-semibold mt-2">{t('leads.detail.dncWarn')}</p>}
+          {confirm === 'won' && (
+            <div className="mt-3 space-y-2">
+              <p className="text-sm text-slate-700">{t('leads.detail.dealHint')}</p>
+              <div className="flex gap-2 items-end">
+                <div className="flex-1"><Field label={t('leads.detail.dealValue')}>
+                  <Input inputMode="decimal" value={deal.amount} onChange={(e) => setDeal({ ...deal, amount: e.target.value })} />
+                </Field></div>
+                <Field label={t('leads.detail.dealCurrency')}>
+                  <Select value={deal.currency} onChange={(e) => setDeal({ ...deal, currency: e.target.value })}>
+                    {['EUR', 'USD', 'TRY'].map((c) => <option key={c} value={c}>{c}</option>)}
+                  </Select>
+                </Field>
+              </div>
+            </div>
+          )}
           <div className="flex gap-2 mt-4">
-            <Button onClick={() => setStatus(confirm)}>{t('leads.detail.confirm')}</Button>
+            <Button disabled={confirm === 'won' && !(dealValue && dealValue > 0)} onClick={() => setStatus(confirm)}>{t('leads.detail.confirm')}</Button>
             <Button variant="secondary" onClick={() => setConfirm(null)}>{t('common.cancel')}</Button>
           </div>
         </Modal>

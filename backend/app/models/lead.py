@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 STATUSES = ["new", "draft_ready", "sent", "replied", "quoted", "won", "lost", "do_not_contact"]
@@ -31,3 +33,6 @@ class ImportIn(BaseModel):
 
 class StatusIn(BaseModel):
     status: str
+    # required when status == "won": what the producer says the deal was worth (self-reported, never converted)
+    deal_value: float | None = Field(default=None, gt=0, le=1_000_000_000, allow_inf_nan=False)
+    deal_currency: Literal["EUR", "USD", "TRY"] | None = None

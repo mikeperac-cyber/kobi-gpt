@@ -131,8 +131,13 @@ async def patch_lead(lead_id: str, body: StatusIn, company: dict = Depends(curre
         raise _err(422, "validation_error")
     if lead["status"] == "do_not_contact" and body.status != "do_not_contact":
         raise _err(409, "lead_blocked")  # once opted out, stays
-    await get_db().leads.update_one({"_id": lead["_id"]}, {"$set": {"status": body.status}})
-    return to_json({**lead, "status": body.status})
+    patch: dict = {"status": body.status}
+    if body.status == "won":
+        if body.deal_value is None or body.deal_currency is None:
+            raise _err(422, "deal_value_required")
+        patch.update(deal_value=body.deal_value, deal_currency=body.deal_currency, won_at=datetime.now(timezone.utc))
+    await get_db().leads.update_one({"_id": lead["_id"]}, {"$set": patch})
+    return to_json({**lead, **patch})
 
 
 @pipeline_router.get("/pipeline/stats")

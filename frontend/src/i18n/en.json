@@ -70,6 +70,7 @@
     "placeholderNote": "Fields in square brackets must be completed by the platform operator before launch."
   },
   "errors": {
+    "deal_value_required": "Enter the amount and currency of the won deal.",
     "unknown_certificate": "This certificate is not in your company profile. Add it there first.",
     "expired_document": "The document has expired.",
     "bad_document": "The document must be a PDF or a photo (JPG, PNG, WebP).",
@@ -529,6 +530,10 @@
       }
     },
     "detail": {
+      "dealValue": "Deal value",
+      "dealCurrency": "Currency",
+      "dealHint": "What is this sale worth in total? It appears as 'export won' on your dashboard; only you see it.",
+      "selfReported": "(self-reported)",
       "back": "Back to buyers",
       "contact": "Contact",
       "website": "Website",

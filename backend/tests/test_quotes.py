@@ -297,7 +297,7 @@ async def test_pipeline_stats_real_counts_own_company(producer, db):
         {"lead_id": lid, "company_id": cid, "direction": "inbound", "status": "sent"}])
     q = (await make(a, lid)).json()
     await a["client"].post(f"/api/quotes/{q['id']}/approve")
-    await a["client"].patch(f"/api/leads/{lid}", json={"status": "won"})
+    await a["client"].patch(f"/api/leads/{lid}", json={"status": "won", "deal_value": 1000, "deal_currency": "EUR"})
     assert (await a["client"].get("/api/pipeline/stats")).json() == {
         "leads": 1, "messages_sent": 1, "replies": 1, "quotes_sent": 1, "won": 1}
 

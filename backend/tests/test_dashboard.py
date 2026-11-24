@@ -130,3 +130,26 @@ async def test_since_overlap_catches_late_insert(producer, db):
                                        "read": False, "created_at": after - timedelta(milliseconds=3)})
     r = (await a["client"].get("/api/notifications/since", params={"after": first["now"]})).json()
     assert [i["params"]["company"] for i in r["items"]] == ["X"]
+
+
+async def test_roi_totals_per_currency(producer, db):
+    from datetime import timedelta
+    a, b = await producer("Ali"), await producer("Veli")
+    cid = a["company"]["id"]
+    rows = [(1000.5, "EUR", 2), (2500, "EUR", 1), (700, "USD", 3), (None, None, 4)]  # last: won before values existed
+    for value, cur, days in rows:
+        await db.leads.insert_one({"company_id": cid, "status": "won", "deal_value": value, "deal_currency": cur,
+                                   "won_at": NOW - timedelta(days=days)})
+    await db.leads.insert_one({"company_id": cid, "status": "lost", "deal_value": 9999, "deal_currency": "EUR"})
+    await db.leads.insert_one({"company_id": b["company"]["id"], "status": "won", "deal_value": 50, "deal_currency": "EUR",
+                               "won_at": NOW})
+    r = (await a["client"].get("/api/dashboard/roi")).json()
+    assert r["won_deals"] == 4 and r["valued_deals"] == 3
+    assert r["totals"] == [{"currency": "EUR", "amount": 3500.5}, {"currency": "USD", "amount": 700.0}]
+    assert r["first_won_at"].startswith((NOW - timedelta(days=4)).date().isoformat())
+
+
+async def test_roi_empty(producer):
+    a = await producer("Ali")
+    assert (await a["client"].get("/api/dashboard/roi")).json() == {
+        "won_deals": 0, "valued_deals": 0, "totals": [], "first_won_at": None}

@@ -146,6 +146,12 @@
     }
   },
   "dashboard": {
+    "roi": {
+      "title": "Kazanılan ihracat",
+      "count": "{{count}} satış kazanıldı",
+      "missing": "{{count}} satışın tutarı girilmemiş.",
+      "selfReported": "Tutarları siz girdiniz; doğrulanmamıştır. Para birimleri çevrilmez."
+    },
     "title": "İhracat Panosu",
     "retry": "Tekrar dene",
     "loadError": "Panoya şu anda ulaşılamadı.",

@@ -90,3 +90,18 @@ async def mark_read(notification_id: str, company: dict = Depends(current_compan
     n = await owned("notifications", notification_id, str(company["_id"]))
     await get_db().notifications.update_one({"_id": n["_id"]}, {"$set": {"read": True}})
     return {"id": notification_id, "read": True}
+
+
+@router.get("/dashboard/roi")
+async def roi(company: dict = Depends(current_company)):
+    """Export deals the producer marked as won, summed per currency. Self-reported and never converted."""
+    # shortcut: loads won leads (few per company); switch to a $group aggregation if that ever grows large
+    won = await get_db().leads.find({"company_id": str(company["_id"]), "status": "won"},
+                                    {"deal_value": 1, "deal_currency": 1, "won_at": 1}).to_list(5000)
+    totals: dict[str, float] = {}
+    for d in won:
+        if d.get("deal_value") and d.get("deal_currency"):
+            totals[d["deal_currency"]] = totals.get(d["deal_currency"], 0) + d["deal_value"]
+    return {"won_deals": len(won), "valued_deals": sum(1 for d in won if d.get("deal_value") and d.get("deal_currency")),
+            "totals": [{"currency": c, "amount": round(v, 2)} for c, v in sorted(totals.items())],
+            "first_won_at": to_json(_first(won, "won_at"))}

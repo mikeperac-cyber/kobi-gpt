@@ -146,6 +146,12 @@
     }
   },
   "dashboard": {
+    "roi": {
+      "title": "Export deals won",
+      "count": "{{count}} deals won",
+      "missing": "{{count}} deals have no amount.",
+      "selfReported": "Amounts entered by you; not verified. Currencies are not converted."
+    },
     "title": "Export Dashboard",
     "retry": "Try again",
     "loadError": "The dashboard could not be loaded right now.",

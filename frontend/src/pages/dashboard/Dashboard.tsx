@@ -9,6 +9,7 @@ import Skeleton from '../../components/ui/Skeleton'
 import ModuleCard from './ModuleCard'
 import QrPresenter from '../../components/QrPresenter'
 import ImpactPanel from './ImpactPanel'
+import RoiPanel from './RoiPanel'
 import Notifications, { type Notif } from './Notifications'
 import Roadmap, { type RoadmapState } from './Roadmap'
 
@@ -69,6 +70,7 @@ export default function Dashboard() {
           to="/leads" cta={t('dashboard.leads.find')} />
       </div>
       {sf.status === 'published' && <div className="flex justify-end"><QrPresenter /></div>}
+      <RoiPanel />
       <ImpactPanel />
       <Notifications items={data.notifications} onRead={markRead} />
     </section>
